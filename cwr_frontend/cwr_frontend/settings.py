@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
+# read environment variables
+import environ
+env = environ.Env()
+environ.Env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_ycijpb4_p+yk_3i7qtf&et)9yus@+t@#g-l$qbqz+&-qas9px'
 
 CORDRA = {
-    "URL": "https://localhost:8443",
+    "URL": env("CORDRA_URL", default="https://localhost:8443"),
 }
 
 # SECURITY WARNING: don't run with debug turned on in production!
