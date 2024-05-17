@@ -11,7 +11,7 @@ class DatasetListView(TemplateView):
     def get(self, request, **kwargs):
         params = {
             "pageNum": 0,
-            "pageSize": 10,
+            "pageSize": 100,
             "query": "type:Dataset"
         }
 

@@ -2,7 +2,6 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from django.shortcuts import render
 import requests
-from urllib.parse import urlencode
 
 
 class DatasetDetailView(TemplateView):
