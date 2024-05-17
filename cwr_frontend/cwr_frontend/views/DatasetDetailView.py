@@ -17,9 +17,23 @@ class DatasetDetailView(TemplateView):
             raise Exception(response.text)
 
         obj = response.json()
+        dataset = next((elem for elem in obj["@graph"] if elem["@type"] == "Dataset"))
 
         context = {
-            "item_size": 0
+            "name": dataset["name"],
         }
 
-        return render(request, self.template_name, context)
+        result =  render(request, self.template_name, context)
+
+        signposts = {
+            "author": [dataset["author"]["@id"]],
+            "license": [dataset["license"]["@id"]],
+            "item": [item["@id"] for item in dataset["hasPart"]]
+        }
+        links = []
+        for key in signposts:
+            for item in signposts[key]:
+                links.append(f"<{item}> ; rel=\"{key}\"")
+        result["Link"] = " , ".join(links)
+
+        return result

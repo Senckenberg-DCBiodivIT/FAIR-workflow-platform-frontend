@@ -17,6 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from cwr_frontend.views.DatasetListView import DatasetListView
+from cwr_frontend.views.DatasetDetailView import DatasetDetailView
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', DatasetListView.as_view(), name="Datasets"),
+    path('dataset', DatasetDetailView.as_view(), name="Dataset"),
 ]

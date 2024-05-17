@@ -22,6 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-_ycijpb4_p+yk_3i7qtf&et)9yus@+t@#g-l$qbqz+&-qas9px'
 
+CORDRA = {
+    "URL": "https://localhost:8443",
+}
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -54,7 +58,7 @@ ROOT_URLCONF = 'cwr_frontend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "cwr_frontend/templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

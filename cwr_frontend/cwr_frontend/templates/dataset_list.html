@@ -1,0 +1,18 @@
+{% load static %}
+
+<html>
+<head></head>
+<body>
+    <h1>Crop wild relatives: Datasets</h1>
+    <p>Num items: {{ total_size }}</p>
+    <div class="dataset-list">
+        {% for item in items %}
+        <div class="dataset-list-item">
+            <h3>{{ item.name }}</h3>
+            <p>{{ item.id }}</p>
+            <p>{{ item.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
