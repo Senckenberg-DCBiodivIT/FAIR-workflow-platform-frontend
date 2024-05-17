@@ -15,7 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+from django.conf import settings
+from revproxy.views import ProxyView
 
 from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
@@ -23,4 +25,5 @@ from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 urlpatterns = [
     path('', DatasetListView.as_view(), name="Datasets"),
     path('dataset', DatasetDetailView.as_view(), name="Dataset"),
+    re_path(r'api/(?P<path>.*)', ProxyView.as_view(upstream=settings.CORDRA["URL"])),
 ]

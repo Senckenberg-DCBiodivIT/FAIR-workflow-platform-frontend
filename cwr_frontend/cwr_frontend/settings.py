@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_ycijpb4_p+yk_3i7qtf&et)9yus@+t@#g-l$qbqz+&-qas9px'
 
 CORDRA = {
-    "URL": env("CORDRA_URL", default="https://localhost:8443"),
+    "URL": env("CORDRA_URL", default="http://localhost:8080"),
 }
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'revproxy',
 ]
 
 MIDDLEWARE = [
