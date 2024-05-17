@@ -25,5 +25,5 @@ from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 urlpatterns = [
     path('', DatasetListView.as_view(), name="dataset_list"),
     path('dataset', DatasetDetailView.as_view(), name="dataset_detail"),
-    re_path(r'api/(?P<path>.*)', ProxyView.as_view(upstream=settings.CORDRA["URL"])),
+    re_path(r'api/(?P<path>.*)', ProxyView.as_view(upstream=settings.CORDRA["URL"]), name="api"),
 ]
