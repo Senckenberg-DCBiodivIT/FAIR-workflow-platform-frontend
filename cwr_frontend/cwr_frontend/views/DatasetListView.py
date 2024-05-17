@@ -9,6 +9,7 @@ class DatasetListView(TemplateView):
     template_name = "dataset_list.html"
 
     def get(self, request, **kwargs):
+        # retrieve items from cordra
         params = {
             "pageNum": 0,
             "pageSize": 100,
@@ -20,6 +21,7 @@ class DatasetListView(TemplateView):
         if response.status_code != 200:
             raise Exception(response.text)
 
+        # extract base metadata for all items
         json = response.json()
         items = []
         for item in json["results"]:
@@ -41,14 +43,11 @@ class DatasetListView(TemplateView):
                 description=description
             ))
 
+        # render response
         total_size = json["size"]
-
         context = {
             "items": items,
             "total_size": total_size
         }
 
         return render(request, self.template_name, context)
-
-
-
