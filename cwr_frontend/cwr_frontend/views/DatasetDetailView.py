@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from cwr_frontend.utils import add_signpost
 import requests
+import magic
 
 
 class DatasetDetailView(TemplateView):
@@ -22,19 +23,43 @@ class DatasetDetailView(TemplateView):
         obj = response.json()
         dataset = next((elem for elem in obj["@graph"] if elem["@type"] == "Dataset"))
 
+        dataset_author_id = dataset["author"]["@id"]
+        author = next((elem for elem in obj["@graph"] if elem["@id"] == dataset_author_id), None)
+        author_name = author["name"]
+
+        signposts = {"item": []}
+
         # render content
         context = {
+            "id": id,
             "name": dataset["name"],
+            "description": dataset["description"],
+            "keywords": dataset["keywords"],
+            "datePublished": dataset["datePublished"],
+            "author": author_name,
+            "author_id": dataset_author_id,
+            "images": []
         }
-        response =  render(request, self.template_name, context)
+
+        for part in dataset["hasPart"]:
+            part_id = part["@id"]
+            item = next((elem for elem in obj["@graph"] if elem["@id"] == part_id), None)
+            if item is None:
+                continue
+            item_id = part_id
+            item_type = item["encodingFormat"]
+            if (item_type.startswith("image")):
+                item_abs_url = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"])) + f"?payload={item_id}"
+                signposts["item"].append((item_abs_url, item_type))
+                context["images"].append(item_abs_url)
+
+        response = render(request, self.template_name, context)
 
         # attach signposting headers
-        signposts = {
+        signposts |= {
             "cite-as": [(request.build_absolute_uri(reverse("api", args=[f"objects/{id}"])), "related")],
-            "author": [dataset["author"]["@id"]],
+            "author": [dataset_author_id],
             "license": [dataset["license"]["@id"]],
-            # TODO items with abs link
-            # "item": [item["@id"] for item in dataset["hasPart"]]
             # TODO zipped RO Crate
         }
         add_signpost(response, signposts)
