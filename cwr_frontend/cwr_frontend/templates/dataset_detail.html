@@ -1,33 +1,31 @@
-{% load static %}
+{% extends "base.html" %}
+{% block title %}Crop wild relatives: {{ name }}{% endblock %}
+{% block headline %}{{ name }}{% endblock %}
 
-<html>
-<head></head>
-<body>
-    <h1>Crop wild relatives: {{ name }}</h1>
-    <table>
-        <tr>
-            <td>PID:</td>
-            <td>{{ id }}</td>
-        </tr>
-        <tr>
-            <td>Description:</td>
-            <td>{{ description }}</td>
-        </tr>
-        <tr>
-            <td>Keywoads:</td>
-            <td>{{ keywords|join:", " }}</td>
-        </tr>
-        <tr>
-            <td>Author:</td>
-            <td>{{ author }} (<a href="{{ author_id }}">{{ author_id }}</a>)</td>
-        </tr>
-    </table>
-    <div>
-        <a href="{{ rocrate }}">Download as RO-Crate</a>
-    </div>
-    <h2>Results</h2>
-    {% for img in images %}
-    <img style="width: 100%" src="{{ img }}" />
-    {% endfor %}
-</body>
-</html>
+{% block content %}
+<table>
+    <tr>
+        <td>PID:</td>
+        <td>{{ id }}</td>
+    </tr>
+    <tr>
+        <td>Description:</td>
+        <td>{{ description }}</td>
+    </tr>
+    <tr>
+        <td>Keywoads:</td>
+        <td>{{ keywords|join:", " }}</td>
+    </tr>
+    <tr>
+        <td>Author:</td>
+        <td>{{ author }} (<a href="{{ author_id }}">{{ author_id }}</a>)</td>
+    </tr>
+</table>
+<div>
+    <a href="{{ rocrate }}">Download as RO-Crate</a>
+</div>
+<h2>Results</h2>
+{% for img in images %}
+<img style="width: 100%" src="{{ img }}"/>
+{% endfor %}
+{% endblock %}

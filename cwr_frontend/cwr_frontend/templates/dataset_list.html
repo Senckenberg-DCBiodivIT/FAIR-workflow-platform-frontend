@@ -1,19 +1,18 @@
-{% load static %}
+{% extends "base.html" %}
+{% block title %}Crop wild relatives: Datasets{% endblock %}
+{% block headline %}Crop Wild Relatives{% endblock %}
 
-<html>
-<head></head>
-<body>
-    <h1>Crop wild relatives: Datasets</h1>
-    <p>Num items: {{ total_size }}</p>
-    <div class="dataset-list">
-        {% for item in items %}
-        <hr />
-        <section class="dataset-list-item">
-            <h3><a href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h3>
-            <p>{{ item.id }}</p>
-            <p>{{ item.description }}</p>
-        </section>
-        {% endfor %}
-    </div>
-</body>
-</html>
+{% block content %}
+<p class="mv2">Datasets: {{ total_size }}</p>
+<div class="dataset-list">
+    {% for item in items %}
+    <section class="dataset-list-item pv3 bb b--black-30 ph3 ph0-l">
+
+        <h3 class="f3 athelas mt0 lh-title mb1"><a class="green underline-hover no-underline"
+                                                   href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h3>
+        <p class="mt0">{{ item.id }}</p>
+        <p>Description: {{ item.description }}</p>
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}
