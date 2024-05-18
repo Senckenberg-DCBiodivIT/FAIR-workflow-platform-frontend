@@ -9,7 +9,9 @@ gunicorn==22.0.0
 idna==3.7
 loguru==0.7.2
 packaging==24.0
+python-magic==0.4.27
 requests==2.31.0
 six==1.16.0
 sqlparse==0.5.0
 urllib3==2.2.1
+zipstream==1.1.4
