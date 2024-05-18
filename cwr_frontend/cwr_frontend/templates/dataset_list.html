@@ -9,7 +9,7 @@
         {% for item in items %}
         <hr />
         <section class="dataset-list-item">
-            <h3><a href="{% url 'dataset_detail' %}?id={{ item.id }}">{{ item.name }}</a></h3>
+            <h3><a href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h3>
             <p>{{ item.id }}</p>
             <p>{{ item.description }}</p>
         </section>
