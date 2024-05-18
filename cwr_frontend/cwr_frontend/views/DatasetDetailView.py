@@ -2,11 +2,11 @@ from typing import Any
 
 from django.conf import settings
 from django.views.generic import TemplateView
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from cwr_frontend.utils import add_signpost
 import requests
-from django.http import StreamingHttpResponse, HttpResponseNotFound, HttpResponseServerError
+from django.http import StreamingHttpResponse, HttpResponseNotFound, HttpResponseServerError, JsonResponse
 import zipstream
 import json
 
@@ -68,7 +68,7 @@ class DatasetDetailView(TemplateView):
 
         return response
 
-    def to_ROCrate(self, id: str, obj: dict) -> StreamingHttpResponse:
+    def to_ROCrate(self, request, id: str, obj: dict) -> StreamingHttpResponse:
         """ return a downloadable zip in RO-Crate format from the given dataset entity
         the zip file is build on the fly by streaming payload objects directly from the api
 
@@ -82,7 +82,7 @@ class DatasetDetailView(TemplateView):
         files_to_add = {}  # {filename: file_abs_url}
         for file in dataset["hasPart"]:
             file_name = file["@id"]
-            file_abs_url = self.build_payload_abs_path(id, file_name)
+            file_abs_url = request.build_absolute_uri(self.build_payload_abs_path(id, file_name))
             files_to_add[file_name] = file_abs_url
 
         # prepare a streamable zip response
@@ -119,10 +119,20 @@ class DatasetDetailView(TemplateView):
         )
 
         json_obj = response.json()
-        response_format = request.GET.get("format", None)
 
-        if response_format == "ROCrate":
+        # return response:
+        # - if requested in ROCrate format or as a zip , return the zipped RO-Crate
+        # - if requested in json, redirect to the original digital object
+        # - return the rendered http page otherwise
+        response_format = None
+        if "format" in request.GET:
+            response_format = request.GET.get("format").lower()
+        accept = request.META.get("HTTP_ACCEPT", None).lower()
+
+        if response_format == "rocrate" or accept == "application/zip":
             return self.to_ROCrate(request, id, json_obj)
+        elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
+            return JsonResponse(json_obj)
         else:
             return self.render(request, id, json_obj)
 
