@@ -31,6 +31,9 @@ class DatasetDetailView(TemplateView):
             (request.build_absolute_uri() + "&format=ROCrate", "application/zip"),
         ]}
 
+        link_rocrate = request.build_absolute_uri() + "?format=ROCrate"
+        link_digital_object= request.build_absolute_uri() + "?format=json"
+
         # render content
         context = {
             "id": id,
@@ -41,7 +44,8 @@ class DatasetDetailView(TemplateView):
             "author": author_name,
             "author_id": dataset_author_id,
             "images": [],
-            "rocrate": request.build_absolute_uri() + "&format=ROCrate"
+            "link_rocrate": link_rocrate,
+            "link_digital_object": link_digital_object,
         }
 
         for part in dataset["hasPart"]:
