@@ -4,7 +4,7 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from cwr_frontend.utils import add_signpost
+from cwr_frontend.utils import add_signposts
 import requests
 from django.http import StreamingHttpResponse, HttpResponseNotFound, HttpResponseServerError, JsonResponse
 import zipstream
@@ -19,6 +19,26 @@ class DatasetDetailView(TemplateView):
         """ returns an absolute api path for the given payload """
         return reverse("api", args=[f"objects/{id}"]) + f"?payload={item_name}"
 
+    def to_typed_link_set(self,
+                          abs_url: str,
+                          author_url: str,
+                          license_url: str,
+                          items: list[tuple[str, str]],
+                          additional_urls: list[tuple[str, str]]) -> list[tuple[str, str, str|None]]:
+        """ build a list of typed links for sign posting. """
+
+        typed_links = [
+            ("https://schema.org/Dataset", "type", None),
+            ("https://schema.org/AboutPage", "type", None),
+            (abs_url, "cite-as", None),
+            (author_url, "author", None),
+            (license_url, "license", None),
+        ]
+        typed_links += [(url, "describedBy", content_type) for (url, content_type) in additional_urls]
+        typed_links += [(url, "item", content_type) for (url, content_type) in items]
+
+        return typed_links
+
     def render(self, request, id: str, obj: dict[str, Any]):
         """ Return a html representation with signposts from the given digital object """
         dataset = next((elem for elem in obj["@graph"] if elem["@type"] == "Dataset"))
@@ -26,10 +46,6 @@ class DatasetDetailView(TemplateView):
         dataset_author_id = dataset["author"]["@id"]
         author = next((elem for elem in obj["@graph"] if elem["@id"] == dataset_author_id), None)
         author_name = author["name"]
-
-        signposts = {"item": [
-            (request.build_absolute_uri() + "&format=ROCrate", "application/zip"),
-        ]}
 
         link_rocrate = request.build_absolute_uri() + "?format=ROCrate"
         link_digital_object= request.build_absolute_uri() + "?format=json"
@@ -48,6 +64,8 @@ class DatasetDetailView(TemplateView):
             "link_digital_object": link_digital_object,
         }
 
+        # get list of images and their content type
+        images = []
         for part in dataset["hasPart"]:
             part_id = part["@id"]
             item = next((elem for elem in obj["@graph"] if elem["@id"] == part_id), None)
@@ -57,18 +75,24 @@ class DatasetDetailView(TemplateView):
             item_type = item["encodingFormat"]
             if (item_type.startswith("image")):
                 item_abs_url = self.build_payload_abs_path(id, item_id)
-                signposts["item"].append((item_abs_url, item_type))
-                context["images"].append(item_abs_url)
+                images.append((item_abs_url, item_type))
 
+        # add images to page
+        context["images"] = [image[0] for image in images]
+
+        # render response and attach signposting links
         response = render(request, self.template_name, context)
-
-        # attach signposting headers
-        signposts |= {
-            "cite-as": [(request.build_absolute_uri(reverse("api", args=[f"objects/{id}"])), "related")],
-            "author": [dataset_author_id],
-            "license": [dataset["license"]["@id"]],
-        }
-        add_signpost(response, signposts)
+        typed_links = self.to_typed_link_set(
+            abs_url=request.build_absolute_uri(),
+            author_url=dataset_author_id,
+            license_url=dataset["license"]["@id"],
+            items=images,
+            additional_urls=[
+                (link_rocrate, "application/zip"),
+                (link_digital_object, "application/json+ld"),
+            ]
+        )
+        add_signposts(response, typed_links)
 
         return response
 
