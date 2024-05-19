@@ -3,28 +3,56 @@
 {% block headline %}{{ name }}{% endblock %}
 
 {% block content %}
-<table>
-    <tr>
-        <td>PID:</td>
-        <td>{{ id }}</td>
-    </tr>
-    <tr>
-        <td>Description:</td>
-        <td>{{ description }}</td>
-    </tr>
-    <tr>
-        <td>Keywoads:</td>
-        <td>{{ keywords|join:", " }}</td>
-    </tr>
-    <tr>
-        <td>Author:</td>
-        <td>{{ author }} (<a href="{{ author_id }}">{{ author_id }}</a>)</td>
-    </tr>
-</table>
+<div class="">
+    <table class="f6 w-100 mw8 center">
+        <tbody>
+        <tr class="stripe-dark">
+            <td class="pa1">PID:</td>
+            <td class="pa1">{{ id }}</td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Description:</td>
+            <td class="pa1">{{ description }}</td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Keywords:</td>
+            <td class="pa1">{{ keywords|join:", " }}</td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Published:</td>
+            <td class="pa1">{{ datePublished }}</td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Author:</td>
+            <td class="pa1">{{ author }} (<a href="{{ author_id }}">{{ author_id }}</a>)</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 
 <div class="mv3">
     <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{{ link_digital_object }}">View Digital Object of this record</a>
     <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{{ link_rocrate }}">Download RO-Crate (zip)</a>
+</div>
+
+<div>
+    <h2>Provenance for this record</h2>
+    <table class="f6 w-100 mw8 center">
+        <tbody>
+        <tr class="stripe-dark">
+            <td class="pa1">Type</td>
+            <td class="pa1">{{ prov_action }}</td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Agent:</td>
+            <td class="pa1">{{ prov_agent_name }} (<a href="{{ prov_agent_id }}">{{ prov_agent_id }})</a></td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Instrument</td>
+            <td class="pa1"><a href="{{ prov_instrument_id }}">{{ prov_instrument_id }}</a></td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 <div>

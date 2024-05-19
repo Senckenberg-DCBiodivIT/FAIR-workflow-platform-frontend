@@ -50,6 +50,13 @@ class DatasetDetailView(TemplateView):
         link_rocrate = request.build_absolute_uri() + "?format=ROCrate"
         link_digital_object= request.build_absolute_uri() + "?format=json"
 
+        prov_action = next((elem for elem in obj["@graph"] if elem["@type"] == "CreateAction"), None)
+        prov_action_name = prov_action["@type"]
+        prov_instrument_id = prov_action["instrument"]["@id"]
+        prov_agent_id = prov_action["agent"]["@id"]
+        prov_agent = next((elem for elem in obj["@graph"] if elem["@type"] == "Person" and elem["@id"] == prov_agent_id), None)
+        prov_agent_name = prov_agent["name"]
+
         # render content
         context = {
             "id": id,
@@ -62,6 +69,11 @@ class DatasetDetailView(TemplateView):
             "images": [],
             "link_rocrate": link_rocrate,
             "link_digital_object": link_digital_object,
+            "prov_action": prov_action_name,
+            "prov_agent_id": prov_agent_id,
+            "prov_agent_name": prov_agent_name,
+            "prov_instrument_id": prov_instrument_id,
+
         }
 
         # get list of images and their content type
