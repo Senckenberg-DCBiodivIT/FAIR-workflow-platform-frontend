@@ -73,7 +73,6 @@ class DatasetDetailView(TemplateView):
             "prov_agent_id": prov_agent_id,
             "prov_agent_name": prov_agent_name,
             "prov_instrument_id": prov_instrument_id,
-
         }
 
         # get list of images and their content type
@@ -90,7 +89,7 @@ class DatasetDetailView(TemplateView):
                 images.append((item_abs_url, item_type))
 
         # add images to page
-        context["images"] = [image[0] for image in images]
+        context["images"] = [(image[0].split("=")[-1], image[0]) for image in images]
 
         # render response and attach signposting links
         response = render(request, self.template_name, context)
