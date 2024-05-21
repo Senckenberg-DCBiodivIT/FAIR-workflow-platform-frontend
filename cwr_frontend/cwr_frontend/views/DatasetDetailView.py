@@ -121,7 +121,9 @@ class DatasetDetailView(TemplateView):
         files_to_add = {}  # {filename: file_abs_url}
         for file in dataset["hasPart"]:
             file_name = file["@id"]
-            file_abs_url = request.build_absolute_uri(self.build_payload_abs_path(id, file_name))
+            # file url must point to CORDRA directly. For some reason, it does not work to use the /api proxy
+            # for streaming from localhost inside docker.
+            file_abs_url = settings.CORDRA["URL"] + "/objects/" + id + "?payload=" + file_name
             files_to_add[file_name] = file_abs_url
 
         # prepare a streamable zip response
@@ -133,11 +135,14 @@ class DatasetDetailView(TemplateView):
 
         # add payload files
         for (name, url) in files_to_add.items():
-            response = requests.get(url, verify=False, stream=True)
-            if response.status_code == 200:
-                zs.write_iter(name, response.iter_content(chunk_size=1024))
-            else:
-                raise Exception("Failed to add file to ro-crate zip stream: " + response.text)
+            try:
+                response = requests.get(url, verify=False, stream=True)
+                if response.status_code == 200:
+                    zs.write_iter(name, response.iter_content(chunk_size=1024))
+                else:
+                    raise Exception(f"Failed to add file ({url}) to ro-crate zip stream: " + response.text + " " + str(response))
+            except Exception as e:
+                raise Exception(f"Failed to download file from backend ({url}): {e}")
 
         archive_name = f'{id.replace("/", "_")}.zip'
         response = StreamingHttpResponse(zs, content_type="application/zip")
