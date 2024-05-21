@@ -47,6 +47,8 @@ class DatasetDetailView(TemplateView):
         author = next((elem for elem in obj["@graph"] if elem["@id"] == dataset_author_id), None)
         author_name = author["name"]
 
+        license_id = dataset["license"]["@id"]
+
         link_rocrate = request.build_absolute_uri() + "?format=ROCrate"
         link_digital_object= request.build_absolute_uri() + "?format=json"
 
@@ -66,6 +68,7 @@ class DatasetDetailView(TemplateView):
             "datePublished": dataset["datePublished"],
             "author": author_name,
             "author_id": dataset_author_id,
+            "license_id": license_id,
             "images": [],
             "link_rocrate": link_rocrate,
             "link_digital_object": link_digital_object,
