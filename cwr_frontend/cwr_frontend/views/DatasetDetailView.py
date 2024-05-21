@@ -26,7 +26,6 @@ class DatasetDetailView(TemplateView):
                           items: list[tuple[str, str]],
                           additional_urls: list[tuple[str, str]]) -> list[tuple[str, str, str|None]]:
         """ build a list of typed links for sign posting. """
-
         typed_links = [
             ("https://schema.org/Dataset", "type", None),
             ("https://schema.org/AboutPage", "type", None),
@@ -79,7 +78,7 @@ class DatasetDetailView(TemplateView):
         }
 
         # get list of images and their content type
-        images = []
+        items = []
         for part in dataset["hasPart"]:
             part_id = part["@id"]
             item = next((elem for elem in obj["@graph"] if elem["@id"] == part_id), None)
@@ -87,12 +86,12 @@ class DatasetDetailView(TemplateView):
                 continue
             item_id = part_id
             item_type = item["encodingFormat"]
-            if (item_type.startswith("image")):
-                item_abs_url = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]) + f"?payload={item_id}")
-                images.append((item_abs_url, item_type))
+            item_abs_url = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]) + f"?payload={item_id}")
+            is_image = item_type.startswith("image")
+            items.append((item_abs_url, item_type, is_image))
 
-        # add images to page
-        context["images"] = [(image[0].split("=")[-1], image[0]) for image in images]
+        # add images to page: tuple of file_name, relative_url (or none if not an image)
+        context["images"] = [(image[0].split("=")[-1], image[0] if image[2] else None) for image in items]
 
         # render response and attach signposting links
         response = render(request, self.template_name, context)
@@ -100,7 +99,7 @@ class DatasetDetailView(TemplateView):
             abs_url=request.build_absolute_uri(reverse("dataset_detail", args=[id])),
             author_url=dataset_author_id,
             license_url=dataset["license"]["@id"],
-            items=images,
+            items=[ (item[0], item[1]) for item in items ],
             additional_urls=[
                 (link_rocrate, "application/zip"),
                 (link_digital_object, "application/json+ld"),

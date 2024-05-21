@@ -3,6 +3,7 @@
 {% block headline %}{{ name }}{% endblock %}
 
 {% block content %}
+{% load static %}
 <div class="">
     <table class="f6 w-100 mw8">
         <tbody>
@@ -60,16 +61,20 @@
 </div>
 
 <div>
-    <h2>Results</h2>
+    <h2>Content</h2>
     <div class="cf">
-    {% for name, img in images %}
+    {% for name, img_url in images %}
 <!--    <img style="width: 100%" src="{{ img }}"/>-->
         <div class="fl w-50 w-50-m w-25-l pa2">
             <a href="{{ img }}">
-                <img src="{{ img }}" class="w-100 db outline black-10"/>
+                {% if img_url %}
+                <img src="{{ img_url }}" class="w-100 db outline black-10"/>
+                {% else %}
+                <img src="{% static 'unknown_payload.png' %}" class="w-100 db outline black-10"/>
+                {% endif %}
                 <dl class="mt2 f6 lh-copy">
                     <dt class="clip">Title</dt>
-                    <dd class="ml0 black truncate w-100">{{ name }}</dd>
+                    <dd class="ml0 black truncate w-100 tc">{{ name }}</dd>
                 </dl>
             </a>
         </div>
