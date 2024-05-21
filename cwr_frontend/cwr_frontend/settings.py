@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 FORCE_SCRIPT_NAME = env("FORCE_SCRIPT_NAME", default=None)
 
 # disable trailing slash warning (required to make it work with a forced script name)
-SILENCED_SYSTEM_CHECKS = ["models.W002"]
+SILENCED_SYSTEM_CHECKS = ["urls.W002"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

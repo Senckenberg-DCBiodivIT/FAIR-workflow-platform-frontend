@@ -88,7 +88,7 @@ class DatasetDetailView(TemplateView):
             item_id = part_id
             item_type = item["encodingFormat"]
             if (item_type.startswith("image")):
-                item_abs_url = self.build_payload_abs_path(id, item_id)
+                item_abs_url = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]) + f"?payload={item_id}")
                 images.append((item_abs_url, item_type))
 
         # add images to page
@@ -97,7 +97,7 @@ class DatasetDetailView(TemplateView):
         # render response and attach signposting links
         response = render(request, self.template_name, context)
         typed_links = self.to_typed_link_set(
-            abs_url=request.build_absolute_uri(),
+            abs_url=request.build_absolute_uri(reverse("dataset_detail", args=[id])),
             author_url=dataset_author_id,
             license_url=dataset["license"]["@id"],
             items=images,
