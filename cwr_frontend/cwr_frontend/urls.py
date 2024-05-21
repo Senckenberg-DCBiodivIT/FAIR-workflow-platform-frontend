@@ -24,9 +24,10 @@ from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 
 urlpatterns = [
     # list of datasets
-    path('', DatasetListView.as_view(), name="dataset_list"),
+    re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
     re_path(r'dataset/(?P<id>[a-z0-9\/]+)', DatasetDetailView.as_view(), name="dataset_detail"),
     # proxy all api requests to cordra
     re_path(r'api/(?P<path>.*)', ProxyView.as_view(upstream=settings.CORDRA["URL"]), name="api"),
+
 ]

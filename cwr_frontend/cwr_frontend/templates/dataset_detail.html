@@ -35,8 +35,8 @@
 </div>
 
 <div class="mv3">
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{{ link_digital_object }}">View Digital Object of this record</a>
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{{ link_rocrate }}">Download RO-Crate (zip)</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object of this record</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate">Download RO-Crate (zip)</a>
 </div>
 
 <div>

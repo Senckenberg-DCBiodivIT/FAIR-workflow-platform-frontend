@@ -20,6 +20,11 @@ environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# make frontend available under a sub-path, i.e. /cwr-prototype
+FORCE_SCRIPT_NAME = env("FORCE_SCRIPT_NAME", default=None)
+
+# disable trailing slash warning (required to make it work with a forced script name)
+SILENCED_SYSTEM_CHECKS = ["models.W002"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
