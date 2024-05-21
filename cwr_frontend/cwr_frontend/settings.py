@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # make frontend available under a sub-path, i.e. /cwr-prototype
 FORCE_SCRIPT_NAME = env("FORCE_SCRIPT_NAME", default=None)
 
+# use forwarded hostname if available. This is required to use the correct hostname for reversing urls
+# if django is run behind a reverse proxy like nginx
+USE_X_FORWARDED_HOST = True
+
 # disable trailing slash warning (required to make it work with a forced script name)
 SILENCED_SYSTEM_CHECKS = ["urls.W002"]
 

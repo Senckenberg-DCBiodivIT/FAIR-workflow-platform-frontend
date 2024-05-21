@@ -49,8 +49,8 @@ class DatasetDetailView(TemplateView):
 
         license_id = dataset["license"]["@id"]
 
-        link_rocrate = request.build_absolute_uri() + "?format=ROCrate"
-        link_digital_object= request.build_absolute_uri() + "?format=json"
+        link_rocrate = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=ROCrate"
+        link_digital_object = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=json"
 
         prov_action = next((elem for elem in obj["@graph"] if elem["@type"] == "CreateAction"), None)
         prov_action_name = prov_action["@type"]
