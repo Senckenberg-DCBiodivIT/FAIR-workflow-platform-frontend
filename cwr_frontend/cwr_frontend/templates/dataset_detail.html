@@ -63,11 +63,11 @@
 <div>
     <h2>Content</h2>
     <div class="cf">
-    {% for name, img_url in images %}
+    {% for name, img_url, is_img in images %}
 <!--    <img style="width: 100%" src="{{ img }}"/>-->
         <div class="fl w-50 w-50-m w-25-l pa2">
-            <a href="{{ img }}">
-                {% if img_url %}
+            <a href="{{ img_url }}">
+                {% if is_img %}
                 <img src="{{ img_url }}" class="w-100 db outline black-10"/>
                 {% else %}
                 <img src="{% url 'placeholder_img' %}" class="w-100 db outline black-10"/>

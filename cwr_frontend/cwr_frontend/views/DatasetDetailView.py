@@ -91,7 +91,7 @@ class DatasetDetailView(TemplateView):
             items.append((item_abs_url, item_type, is_image))
 
         # add images to page: tuple of file_name, relative_url (or none if not an image)
-        context["images"] = [(image[0].split("=")[-1], image[0] if image[2] else None) for image in items]
+        context["images"] = [(image[0].split("=")[-1], image[0], image[2]) for image in items]
 
         # render response and attach signposting links
         response = render(request, self.template_name, context)
