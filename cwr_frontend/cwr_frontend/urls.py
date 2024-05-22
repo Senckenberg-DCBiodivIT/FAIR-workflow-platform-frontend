@@ -28,7 +28,7 @@ urlpatterns = [
     re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
     re_path(r'dataset/(?P<id>[a-z0-9\/]+)', DatasetDetailView.as_view(), name="dataset_detail"),
-    path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
+    re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # proxy all api requests to cordra
     re_path(r'api/(?P<path>.*)', ProxyView.as_view(upstream=settings.CORDRA["URL"]), name="api"),
     # an ugly hack to serve a placeholder image without using static files
