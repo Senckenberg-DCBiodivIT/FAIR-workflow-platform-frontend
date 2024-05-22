@@ -6,15 +6,18 @@
     <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
 </head>
 <body>
-<div class="page-container">
+<div class="page-container" style="position: relative; min-height: 100vh">
     <div class="w-100 bb white pa3 bg-green">
         <p class="ma0"><a class="white no-underline dim" href="{% url 'dataset_list' %}">Crop Wild Relatives</a></p>
         <h1 class="" style="margin: 0em">{% block headline %}{% endblock %}</h1>
     </div>
-    <div class="content-wrap w-100 pa3">
+    <div class="content-wrap w-100 pa3" style="padding-bottom: 3rem">
         <main>
             {% block content %}{% endblock %}
         </main>
+    </div>
+    <div class="w-100 bb white ph3 pv2 bg-green tr" style="position: absolute; bottom: 0">
+        <a href="{% url 'imprint' %}" class="ma0 no-underline dim white">Imprint and Copyright</a>
     </div>
 </div>
 </body>
