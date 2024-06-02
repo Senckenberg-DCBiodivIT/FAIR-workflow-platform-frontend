@@ -110,7 +110,8 @@ class DatasetDetailView(TemplateView):
             license_url=license_id,
             items=[(item[0], item[1]) for item in items],
             additional_urls=[
-                (link_rocrate, "application/zip"),
+                (link_rocrate, "application/json+ld"),
+                (link_rocrate + "&download=true", "application/zip"),
                 (link_digital_object, "application/json+ld"),
             ]
         )
