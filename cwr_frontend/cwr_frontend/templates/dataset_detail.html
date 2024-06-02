@@ -29,15 +29,15 @@
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">License:</td>
-            <td class="pa1"><a href="{{ author_id }}">{{ license_id }}</a></td>
+            <td class="pa1"><a href="{{ license_id }}">{{ license_id }}</a></td>
         </tr>
         </tbody>
     </table>
 </div>
 
 <div class="mv3">
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object of this record</a>
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate">Download RO-Crate (zip)</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate">View RO-Crate</a>
 </div>
 
 <div>
@@ -62,9 +62,9 @@
 
 <div>
     <h2>Content</h2>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
     <div class="cf">
     {% for name, img_url, is_img in images %}
-<!--    <img style="width: 100%" src="{{ img }}"/>-->
         <div class="fl w-50 w-50-m w-25-l pa2">
             <a href="{{ img_url }}">
                 {% if is_img %}

@@ -1,32 +1,15 @@
-from typing import Any
-
-from django.conf import settings
 from django.views.generic import TemplateView
 from django.shortcuts import render
-import requests
-from urllib.parse import urlencode
+
+from cwr_frontend.cordra.CordraConnector import CordraConnector
 
 
 class DatasetListView(TemplateView):
     template_name = "dataset_list.html"
-
-    def retrieve_items(self) -> dict[str, Any]:
-        """ retrieve list of objects from cordra """
-        params = {
-            "pageNum": 0,
-            "pageSize": 100,
-            "query": "type:Dataset"
-        }
-
-        url = settings.CORDRA["URL"] + "/search"
-        response = requests.get(url + "?" + urlencode(params), verify=False)
-        if response.status_code != 200:
-            raise Exception(response.text)
-
-        return response.json()
+    _connector = CordraConnector()
 
     def get(self, request, **kwargs):
-        items_response = self.retrieve_items()
+        items_response = self._connector.list_datasets()
         items = items_response["results"]
         items_total_count = items_response["size"]
 
@@ -34,12 +17,9 @@ class DatasetListView(TemplateView):
         items_reduced = []
         for item in items:
             id = item["id"]
-            name = None
-            description = None
-            for graph_element in item["content"]["@graph"]:
-                if graph_element["@type"] == "Dataset":
-                    name = graph_element["name"]
-                    description = graph_element["description"]
+            content = item["content"]
+            name = content["name"]
+            description = content["description"]
 
             if name is None or id is None:
                 raise Exception("Dataset name or id not found for " + item)

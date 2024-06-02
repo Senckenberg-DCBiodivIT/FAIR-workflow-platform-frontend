@@ -1,18 +1,24 @@
+import json
+import os
+import tempfile
+from copy import deepcopy
+from tempfile import NamedTemporaryFile
 from typing import Any
 
-from django.conf import settings
-from django.views.generic import TemplateView
+from django.http import JsonResponse, FileResponse, HttpResponseBase
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views.generic import TemplateView
+from rocrate.model import ContextEntity
+from rocrate.rocrate import ROCrate
+
+from cwr_frontend.cordra.CordraConnector import CordraConnector
 from cwr_frontend.utils import add_signposts
-import requests
-from django.http import StreamingHttpResponse, HttpResponseNotFound, HttpResponseServerError, JsonResponse
-import zipstream
-import json
 
 
 class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
+    _connector = CordraConnector()
 
     # get list of files to add to the archive
     def build_payload_abs_path(self, id: str, item_name: str) -> str:
@@ -24,7 +30,7 @@ class DatasetDetailView(TemplateView):
                           author_url: str,
                           license_url: str,
                           items: list[tuple[str, str]],
-                          additional_urls: list[tuple[str, str]]) -> list[tuple[str, str, str|None]]:
+                          additional_urls: list[tuple[str, str]]) -> list[tuple[str, str, str | None]]:
         """ build a list of typed links for sign posting. """
         typed_links = [
             ("https://schema.org/Dataset", "type", None),
@@ -38,24 +44,27 @@ class DatasetDetailView(TemplateView):
 
         return typed_links
 
-    def render(self, request, id: str, obj: dict[str, Any]):
+    def render(self, request, id: str, objects: dict[str, dict[str, Any]]):
         """ Return a html representation with signposts from the given digital object """
-        dataset = next((elem for elem in obj["@graph"] if elem["@type"] == "Dataset"))
+        dataset = objects[id]
 
-        dataset_author_id = dataset["author"]["@id"]
-        author = next((elem for elem in obj["@graph"] if elem["@id"] == dataset_author_id), None)
+        # TODO support multiple authors and no author
+        author = next(iter([elem for (elem_id, elem) in objects.items() if
+                            elem["@type"] == "Person" and elem_id in dataset["author"]]), None)
+        dataset_author_id = author["identifier"]
         author_name = author["name"]
 
-        license_id = dataset["license"]["@id"]
+        license_id = dataset["license"] if "license" in dataset else None
 
         link_rocrate = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=ROCrate"
         link_digital_object = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=json"
 
-        prov_action = next((elem for elem in obj["@graph"] if elem["@type"] == "CreateAction"), None)
+        prov_action = next(iter(elem for (key, elem) in objects.items() if elem["@type"] == "CreateAction"), None)
         prov_action_name = prov_action["@type"]
-        prov_instrument_id = prov_action["instrument"]["@id"]
-        prov_agent_id = prov_action["agent"]["@id"]
-        prov_agent = next((elem for elem in obj["@graph"] if elem["@type"] == "Person" and elem["@id"] == prov_agent_id), None)
+        prov_instrument_id = prov_action["instrument"]["@id"] if "instrument" in prov_action else None
+        prov_agent_internal_id = prov_action["agent"]
+        prov_agent = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_agent_internal_id), None)
+        prov_agent_id = prov_agent["identifier"]
         prov_agent_name = prov_agent["name"]
 
         # render content
@@ -63,7 +72,7 @@ class DatasetDetailView(TemplateView):
             "id": id,
             "name": dataset["name"],
             "description": dataset["description"],
-            "keywords": dataset["keywords"],
+            "keywords": dataset["keywords"] if "keywords" in dataset else [],
             "datePublished": dataset["datePublished"],
             "author": author_name,
             "author_id": dataset_author_id,
@@ -79,14 +88,14 @@ class DatasetDetailView(TemplateView):
 
         # get list of images and their content type
         items = []
-        for part in dataset["hasPart"]:
-            part_id = part["@id"]
-            item = next((elem for elem in obj["@graph"] if elem["@id"] == part_id), None)
+        for part_id in dataset["hasPart"]:
+            item = next((elem for (key, elem) in objects.items() if key == part_id), None)
             if item is None:
                 continue
-            item_id = part_id
+            item_id = item["name"]
             item_type = item["encodingFormat"]
-            item_abs_url = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]) + f"?payload={item_id}")
+            item_abs_url = request.build_absolute_uri(
+                reverse("api", args=[f"objects/{part_id}"]) + f"?payload={item_id}")
             is_image = item_type.startswith("image")
             items.append((item_abs_url, item_type, is_image))
 
@@ -98,8 +107,8 @@ class DatasetDetailView(TemplateView):
         typed_links = self.to_typed_link_set(
             abs_url=request.build_absolute_uri(reverse("dataset_detail", args=[id])),
             author_url=dataset_author_id,
-            license_url=dataset["license"]["@id"],
-            items=[ (item[0], item[1]) for item in items ],
+            license_url=license_id,
+            items=[(item[0], item[1]) for item in items],
             additional_urls=[
                 (link_rocrate, "application/zip"),
                 (link_digital_object, "application/json+ld"),
@@ -109,62 +118,115 @@ class DatasetDetailView(TemplateView):
 
         return response
 
-    def to_ROCrate(self, request, id: str, obj: dict) -> StreamingHttpResponse:
+    def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], fetch_remote: bool = False) -> ROCrate:
+        objects = deepcopy(objects)  # editing elements in place messes with django cache
+
+        dataset = objects[id]
+
+        added_persons = []
+        crate = ROCrate()
+
+        for property in ["name", "description", "dateCreated", "studySubject", "datePublished", "dateModified",
+                         "keywords"]:
+            if (property in dataset) and (dataset[property] is not None):
+                crate.root_dataset[property] = dataset[property]
+
+        for author in map(lambda author_id: objects[author_id], dataset["author"]):
+            author = deepcopy(author)
+            author_id = author.pop("@id")
+            crate_author = crate.add(ContextEntity(crate, author_id, properties=author))
+            crate.root_dataset.append_to("author", crate_author)
+            added_persons.append(author_id)
+
+        crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
+        crate.root_dataset["sameAs"] = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]))
+
+        # add all files
+        for file in [objects[part_id] for part_id in objects if objects[part_id]["@type"] == "MediaObject"]:
+            url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
+            if fetch_remote:
+                dest_path = file["name"]
+            else:
+                dest_path = None  # use payload URL as path
+            crate.add_file(url, dest_path=dest_path, fetch_remote=fetch_remote, properties={
+                "name": file["name"],
+                "encodingFormat": file["encodingFormat"],
+                "contentSize": file["contentSize"]
+            })
+
+        for action in map(lambda mention_id: objects[mention_id], dataset["mentions"]):
+            action_id = action.pop("@id")
+            agent_id = action.get("agent", None)
+            action = crate.add(ContextEntity(crate, action_id, properties=action))
+            if agent_id:
+                agent = objects[agent_id]
+                agent = deepcopy(agent)
+                agent_id = agent.pop("@id")
+                added_agent = crate.add(ContextEntity(crate, agent_id, properties=agent))
+                added_persons.append(agent_id)
+                action["agent"] = added_agent
+            results_id = action.get("result", [])
+            del (action["result"])
+            for file in map(lambda id: objects[id], results_id):
+                url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
+                if fetch_remote:
+                    dest_path = file["name"]
+                else:
+                    dest_path = None  # use payload URL as path
+                crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=fetch_remote, properties={
+                    "name": file["name"],
+                    "encodingFormat": file["encodingFormat"],
+                    "contentSize": file["contentSize"]
+                })
+                action.append_to("result", crate_result_file)
+
+            if "instrument" in action:
+                instrument = deepcopy(objects[action_id]["instrument"])
+                instrument_id = instrument.pop("@id")
+                action["instrument"] = crate.add(ContextEntity(crate, instrument_id, properties=instrument))
+            crate.root_dataset.append_to("mentions", action)
+
+        return crate
+
+    def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download=False) -> HttpResponseBase:
         """ return a downloadable zip in RO-Crate format from the given dataset entity
         the zip file is build on the fly by streaming payload objects directly from the api
 
         params:
           id - the pid of the dataset
-          obj - the json object of the dataset
+          objects - list of digital objects of the dataset
+          download - return a downloadable zip in RO-Crate format
         """
-
-        # get list of files to add to the archive
-        dataset = next((elem for elem in obj["@graph"] if elem["@type"] == "Dataset"))
-        files_to_add = {}  # {filename: file_abs_url}
-        for file in dataset["hasPart"]:
-            file_name = file["@id"]
-            # file url must point to CORDRA directly. For some reason, it does not work to use the /api proxy
-            # for streaming from localhost inside docker.
-            file_abs_url = settings.CORDRA["URL"] + "/objects/" + id + "?payload=" + file_name
-            files_to_add[file_name] = file_abs_url
-
-        # prepare a streamable zip response
-        # this does not allocate memory on the server (hopefully)
-        zs = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_DEFLATED)
-
-        # add ro-crate-metadata.json to the archive
-        zs.writestr("ro-crate-metadata.json", str.encode(json.dumps(obj, indent=2)))
-
-        # add payload files
-        for (name, url) in files_to_add.items():
+        if download:
+            crate = self._build_ROCrate(request, id, objects, fetch_remote=True)
+            temp_file = NamedTemporaryFile(suffix=".zip", delete=False)
             try:
-                response = requests.get(url, verify=False, stream=True)
-                if response.status_code == 200:
-                    zs.write_iter(name, response.iter_content(chunk_size=1024))
-                else:
-                    raise Exception(f"Failed to add file ({url}) to ro-crate zip stream: " + response.text + " " + str(response))
-            except Exception as e:
-                raise Exception(f"Failed to download file from backend ({url}): {e}")
+                crate.write_zip(temp_file.name)
+                temp_file.flush()
+                temp_file.seek(0)
 
-        archive_name = f'{id.replace("/", "_")}.zip'
-        response = StreamingHttpResponse(zs, content_type="application/zip")
-        response['Content-Disposition'] = f'attachment; filename={archive_name}'
-        return response
+                archive_name = f'{id.replace("/", "_")}.zip'
+                response = FileResponse(temp_file, as_attachment=True, filename=archive_name)
+                def clean():
+                    os.remove(temp_file.name)
+                response.close = clean
+                return response
+            except Exception as e:
+                temp_file.close()
+                os.remove(temp_file.name)
+                raise e
+        else:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                crate = self._build_ROCrate(request, id, objects, fetch_remote=False)
+                crate.write(temp_dir)
+                metadata = json.load(open(temp_dir + "/ro-crate-metadata.json", "r"))
+                return JsonResponse(metadata)
 
     def get(self, request, **kwargs):
         id = kwargs.get("id")
 
         # get digital object from cordra
-        url = settings.CORDRA["URL"] + "/objects/" + id
-        response = requests.get(url, verify=False)
-        if response.status_code == 400:
-            return HttpResponseNotFound("Object with PID " + id + " not found")
-        elif response.status_code != 200:
-            return HttpResponseServerError(
-                f"Could not receive object with PID {id} (Backend responded with {response.status_code})"
-        )
-
-        json_obj = response.json()
+        objects = self._connector.resolve_objects(id)
 
         # return response:
         # - if requested in ROCrate format or as a zip , return the zipped RO-Crate
@@ -173,13 +235,17 @@ class DatasetDetailView(TemplateView):
         response_format = None
         if "format" in request.GET:
             response_format = request.GET.get("format").lower()
+        download = False
+        if "download" in request.GET:
+            download = request.GET.get("download").lower() == "true"
         accept = request.META.get("HTTP_ACCEPT", None).lower()
 
-        if response_format == "rocrate" or accept == "application/zip":
-            return self.to_ROCrate(request, id, json_obj)
+        if response_format == "rocrate":
+            if download or accept == "application/zip":
+                return self.as_ROCrate(request, id, objects, download=True)
+            else:
+                return self.as_ROCrate(request, id, objects, download=False)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
-            return JsonResponse(json_obj)
+            return redirect(request.build_absolute_uri(reverse("api", args=[f"objects/{id}"])))
         else:
-            return self.render(request, id, json_obj)
-
-
+            return self.render(request, id, objects)
