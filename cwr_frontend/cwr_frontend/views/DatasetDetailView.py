@@ -5,7 +5,7 @@ from copy import deepcopy
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from django.http import JsonResponse, FileResponse, HttpResponseBase
+from django.http import JsonResponse, FileResponse, HttpResponseBase, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -111,7 +111,7 @@ class DatasetDetailView(TemplateView):
             items=[(item[0], item[1]) for item in items],
             additional_urls=[
                 (link_rocrate, "application/json+ld"),
-                (link_rocrate + "&download=true", "application/zip"),
+                # (link_rocrate + "&download=true", "application/zip"),
                 (link_digital_object, "application/json+ld"),
             ]
         )
@@ -243,6 +243,7 @@ class DatasetDetailView(TemplateView):
 
         if response_format == "rocrate":
             if download or accept == "application/zip":
+                return HttpResponse("not implemented yet", status=501)
                 return self.as_ROCrate(request, id, objects, download=True)
             else:
                 return self.as_ROCrate(request, id, objects, download=False)
