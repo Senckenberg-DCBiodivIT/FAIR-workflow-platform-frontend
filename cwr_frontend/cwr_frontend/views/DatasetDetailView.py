@@ -121,10 +121,8 @@ class DatasetDetailView(TemplateView):
 
     def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], fetch_remote: bool = False) -> ROCrate:
         objects = deepcopy(objects)  # editing elements in place messes with django cache
-
         dataset = objects[id]
 
-        added_persons = []
         crate = ROCrate()
 
         for property in ["name", "description", "dateCreated", "studySubject", "datePublished", "dateModified",
@@ -137,13 +135,12 @@ class DatasetDetailView(TemplateView):
             author_id = author.pop("@id")
             crate_author = crate.add(ContextEntity(crate, author_id, properties=author))
             crate.root_dataset.append_to("author", crate_author)
-            added_persons.append(author_id)
 
         crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
         crate.root_dataset["sameAs"] = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]))
 
         # add all files
-        for file in [objects[part_id] for part_id in objects if objects[part_id]["@type"] == "MediaObject"]:
+        for (part_id, file) in [(part_id, objects[part_id]) for part_id in objects if part_id in dataset["hasPart"]]:
             url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
             if fetch_remote:
                 dest_path = file["name"]
@@ -164,7 +161,6 @@ class DatasetDetailView(TemplateView):
                 agent = deepcopy(agent)
                 agent_id = agent.pop("@id")
                 added_agent = crate.add(ContextEntity(crate, agent_id, properties=agent))
-                added_persons.append(agent_id)
                 action["agent"] = added_agent
             results_id = action.get("result", [])
             del (action["result"])
