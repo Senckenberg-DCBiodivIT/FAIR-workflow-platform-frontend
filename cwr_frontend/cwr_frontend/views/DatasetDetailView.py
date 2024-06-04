@@ -3,9 +3,12 @@ import os
 import tempfile
 from copy import deepcopy
 from tempfile import NamedTemporaryFile
+from threading import Thread
 from typing import Any
 
-from django.http import JsonResponse, FileResponse, HttpResponseBase, HttpResponse
+import requests
+import zipstream
+from django.http import JsonResponse, FileResponse, HttpResponseBase, StreamingHttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -111,7 +114,7 @@ class DatasetDetailView(TemplateView):
             items=[(item[0], item[1]) for item in items],
             additional_urls=[
                 (link_rocrate, "application/json+ld"),
-                # (link_rocrate + "&download=true", "application/zip"),
+                (link_rocrate + "&download=true", "application/zip"),
                 (link_digital_object, "application/json+ld"),
             ]
         )
@@ -119,7 +122,7 @@ class DatasetDetailView(TemplateView):
 
         return response
 
-    def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], fetch_remote: bool = False) -> ROCrate:
+    def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], remote_urls: bool = False) -> ROCrate:
         objects = deepcopy(objects)  # editing elements in place messes with django cache
         dataset = objects[id]
 
@@ -142,11 +145,11 @@ class DatasetDetailView(TemplateView):
         # add all files
         for (part_id, file) in [(part_id, objects[part_id]) for part_id in objects if part_id in dataset["hasPart"]]:
             url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
-            if fetch_remote:
-                dest_path = file["name"]
-            else:
+            if remote_urls:
                 dest_path = None  # use payload URL as path
-            crate.add_file(url, dest_path=dest_path, fetch_remote=fetch_remote, properties={
+            else:
+                dest_path = file["name"]
+            crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
                 "name": file["name"],
                 "encodingFormat": file["encodingFormat"],
                 "contentSize": file["contentSize"]
@@ -166,11 +169,11 @@ class DatasetDetailView(TemplateView):
             del (action["result"])
             for file in map(lambda id: objects[id], results_id):
                 url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
-                if fetch_remote:
-                    dest_path = file["name"]
-                else:
+                if remote_urls:
                     dest_path = None  # use payload URL as path
-                crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=fetch_remote, properties={
+                else:
+                    dest_path = file["name"]
+                crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
                     "name": file["name"],
                     "encodingFormat": file["encodingFormat"],
                     "contentSize": file["contentSize"]
@@ -194,30 +197,40 @@ class DatasetDetailView(TemplateView):
           objects - list of digital objects of the dataset
           download - return a downloadable zip in RO-Crate format
         """
-        if download:
-            crate = self._build_ROCrate(request, id, objects, fetch_remote=True)
-            temp_file = NamedTemporaryFile(suffix=".zip", delete=False)
-            try:
-                crate.write_zip(temp_file.name)
-                temp_file.flush()
-                temp_file.seek(0)
+        # Get crate metadata file (library does only support output to file)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            crate = self._build_ROCrate(request, id, objects, remote_urls=not download)
+            crate.write(temp_dir)
+            metadata = json.load(open(temp_dir + "/ro-crate-metadata.json", "r"))
 
-                archive_name = f'{id.replace("/", "_")}.zip'
-                response = FileResponse(temp_file, as_attachment=True, filename=archive_name)
-                def clean():
-                    os.remove(temp_file.name)
-                response.close = clean
-                return response
+        if download:
+            # create a zip stream of ro crate files
+            zs = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_DEFLATED)
+            zs.writestr("ro-crate-metadata.json", str.encode(json.dumps(metadata, indent=2)))
+
+            try:
+                for object in objects.values():
+                    if object["@type"] != "MediaObject":
+                        continue
+                    print(object)
+                    url = request.build_absolute_uri(self.build_payload_abs_path(object["@id"], object["name"]))
+                    name = object["name"]
+                    object_response = requests.get(url, verify=False, stream=True)
+                    if object_response.status_code == 200:
+                        zs.write_iter(name, object_response.iter_content(chunk_size=1024))
+                    else:
+                        raise Exception(f"Failed to add object file {url} to ro-crate zip stream: {object_response.text}")
             except Exception as e:
-                temp_file.close()
-                os.remove(temp_file.name)
+                zs.close()
                 raise e
+
+            archive_name = f'{id.replace("/", "_")}.zip'
+            response = StreamingHttpResponse(zs, content_type="application/zip")
+            response["Content-Disposition"] = f"attachment; filename={archive_name}"
+            return response
         else:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                crate = self._build_ROCrate(request, id, objects, fetch_remote=False)
-                crate.write(temp_dir)
-                metadata = json.load(open(temp_dir + "/ro-crate-metadata.json", "r"))
-                return JsonResponse(metadata)
+            # return only metadata as json file
+            return JsonResponse(metadata)
 
     def get(self, request, **kwargs):
         id = kwargs.get("id")
@@ -239,7 +252,7 @@ class DatasetDetailView(TemplateView):
 
         if response_format == "rocrate":
             if download or accept == "application/zip":
-                return HttpResponse("not implemented yet", status=501)
+                # return HttpResponse("not implemented yet", status=501)
                 return self.as_ROCrate(request, id, objects, download=True)
             else:
                 return self.as_ROCrate(request, id, objects, download=False)
