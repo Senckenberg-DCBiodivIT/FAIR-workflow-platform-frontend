@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Crop wild relatives: {{ name }}{% endblock %}
 {% block headline %}{{ name }}{% endblock %}
-
+{% block banner %}
+{% with "This site uses fair signposting. <a href=\"https://signposting.org/FAIR/\">Learn more</a> or install <a href=\"https://chromewebstore.google.com/detail/signposting-sniffing/pahanegeimljfcnjogglnamnlcgipmbc\">this chrome extension</a> to visualize it." as banner_text %}
+{% include 'banner.html' %}
+{% endwith %}
+{% endblock %}
 {% block content %}
 {% load static %}
 <div class="">
