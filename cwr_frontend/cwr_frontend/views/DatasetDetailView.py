@@ -8,7 +8,7 @@ from typing import Any
 
 import requests
 import zipstream
-from django.http import JsonResponse, FileResponse, HttpResponseBase, StreamingHttpResponse
+from django.http import JsonResponse, FileResponse, HttpResponseBase, StreamingHttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -237,6 +237,9 @@ class DatasetDetailView(TemplateView):
 
         # get digital object from cordra
         objects = self._connector.resolve_objects(id)
+
+        if not id in objects or objects[id]["@type"] != "Dataset":
+            raise Http404
 
         # return response:
         # - if requested in ROCrate format or as a zip , return the zipped RO-Crate
