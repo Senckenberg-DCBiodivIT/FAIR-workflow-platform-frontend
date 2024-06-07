@@ -1,9 +1,6 @@
 import json
-import os
 import tempfile
 from copy import deepcopy
-from tempfile import NamedTemporaryFile
-from threading import Thread
 from typing import Any
 
 import requests

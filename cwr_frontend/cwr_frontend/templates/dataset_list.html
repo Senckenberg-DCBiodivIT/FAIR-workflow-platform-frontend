@@ -10,8 +10,9 @@
 
         <h3 class="f3 athelas mt0 lh-title mb1"><a class="green underline-hover no-underline"
                                                    href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h3>
-        <p class="mt0">{{ item.id }}</p>
-        <p>Description: {{ item.description }}</p>
+        <p class="mt0 b">{{ item.id }}</p>
+        <p>Description: <span class="i">{{ item.description }}</span> ({{ item.file_count }} files)</p>
+        <p>Last Modified: {{ item.date_modified|date:"SHORT_DATETIME_FORMAT" }}</p>
     </section>
     {% endfor %}
 </div>
