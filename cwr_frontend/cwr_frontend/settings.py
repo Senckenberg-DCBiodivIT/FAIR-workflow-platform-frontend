@@ -37,7 +37,7 @@ SILENCED_SYSTEM_CHECKS = ["urls.W002"]
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_ycijpb4_p+yk_3i7qtf&et)9yus@+t@#g-l$qbqz+&-qas9px'
+SECRET_KEY = env("SECRET_KEY", default='django-insecure-_ycijpb4_p+yk_3i7qtf&et)9yus@+t@#g-l$qbqz+&-qas9px')
 
 CORDRA = {
     "URL": env("CORDRA_URL", default="http://localhost:8080"),
