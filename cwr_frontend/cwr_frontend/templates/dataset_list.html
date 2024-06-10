@@ -8,7 +8,7 @@
     {% for item in items %}
     <section class="dataset-list-item pv3 bb b--black-30 ph3 ph0-l">
 
-        <h3 class="f3 athelas mt0 lh-title mb1"><a class="green underline-hover no-underline"
+        <h3 class="f3 athelas mt0 lh-title mb1"><a class="dark-green underline-hover no-underline"
                                                    href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h3>
         <p class="mt0 b">{{ item.id }}</p>
         <p>Description: <span class="i">{{ item.description }}</span> ({{ item.file_count }} files)</p>

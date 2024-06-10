@@ -40,8 +40,8 @@
 </div>
 
 <div class="mv3">
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object</a>
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate">View RO-Crate</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate">View RO-Crate</a>
 </div>
 
 <div>
@@ -66,7 +66,7 @@
 
 <div>
     <h2>Content</h2>
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
     <div class="cf">
     {% for name, img_url, is_img in images %}
         <div class="fl w-50 w-50-m w-25-l pa2">
