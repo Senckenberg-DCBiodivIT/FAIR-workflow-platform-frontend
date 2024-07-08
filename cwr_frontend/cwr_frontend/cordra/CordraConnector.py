@@ -5,10 +5,14 @@ from django.conf import settings
 
 class CordraConnector:
 
-    def __init__(self, base_url=settings.CORDRA["URL"], user=None, password=None):
+    def __init__(self, base_url=settings.CORDRA["URL"], prefix=settings.CORDRA["PREFIX"], user=None, password=None):
         self._base_url = base_url
         self.user = user
         self.password = password
+        if prefix.endswith("/"):
+            self.prefix = prefix
+        else:
+            self.prefix = prefix + "/"
 
     def list_datasets(self, page_size=100, page_num=0) -> list[dict[str, str]]:
         """ retrieve list of objects from cordra """
@@ -49,16 +53,15 @@ class CordraConnector:
             root_obj = resolved_objects[object_id]
 
         # resolve referenced objects until recursion depth is reached
-        prefix = "cwr/"  # TODO make prefix configurable
         if max_recursion > 0:
             def resolve_links(json, resolved_objects):
                 for key, value in json.items():
                     if key == "@id": continue
-                    if isinstance(value, str) and value.startswith(prefix) and value not in resolved_objects:
+                    if isinstance(value, str) and value.startswith(self.prefix) and value not in resolved_objects:
                         resolved_objects |= self.resolve_objects(value, resolved_objects, max_recursion=max_recursion-1)
                     elif isinstance(value, list):
                         for i in range(len(value)):
-                            if isinstance(value[i], str) and value[i].startswith(prefix) and value[i] not in resolved_objects:
+                            if isinstance(value[i], str) and value[i].startswith(self.prefix) and value[i] not in resolved_objects:
                                 resolved_objects |= self.resolve_objects(value[i], resolved_objects, max_recursion=max_recursion-1)
                     elif isinstance(value, dict):
                         resolve_links(value, resolved_objects)
