@@ -1,4 +1,5 @@
 import json
+import logging
 import tempfile
 from copy import deepcopy
 from typing import Any
@@ -152,36 +153,39 @@ class DatasetDetailView(TemplateView):
                 "contentSize": file["contentSize"]
             })
 
-        for action in map(lambda mention_id: objects[mention_id], dataset["mentions"]):
-            action_id = action.pop("@id")
-            agent_id = action.get("agent", None)
-            action = crate.add(ContextEntity(crate, action_id, properties=action))
-            if agent_id:
-                agent = objects[agent_id]
-                agent = deepcopy(agent)
-                agent_id = agent.pop("@id")
-                added_agent = crate.add(ContextEntity(crate, agent_id, properties=agent))
-                action["agent"] = added_agent
-            results_id = action.get("result", [])
-            del (action["result"])
-            for file in map(lambda id: objects[id], results_id):
-                url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
-                if remote_urls:
-                    dest_path = None  # use payload URL as path
-                else:
-                    dest_path = file["name"]
-                crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
-                    "name": file["name"],
-                    "encodingFormat": file["encodingFormat"],
-                    "contentSize": file["contentSize"]
-                })
-                action.append_to("result", crate_result_file)
+        if ("mentions" in dataset) and (dataset["mentions"] is not None):
+            for action in map(lambda mention_id: objects[mention_id], dataset["mentions"]):
+                action_id = action.pop("@id")
+                agent_id = action.get("agent", None)
+                action = crate.add(ContextEntity(crate, action_id, properties=action))
+                if agent_id:
+                    agent = objects[agent_id]
+                    agent = deepcopy(agent)
+                    agent_id = agent.pop("@id")
+                    added_agent = crate.add(ContextEntity(crate, agent_id, properties=agent))
+                    action["agent"] = added_agent
+                results_id = action.get("result", [])
+                del (action["result"])
+                for file in map(lambda id: objects[id], results_id):
+                    url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
+                    if remote_urls:
+                        dest_path = None  # use payload URL as path
+                    else:
+                        dest_path = file["name"]
+                    crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
+                        "name": file["name"],
+                        "encodingFormat": file["encodingFormat"],
+                        "contentSize": file["contentSize"]
+                    })
+                    action.append_to("result", crate_result_file)
 
-            if "instrument" in action:
-                instrument = deepcopy(objects[action_id]["instrument"])
-                instrument_id = instrument.pop("@id")
-                action["instrument"] = crate.add(ContextEntity(crate, instrument_id, properties=instrument))
-            crate.root_dataset.append_to("mentions", action)
+                if "instrument" in action:
+                    instrument = deepcopy(objects[action_id]["instrument"])
+                    instrument_id = instrument.pop("@id")
+                    action["instrument"] = crate.add(ContextEntity(crate, instrument_id, properties=instrument))
+                crate.root_dataset.append_to("mentions", action)
+        else:
+            logging.warn("No mentions found in Dataset {} while creating RO-Crate".format(id))
 
         return crate
 
