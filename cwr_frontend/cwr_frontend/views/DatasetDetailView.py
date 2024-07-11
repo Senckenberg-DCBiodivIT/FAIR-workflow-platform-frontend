@@ -62,11 +62,16 @@ class DatasetDetailView(TemplateView):
 
         prov_action = next(iter(elem for (key, elem) in objects.items() if elem["@type"] == "CreateAction"), None)
         prov_action_name = prov_action["@type"]
-        prov_instrument_id = prov_action["instrument"]["@id"] if "instrument" in prov_action else None
         prov_agent_internal_id = prov_action["agent"]
         prov_agent = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_agent_internal_id), None)
         prov_agent_id = prov_agent["identifier"]
         prov_agent_name = prov_agent["name"]
+
+        prov_instrument_id = prov_action["instrument"] if "instrument" in prov_action else None
+        prov_instrument_url = None
+        if prov_instrument_id is not None:
+            prov_instrument = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_instrument_id and prov_instrument_id is not None), None)
+            prov_instrument_url = prov_instrument["identifier"]
 
         # render content
         context = {
@@ -84,7 +89,7 @@ class DatasetDetailView(TemplateView):
             "prov_action": prov_action_name,
             "prov_agent_id": prov_agent_id,
             "prov_agent_name": prov_agent_name,
-            "prov_instrument_id": prov_instrument_id,
+            "prov_instrument_id": prov_instrument_url,
         }
 
         # get list of images and their content type
@@ -180,8 +185,8 @@ class DatasetDetailView(TemplateView):
                     action.append_to("result", crate_result_file)
 
                 if "instrument" in action:
-                    instrument = deepcopy(objects[action_id]["instrument"])
-                    instrument_id = instrument.pop("@id")
+                    instrument = deepcopy(objects[action["instrument"]])
+                    instrument_id = instrument["@id"]
                     action["instrument"] = crate.add(ContextEntity(crate, instrument_id, properties=instrument))
                 crate.root_dataset.append_to("mentions", action)
         else:

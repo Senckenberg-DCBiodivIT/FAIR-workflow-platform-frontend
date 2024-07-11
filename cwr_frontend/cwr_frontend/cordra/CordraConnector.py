@@ -39,7 +39,7 @@ class CordraConnector:
 
         return response.json()
 
-    def resolve_objects(self, object_id: str, resolved_objects=None, max_recursion = 2) -> dict[str, [dict[str, Any]]]:
+    def resolve_objects(self, object_id: str, resolved_objects=None, max_recursion = 3) -> dict[str, [dict[str, Any]]]:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """
