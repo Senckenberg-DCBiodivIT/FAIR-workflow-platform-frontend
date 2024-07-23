@@ -98,10 +98,10 @@ class DatasetDetailView(TemplateView):
             item = next((elem for (key, elem) in objects.items() if key == part_id), None)
             if item is None:
                 continue
-            item_id = item["name"]
+            payload_contentUrl = item["contentUrl"]
             item_type = item["encodingFormat"]
             item_abs_url = request.build_absolute_uri(
-                reverse("api", args=[f"objects/{part_id}"]) + f"?payload={item_id}")
+                reverse("api", args=[f"objects/{part_id}"]) + f"?payload={payload_contentUrl}")
             is_image = item_type.startswith("image")
             items.append((item_abs_url, item_type, is_image))
 
@@ -147,11 +147,11 @@ class DatasetDetailView(TemplateView):
 
         # add all files
         for (part_id, file) in [(part_id, objects[part_id]) for part_id in objects if part_id in dataset["hasPart"]]:
-            url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
+            url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["contentUrl"]))
             if remote_urls:
                 dest_path = None  # use payload URL as path
             else:
-                dest_path = file["name"]
+                dest_path = file["contentUrl"]
             crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
                 "name": file["name"],
                 "encodingFormat": file["encodingFormat"],
@@ -172,11 +172,11 @@ class DatasetDetailView(TemplateView):
                 results_id = action.get("result", [])
                 del (action["result"])
                 for file in map(lambda id: objects[id], results_id):
-                    url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["name"]))
+                    url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["contentUrl"]))
                     if remote_urls:
                         dest_path = None  # use payload URL as path
                     else:
-                        dest_path = file["name"]
+                        dest_path = file["contentUrl"]
                     crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
                         "name": file["name"],
                         "encodingFormat": file["encodingFormat"],
@@ -219,8 +219,8 @@ class DatasetDetailView(TemplateView):
                     if object["@type"] != "MediaObject":
                         continue
                     print(object)
-                    url = request.build_absolute_uri(self.build_payload_abs_path(object["@id"], object["name"]))
-                    name = object["name"]
+                    url = request.build_absolute_uri(self.build_payload_abs_path(object["@id"], object["contentUrl"]))
+                    name = object["contentUrl"]
                     object_response = requests.get(url, verify=False, stream=True)
                     if object_response.status_code == 200:
                         zs.write_iter(name, object_response.iter_content(chunk_size=1024))
