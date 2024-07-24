@@ -40,7 +40,7 @@ SILENCED_SYSTEM_CHECKS = ["urls.W002"]
 SECRET_KEY = env("SECRET_KEY", default='django-insecure-_ycijpb4_p+yk_3i7qtf&et)9yus@+t@#g-l$qbqz+&-qas9px')
 
 CORDRA = {
-    "URL": env("CORDRA_URL", default="http://localhost:8080"),
+    "URL": env("CORDRA_URL", default="https://localhost:8443"),
     "PREFIX": env("CORDRA_PREFIX", default="cwr/"),
 }
 
@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'revproxy',
 ]
 
 MIDDLEWARE = [

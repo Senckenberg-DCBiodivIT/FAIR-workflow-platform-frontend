@@ -14,10 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, re_path
 from django.conf import settings
+from django.urls import re_path
 from django.views.generic import TemplateView
-from revproxy.views import ProxyView
+from cwr_frontend.views.CordraProxyView import CordraProxyView
 
 from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
@@ -30,7 +30,7 @@ urlpatterns = [
     re_path(r'dataset/(?P<id>[a-z0-9\/]+)', DatasetDetailView.as_view(), name="dataset_detail"),
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # proxy all api requests to cordra
-    re_path(r'api/(?P<path>.*)', ProxyView.as_view(upstream=settings.CORDRA["URL"]), name="api"),
+    re_path(r'api/(?P<path>.*)', CordraProxyView.as_view(upstream=settings.CORDRA["URL"], path="api/"), name="api"),
     # an ugly hack to serve a placeholder image without using static files
     # replace with actual static file servement!
     re_path("placeholder_img", PlaceholderImageView.as_view(), name="placeholder_img"),
