@@ -1,5 +1,5 @@
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 import requests
 from django.conf import settings
 
@@ -7,12 +7,20 @@ class CordraConnector:
 
     def __init__(self, base_url=settings.CORDRA["URL"], prefix=settings.CORDRA["PREFIX"], user=None, password=None):
         self._base_url = base_url
+        if not self._base_url.endswith("/"):
+            self._base_url += "/"
         self.user = user
         self.password = password
-        if prefix.endswith("/"):
-            self.prefix = prefix
-        else:
+        self.prefix = prefix
+        if not self.prefix.endswith("/"):
             self.prefix = prefix + "/"
+
+    def get_object_abs_url(self, id: str, payload_name: str|None = None) -> str:
+        """ Builds the absolute url to a cordra object. If payload name is given, returns the url to the payload."""
+        url = urljoin(self._base_url, f"objects/{id}")
+        if payload_name is not None:
+            url += f"?payload={payload_name}"
+        return url
 
     def list_datasets(self, page_size=100, page_num=0) -> list[dict[str, str]]:
         """ retrieve list of objects from cordra """
@@ -21,7 +29,7 @@ class CordraConnector:
             "pageSize": page_size,
             "query": "type:Dataset"
         }
-        url = f"{self._base_url}/search?{urlencode(params)}"
+        url = f'{urljoin(self._base_url, "search")}?{urlencode(params)}'
         response = requests.get(url, verify=False)
         if response.status_code != 200:
             raise Exception(response.text)
@@ -30,7 +38,7 @@ class CordraConnector:
 
     def get_object_by_id(self, id: str) -> dict[str, Any]:
         """ retrieve object from cordra. Raises if the object was not found. """
-        url = settings.CORDRA["URL"] + "/objects/" + id
+        url = self.get_object_abs_url(id)
         response = requests.get(url, verify=False)
         if response.status_code != 200:
             raise Exception(

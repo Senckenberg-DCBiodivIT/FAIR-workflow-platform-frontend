@@ -42,6 +42,8 @@ SECRET_KEY = env("SECRET_KEY", default='django-insecure-_ycijpb4_p+yk_3i7qtf&et)
 CORDRA = {
     "URL": env("CORDRA_URL", default="https://localhost:8443"),
     "PREFIX": env("CORDRA_PREFIX", default="cwr/"),
+    "USER": env("CORDRA_USER", default=None),
+    "PASSWORD": env("CORDRA_PASSWORD", default=None),
 }
 
 # SECURITY WARNING: don't run with debug turned on in production!

@@ -1,6 +1,7 @@
 import json
 import logging
 import tempfile
+import urllib.parse
 from copy import deepcopy
 from typing import Any
 
@@ -20,11 +21,6 @@ from cwr_frontend.utils import add_signposts
 class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
     _connector = CordraConnector()
-
-    # get list of files to add to the archive
-    def build_payload_abs_path(self, id: str, item_name: str) -> str:
-        """ returns an absolute api path for the given payload """
-        return reverse("api", args=[f"objects/{id}"]) + f"?payload={item_name}"
 
     def to_typed_link_set(self,
                           abs_url: str,
@@ -100,8 +96,7 @@ class DatasetDetailView(TemplateView):
                 continue
             payload_contentUrl = item["contentUrl"]
             item_type = item["encodingFormat"]
-            item_abs_url = request.build_absolute_uri(
-                reverse("api", args=[f"objects/{part_id}"]) + f"?payload={payload_contentUrl}")
+            item_abs_url = self._connector.get_object_abs_url(part_id, payload_contentUrl)
             is_image = item_type.startswith("image")
             items.append((item_abs_url, item_type, is_image))
 
@@ -143,11 +138,11 @@ class DatasetDetailView(TemplateView):
             crate.root_dataset.append_to("author", crate_author)
 
         crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
-        crate.root_dataset["sameAs"] = request.build_absolute_uri(reverse("api", args=[f"objects/{id}"]))
+        crate.root_dataset["sameAs"] = self._connector.get_object_abs_url(id)
 
         # add all files
         for (part_id, file) in [(part_id, objects[part_id]) for part_id in objects if part_id in dataset["hasPart"]]:
-            url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["contentUrl"]))
+            url = request.build_absolute_uri(self._connector.get_object_abs_url(file["@id"], file["contentUrl"]))
             if remote_urls:
                 dest_path = None  # use payload URL as path
             else:
@@ -172,7 +167,7 @@ class DatasetDetailView(TemplateView):
                 results_id = action.get("result", [])
                 del (action["result"])
                 for file in map(lambda id: objects[id], results_id):
-                    url = request.build_absolute_uri(self.build_payload_abs_path(file["@id"], file["contentUrl"]))
+                    url = request.build_absolute_uri(self._connector.get_object_abs_url(file["@id"], file["contentUrl"]))
                     if remote_urls:
                         dest_path = None  # use payload URL as path
                     else:
@@ -219,7 +214,7 @@ class DatasetDetailView(TemplateView):
                     if object["@type"] != "MediaObject":
                         continue
                     print(object)
-                    url = request.build_absolute_uri(self.build_payload_abs_path(object["@id"], object["contentUrl"]))
+                    url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
                     name = object["contentUrl"]
                     object_response = requests.get(url, verify=False, stream=True)
                     if object_response.status_code == 200:
@@ -266,6 +261,6 @@ class DatasetDetailView(TemplateView):
             else:
                 return self.as_ROCrate(request, id, objects, download=False)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
-            return redirect(request.build_absolute_uri(reverse("api", args=[f"objects/{id}"])))
+            return redirect(self._connector.get_object_abs_url(id))
         else:
             return self.render(request, id, objects)
