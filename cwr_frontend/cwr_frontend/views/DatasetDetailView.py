@@ -121,11 +121,11 @@ class DatasetDetailView(TemplateView):
 
         return response
 
-    def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], remote_urls: bool = False) -> ROCrate:
+    def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], with_preview: bool = False, remote_urls: bool = False) -> ROCrate:
         objects = deepcopy(objects)  # editing elements in place messes with django cache
         dataset = objects[id]
 
-        crate = ROCrate()
+        crate = ROCrate(gen_preview=with_preview)
 
         for property in ["name", "description", "dateCreated", "studySubject", "datePublished", "dateModified",
                          "keywords"]:
@@ -206,37 +206,39 @@ class DatasetDetailView(TemplateView):
         """
         # Get crate metadata file (library does only support output to file)
         with tempfile.TemporaryDirectory() as temp_dir:
-            crate = self._build_ROCrate(request, id, objects, remote_urls=not download)
+            crate = self._build_ROCrate(request, id, objects, with_preview = download, remote_urls=not download)
             crate.write(temp_dir)
             metadata = json.load(open(temp_dir + "/ro-crate-metadata.json", "r"))
 
-        if download:
-            # create a zip stream of ro crate files
-            zs = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_DEFLATED)
-            zs.writestr("ro-crate-metadata.json", str.encode(json.dumps(metadata, indent=2)))
+            if download:
+                # create a zip stream of ro crate files
+                zs = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_DEFLATED)
+                zs.writestr("ro-crate-metadata.json", str.encode(json.dumps(metadata, indent=2)))
+                html = open(temp_dir + "/ro-crate-preview.html", "r").read()
+                zs.writestr("ro-crate-preview.html", str.encode(html))
 
-            try:
-                for object in objects.values():
-                    if "MediaObject" not in object["@type"]:
-                        continue
-                    url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
-                    name = object["contentUrl"]
-                    object_response = requests.get(url, verify=False, stream=True)
-                    if object_response.status_code == 200:
-                        zs.write_iter(name, object_response.iter_content(chunk_size=1024))
-                    else:
-                        raise Exception(f"Failed to add object file {url} to ro-crate zip stream: {object_response.text}")
-            except Exception as e:
-                zs.close()
-                raise e
+                try:
+                    for object in objects.values():
+                        if "MediaObject" not in object["@type"]:
+                            continue
+                        url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
+                        name = object["contentUrl"]
+                        object_response = requests.get(url, verify=False, stream=True)
+                        if object_response.status_code == 200:
+                            zs.write_iter(name, object_response.iter_content(chunk_size=1024))
+                        else:
+                            raise Exception(f"Failed to add object file {url} to ro-crate zip stream: {object_response.text}")
+                except Exception as e:
+                    zs.close()
+                    raise e
 
-            archive_name = f'{id.replace("/", "_")}.zip'
-            response = StreamingHttpResponse(zs, content_type="application/zip")
-            response["Content-Disposition"] = f"attachment; filename={archive_name}"
-            return response
-        else:
-            # return only metadata as json file
-            return JsonResponse(metadata)
+                archive_name = f'{id.replace("/", "_")}.zip'
+                response = StreamingHttpResponse(zs, content_type="application/zip")
+                response["Content-Disposition"] = f"attachment; filename={archive_name}"
+                return response
+            else:
+                # return only metadata as json file
+                return JsonResponse(metadata)
 
     def get(self, request, **kwargs):
         id = kwargs.get("id")
