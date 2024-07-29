@@ -139,7 +139,8 @@ class DatasetDetailView(TemplateView):
             crate_author = crate.add(Person(crate, author_id, properties=author))
             crate.root_dataset.append_to("author", crate_author)
 
-        crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
+        if "license" in dataset:
+            crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
         crate.root_dataset["sameAs"] = self._connector.get_object_abs_url(id)
 
         # add all files
