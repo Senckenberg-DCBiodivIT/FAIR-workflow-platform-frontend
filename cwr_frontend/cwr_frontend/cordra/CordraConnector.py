@@ -27,9 +27,11 @@ class CordraConnector:
         params = {
             "pageNum": page_num,
             "pageSize": page_size,
-            "query": "type:Dataset"
+            "query": "type:Dataset",
+            "sortFields": 'metadata/modifiedOn DESC '
         }
         url = f'{urljoin(self._base_url, "search")}?{urlencode(params)}'
+        print(url)
         response = requests.get(url, verify=False)
         if response.status_code != 200:
             raise Exception(response.text)
