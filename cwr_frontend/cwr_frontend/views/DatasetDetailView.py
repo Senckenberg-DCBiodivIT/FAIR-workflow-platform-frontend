@@ -56,18 +56,26 @@ class DatasetDetailView(TemplateView):
         link_rocrate = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=ROCrate"
         link_digital_object = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=json"
 
-        prov_action = next(iter(elem for (key, elem) in objects.items() if elem["@type"] == "CreateAction"), None)
-        prov_action_name = prov_action["@type"]
-        prov_agent_internal_id = prov_action["agent"]
-        prov_agent = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_agent_internal_id), None)
-        prov_agent_id = prov_agent["identifier"]
-        prov_agent_name = prov_agent["name"]
+        prov_action = next(iter(elem for (key, elem) in objects.items() if "CreateAction" in elem["@type"]), None)
+        if prov_action is not None:
 
-        prov_instrument_id = prov_action["instrument"] if "instrument" in prov_action else None
-        prov_instrument_url = None
-        if prov_instrument_id is not None:
-            prov_instrument = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_instrument_id and prov_instrument_id is not None), None)
-            prov_instrument_url = prov_instrument["identifier"]
+            prov_agent_internal_id = prov_action.get("agent")
+            prov_agent = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_agent_internal_id), None)
+            prov_agent_id = prov_agent.get("identifier")
+            prov_agent_name = prov_agent.get("name")
+
+            prov_instrument_internal_id = prov_action.get("instrument")
+            prov_instrument_url = None
+            if prov_instrument_internal_id is not None:
+                prov_instrument = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_instrument_internal_id and prov_instrument_internal_id is not None), None)
+                prov_instrument_url = prov_instrument.get("identifier")
+            prov_context = {
+                "agent_id": prov_agent_id,
+                "agent_name": prov_agent_name,
+                "instrument_id": prov_instrument_url,
+            }
+        else:
+            prov_context = None
 
         # render content
         context = {
@@ -82,10 +90,7 @@ class DatasetDetailView(TemplateView):
             "images": [],
             "link_rocrate": link_rocrate,
             "link_digital_object": link_digital_object,
-            "prov_action": prov_action_name,
-            "prov_agent_id": prov_agent_id,
-            "prov_agent_name": prov_agent_name,
-            "prov_instrument_id": prov_instrument_url,
+            "provenance": prov_context
         }
 
         # get list of images and their content type

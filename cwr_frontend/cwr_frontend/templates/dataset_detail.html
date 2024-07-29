@@ -45,23 +45,23 @@
 </div>
 
 <div>
-    <h2>Provenance for this record</h2>
+<h2>Provenance for this record</h2>
+{% if provenance %}
     <table class="f6 w-100 mw8">
         <tbody>
         <tr class="stripe-dark">
-            <td class="pa1">Type</td>
-            <td class="pa1">{{ prov_action }}</td>
-        </tr>
-        <tr class="stripe-dark">
             <td class="pa1">Agent:</td>
-            <td class="pa1">{{ prov_agent_name }} (<a href="{{ prov_agent_id }}">{{ prov_agent_id }})</a></td>
+            <td class="pa1">{{ provenance.agent_name }} (<a href="{{ provenance.agent_id }}">{{ provenance.agent_id }})</a></td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Instrument</td>
-            <td class="pa1"><a href="{{ prov_instrument_id }}">{{ prov_instrument_id }}</a></td>
+            <td class="pa1"><a href="{{ provenance.instrument_id }}">{{ provenance.instrument_id }}</a></td>
         </tr>
         </tbody>
     </table>
+{% else %}
+    Dataset has no provenance data
+{% endif %}
 </div>
 
 <div>
