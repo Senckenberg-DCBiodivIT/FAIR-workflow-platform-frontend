@@ -10,7 +10,7 @@ from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, H
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
-from rocrate.model import ContextEntity
+from rocrate.model import ContextEntity, Person
 from rocrate.rocrate import ROCrate
 
 from cwr_frontend.cordra.CordraConnector import CordraConnector
@@ -135,7 +135,8 @@ class DatasetDetailView(TemplateView):
         for author in map(lambda author_id: objects[author_id], dataset["author"]):
             author = deepcopy(author)
             author_id = author.pop("@id")
-            crate_author = crate.add(ContextEntity(crate, author_id, properties=author))
+            del author["@context"]
+            crate_author = crate.add(Person(crate, author_id, properties=author))
             crate.root_dataset.append_to("author", crate_author)
 
         crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
@@ -156,14 +157,17 @@ class DatasetDetailView(TemplateView):
 
         if ("mentions" in dataset) and (dataset["mentions"] is not None):
             for action in map(lambda mention_id: objects[mention_id], dataset["mentions"]):
+                action = deepcopy(action)
+                del action["@context"]
                 action_id = action.pop("@id")
                 agent_id = action.get("agent", None)
                 action = crate.add(ContextEntity(crate, action_id, properties=action))
                 if agent_id:
                     agent = objects[agent_id]
                     agent = deepcopy(agent)
+                    del agent["@context"]
                     agent_id = agent.pop("@id")
-                    added_agent = crate.add(ContextEntity(crate, agent_id, properties=agent))
+                    added_agent = crate.add(Person(crate, agent_id, properties=agent))
                     action["agent"] = added_agent
                 results_id = action.get("result", [])
                 del (action["result"])
@@ -182,6 +186,7 @@ class DatasetDetailView(TemplateView):
 
                 if "instrument" in action:
                     instrument = deepcopy(objects[action["instrument"]])
+                    del instrument["@context"]
                     instrument_id = instrument["@id"]
                     action["instrument"] = crate.add(ContextEntity(crate, instrument_id, properties=instrument))
                 crate.root_dataset.append_to("mentions", action)
@@ -212,9 +217,8 @@ class DatasetDetailView(TemplateView):
 
             try:
                 for object in objects.values():
-                    if object["@type"] != "MediaObject":
+                    if "MediaObject" not in object["@type"]:
                         continue
-                    print(object)
                     url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
                     name = object["contentUrl"]
                     object_response = requests.get(url, verify=False, stream=True)
