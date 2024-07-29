@@ -1,13 +1,12 @@
 import json
 import logging
 import tempfile
-import urllib.parse
 from copy import deepcopy
 from typing import Any
 
 import requests
 import zipstream
-from django.http import JsonResponse, FileResponse, HttpResponseBase, StreamingHttpResponse, Http404
+from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -49,7 +48,7 @@ class DatasetDetailView(TemplateView):
         authors = [(elem["name"], elem.get("identifier")) for (elem_id, elem) in objects.items() if
                             "Person" in elem["@type"] and elem_id in dataset["author"]]
 
-        license = dataset["license"] if "license" in dataset else None
+        license_id = dataset["license"] if "license" in dataset else None
 
         link_rocrate = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=ROCrate"
         link_digital_object = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=json"
@@ -83,7 +82,7 @@ class DatasetDetailView(TemplateView):
             "keywords": dataset["keywords"] if "keywords" in dataset else [],
             "datePublished": dataset["datePublished"],
             "authors": authors,
-            "license_id": license,
+            "license_id": license_id,
             "images": [],
             "link_rocrate": link_rocrate,
             "link_digital_object": link_digital_object,
@@ -110,7 +109,7 @@ class DatasetDetailView(TemplateView):
         typed_links = self.to_typed_link_set(
             abs_url=request.build_absolute_uri(reverse("dataset_detail", args=[id])),
             author_urls=[author_url for (_, author_url) in authors],
-            license_url=license,
+            license_url=license_id,
             items=[(item[0], item[1]) for item in items],
             additional_urls=[
                 (link_rocrate, "application/json+ld"),
@@ -241,7 +240,7 @@ class DatasetDetailView(TemplateView):
         # get digital object from cordra
         objects = self._connector.resolve_objects(id)
 
-        if not id in objects or objects[id]["@type"] != "Dataset":
+        if not id in objects or not "Dataset" in objects[id]["@type"]:
             raise Http404
 
         # return response:
