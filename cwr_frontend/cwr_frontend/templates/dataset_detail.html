@@ -73,7 +73,7 @@
     <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
     <div class="cf">
     {% for name, img_url, is_img in images %}
-        <div class="fl w-50 w-50-m w-25-l pa2">
+        <div class="fl w-25 w-25-m w-20-l pa2">
             <a href="{{ img_url }}">
                 {% if is_img %}
                 <img src="{{ img_url }}" class="w-100 db outline black-10"/>
