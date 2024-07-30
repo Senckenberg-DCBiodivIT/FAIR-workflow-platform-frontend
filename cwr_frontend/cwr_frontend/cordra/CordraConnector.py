@@ -1,7 +1,10 @@
+import time
+from itertools import batched
 from typing import Any
 from urllib.parse import urlencode, urljoin
 import requests
 from django.conf import settings
+
 
 class CordraConnector:
 
@@ -15,7 +18,7 @@ class CordraConnector:
         if not self.prefix.endswith("/"):
             self.prefix = prefix + "/"
 
-    def get_object_abs_url(self, id: str, payload_name: str|None = None) -> str:
+    def get_object_abs_url(self, id: str, payload_name: str | None = None) -> str:
         """ Builds the absolute url to a cordra object. If payload name is given, returns the url to the payload."""
         url = urljoin(self._base_url, f"objects/{id}")
         if payload_name is not None:
@@ -49,33 +52,62 @@ class CordraConnector:
 
         return response.json()
 
-    def resolve_objects(self, object_id: str, resolved_objects=None, max_recursion = 3) -> dict[str, [dict[str, Any]]]:
-        """ Recursively resolves cordra objects until the max recursion depth is reached.
-        Returns a map of all resolved objects in the form {object_id: object}
-        """
+    def search_for_ids(self, ids: list[str]) -> list[dict[str, Any]]:
+        url = urljoin(self._base_url, "search")
+        url = f"{url}?{urlencode({'query': ' OR '.join(['id:' + id for id in ids])})}"
+        response = requests.get(url, verify=False)
+        if response.status_code != 200:
+            raise Exception(
+                f"Could not resolve list of ids (Backend responded with {response.status_code})"
+            )
+
+        return response.json()["results"]
+
+
+    def _resolve(self, object_ids: list[str], resolved_objects=None, max_recursion=3) -> dict[str, dict[str, Any]]:
         if resolved_objects is None:
             resolved_objects = {}
 
-        if not object_id in resolved_objects:
-            root_obj = self.get_object_by_id(object_id)
-            resolved_objects[object_id] = root_obj
+        if max_recursion == 0:
+            raise Exception("Maximum recursion depth reached while resolving cordra objects. This is probably a bug.")
+
+        newly_resolved_objects = []
+        for id_batch in batched(object_ids, 200):  # cordra throws 502 if request becomes too large
+            newly_resolved_objects += self.search_for_ids(id_batch)
+        for obj in newly_resolved_objects:
+            resolved_objects[obj["id"]] = obj["content"]
+
+        def find_all_ids_in_obj(obj: dict[str, Any], ids_to_resolve: set[str] | None = None):
+            if ids_to_resolve is None:
+                ids_to_resolve = set()
+
+            for (key, value) in obj.items():
+                print(value)
+                if key == "@id": continue
+
+                if isinstance(value, dict):
+                    find_all_ids_in_obj(value, ids_to_resolve)
+                elif isinstance(value, list):
+                    for possible_id in value:
+                        if isinstance(possible_id, str) and possible_id.startswith(self.prefix):
+                            ids_to_resolve.add(possible_id)
+                elif isinstance(value, str) and value.startswith(self.prefix):
+                    ids_to_resolve.add(value)
+            return ids_to_resolve
+
+        discovered_ids = []
+        for obj in newly_resolved_objects:
+            discovered_ids += find_all_ids_in_obj(obj["content"])
+        discovered_ids = list(set([id for id in discovered_ids if id not in resolved_objects]))
+
+        if len(discovered_ids) == 0:
+            return resolved_objects
         else:
-            root_obj = resolved_objects[object_id]
+            return self._resolve(discovered_ids, resolved_objects, max_recursion - 1)
 
-        # resolve referenced objects until recursion depth is reached
-        if max_recursion > 0:
-            def resolve_links(json, resolved_objects):
-                for key, value in json.items():
-                    if key == "@id": continue
-                    if isinstance(value, str) and value.startswith(self.prefix) and value not in resolved_objects:
-                        resolved_objects |= self.resolve_objects(value, resolved_objects, max_recursion=max_recursion-1)
-                    elif isinstance(value, list):
-                        for i in range(len(value)):
-                            if isinstance(value[i], str) and value[i].startswith(self.prefix) and value[i] not in resolved_objects:
-                                resolved_objects |= self.resolve_objects(value[i], resolved_objects, max_recursion=max_recursion-1)
-                    elif isinstance(value, dict):
-                        resolve_links(value, resolved_objects)
-            resolve_links(root_obj, resolved_objects)
-
+    def resolve_objects(self, object_id: str, resolved_objects=None, max_recursion=3) -> dict[str, [dict[str, Any]]]:
+        """ Recursively resolves cordra objects until the max recursion depth is reached.
+        Returns a map of all resolved objects in the form {object_id: object}
+        """
+        resolved_objects = self._resolve([object_id])
         return resolved_objects
-
