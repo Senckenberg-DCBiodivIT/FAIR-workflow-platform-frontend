@@ -1,4 +1,3 @@
-import time
 from itertools import batched
 from typing import Any
 from urllib.parse import urlencode, urljoin
@@ -34,7 +33,6 @@ class CordraConnector:
             "sortFields": 'metadata/modifiedOn DESC '
         }
         url = f'{urljoin(self._base_url, "search")}?{urlencode(params)}'
-        print(url)
         response = requests.get(url, verify=False)
         if response.status_code != 200:
             raise Exception(response.text)
@@ -82,7 +80,6 @@ class CordraConnector:
                 ids_to_resolve = set()
 
             for (key, value) in obj.items():
-                print(value)
                 if key == "@id": continue
 
                 if isinstance(value, dict):
