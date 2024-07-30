@@ -102,9 +102,19 @@ class CordraConnector:
         else:
             return self._resolve(discovered_ids, resolved_objects, max_recursion - 1)
 
+    def _resolve_object_graph(self, id: str) -> list[dict[str, Any]]:
+        url = urljoin(self._base_url, "cordra/call")
+        url = f"{url}?{urlencode({'objectId': id, "method": "asGraph"})}"
+        response = requests.get(url, verify=False)
+        if response.status_code != 200:
+            raise Exception(
+                f"Could not resolve list of ids (Backend responded with {response.status_code})"
+            )
+
+        return response.json()["@graph"]
+
     def resolve_objects(self, object_id: str, resolved_objects=None, max_recursion=3) -> dict[str, [dict[str, Any]]]:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """
-        resolved_objects = self._resolve([object_id])
-        return resolved_objects
+        return dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id)))
