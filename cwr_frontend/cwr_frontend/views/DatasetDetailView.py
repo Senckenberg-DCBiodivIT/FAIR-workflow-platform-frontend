@@ -57,6 +57,9 @@ class DatasetDetailView(TemplateView):
         if prov_action is not None:
 
             prov_agent_internal_id = prov_action.get("agent")
+            prov_start_time = prov_action.get("startTime", None)
+            prov_end_time = prov_action.get("endTime", None)
+
             prov_agent = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_agent_internal_id), None)
             prov_agent_id = prov_agent.get("identifier")
             prov_agent_name = prov_agent.get("name")
@@ -70,6 +73,8 @@ class DatasetDetailView(TemplateView):
                 "agent_id": prov_agent_id,
                 "agent_name": prov_agent_name,
                 "instrument_id": prov_instrument_url,
+                "start_time": prov_start_time,
+                "end_time": prov_end_time
             }
         else:
             prov_context = None

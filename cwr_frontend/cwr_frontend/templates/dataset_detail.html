@@ -21,7 +21,7 @@
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Keywords:</td>
-            <td class="pa1">{{ keywords|join:", " }}</td>
+            <td class="pa1">{{ keywords|join:", "}}</td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Published:</td>
@@ -37,7 +37,13 @@
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">License:</td>
-            <td class="pa1"><a href="{{ license_id }}">{{ license_id }}</a></td>
+            <td class="pa1">
+                {% if license_id %}
+                <a href="{{ license_id }}">{{ license_id }}</a>
+                {% else %}
+                No license
+                {% endif %}
+            </td>
         </tr>
         </tbody>
     </table>
@@ -59,7 +65,21 @@
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Instrument</td>
-            <td class="pa1"><a href="{{ provenance.instrument_id }}">{{ provenance.instrument_id }}</a></td>
+            <td class="pa1">
+                {% if provenance.instrument_id %}
+                <a href="{{ provenance.instrument_id }}">{{ provenance.instrument_id }}</a>
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Start Time</td>
+            <td class="pa1">{{ provenance.start_time | default_if_none:"N/A" }}</td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">End Time</td>
+            <td class="pa1">{{ provenance.end_time | default_if_none:"N/A" }}</td>
         </tr>
         </tbody>
     </table>
