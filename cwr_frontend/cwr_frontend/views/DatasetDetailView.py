@@ -63,14 +63,20 @@ class DatasetDetailView(TemplateView):
             prov_agent_name = prov_agent.get("name")
 
             prov_instrument_internal_id = prov_action.get("instrument")
-            prov_instrument_url = None
+            prov_instrument = {}
             if prov_instrument_internal_id is not None:
                 prov_instrument = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_instrument_internal_id and prov_instrument_internal_id is not None), None)
-                prov_instrument_url = prov_instrument.get("identifier")
+                prov_instrument["name"] = prov_instrument.get("name", prov_instrument.get("contentUrl"))
+                prov_instrument["description"] = prov_instrument.get("description")
+                if "SoftwareApplication" in prov_instrument["@type"]:
+                    prov_instrument["url"] = prov_instrument.get("identifier")
+                elif "ComputationalWorkflow" in prov_instrument["@type"]:
+                    prov_instrument["url"] = self._connector.get_object_abs_url(prov_instrument_internal_id, prov_instrument["contentUrl"])
+                    prov_instrument["programmingLanguage"] = prov_instrument.get("programmingLanguage")
             prov_context = {
                 "agent_id": prov_agent_id,
                 "agent_name": prov_agent_name,
-                "instrument_id": prov_instrument_url,
+                "instrument": prov_instrument,
                 "start_time": prov_start_time,
                 "end_time": prov_end_time
             }
