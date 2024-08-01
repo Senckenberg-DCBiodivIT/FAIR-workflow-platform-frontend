@@ -3,6 +3,7 @@ from typing import Any
 from urllib.parse import urlencode, urljoin
 import requests
 from django.conf import settings
+from django.core.cache import cache
 
 
 class CordraConnector:
@@ -117,4 +118,9 @@ class CordraConnector:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """
-        return dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id)))
+        cache_key = f"dataset-objects-{object_id}"
+        objects = cache.get(cache_key)
+        if objects is None:
+            objects = dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id)))
+            cache.set(cache_key, objects, 15*60)
+        return objects

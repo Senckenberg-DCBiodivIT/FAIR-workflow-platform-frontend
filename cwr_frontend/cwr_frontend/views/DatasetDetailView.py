@@ -1,7 +1,5 @@
 import json
-import logging
 import tempfile
-from copy import deepcopy
 from typing import Any
 
 import requests

@@ -104,9 +104,11 @@ else:
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "/var/tmp/django_cache/cwr_frontend",
-            "TIMEOUT": 60 * 15,
+            "TIMEOUT": 0,
         }
     }
+    # Do not send cache-control headers for pages
+    CACHE_MIDDLEWARE_SECONDS = 0
 
 WSGI_APPLICATION = 'cwr_frontend.wsgi.application'
 
