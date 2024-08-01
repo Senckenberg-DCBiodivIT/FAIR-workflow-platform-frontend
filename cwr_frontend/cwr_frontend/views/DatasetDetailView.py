@@ -127,77 +127,91 @@ class DatasetDetailView(TemplateView):
         return response
 
     def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], with_preview: bool = False, remote_urls: bool = False) -> ROCrate:
-        objects = deepcopy(objects)  # editing elements in place messes with django cache
+        crate = ROCrate(gen_preview=with_preview)
         dataset = objects[id]
 
-        crate = ROCrate(gen_preview=with_preview)
+        # TODO add sameAs identifier for digital objects that are not files?
 
-        for property in ["name", "description", "dateCreated", "studySubject", "datePublished", "dateModified",
-                         "keywords"]:
-            if (property in dataset) and (dataset[property] is not None):
-                crate.root_dataset[property] = dataset[property]
+        files_to_add = dataset.get("hasPart", [])
+        if dataset.get("mainEntity") and dataset.get("mainEntity") not in files_to_add:
+            files_to_add.append(dataset.get("mainEntity"))
+        persons_to_add = dataset.get("author", [])
+        actions_to_add = dataset.get("mentions", [])
+        license_to_add = dataset.get("license")
+        instruments_to_add = [action.get("instrument") for action in [objects[action_id] for action_id in actions_to_add]]
 
-        for author in map(lambda author_id: objects[author_id], dataset["author"]):
-            author = deepcopy(author)
-            author_id = author.pop("@id")
-            del author["@context"]
-            crate_author = crate.add(Person(crate, author_id, properties=author))
-            crate.root_dataset.append_to("author", crate_author)
+        id_to_crate_id = {}
 
-        if "license" in dataset:
-            crate.license = crate.add(ContextEntity(crate, dataset["license"], properties={"@type": "CreativeWork"}))
-        crate.root_dataset["sameAs"] = self._connector.get_object_abs_url(id)
+        # add license
+        crate.add(ContextEntity(crate, license_to_add, {"@type": "CreativeWork"}))
+        id_to_crate_id[license_to_add] = license_to_add
+
+        # add persons
+        for jsonld in map(lambda person_id: objects[person_id], persons_to_add):
+            if "@context" in jsonld:
+                del jsonld["@context"]
+            if "affiliation" in jsonld:
+                del jsonld["affiliation"]  # TODO add affiliation to crate
+            person_id = jsonld.pop("@id")
+            crate.add(Person(crate, identifier=person_id, properties=jsonld))
+            id_to_crate_id[person_id] = person_id
 
         # add all files
-        for (part_id, file) in [(part_id, objects[part_id]) for part_id in objects if part_id in dataset["hasPart"]]:
+        for (part_id, file) in [(part_id, objects[part_id]) for part_id in files_to_add]:
             url = request.build_absolute_uri(self._connector.get_object_abs_url(file["@id"], file["contentUrl"]))
             if remote_urls:
                 dest_path = None  # use payload URL as path
             else:
                 dest_path = file["contentUrl"]
-            crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
+                file["sameAs"] = url
+            del file["@id"]
+            del file["@context"]
+            del file["contentUrl"]
+            if "partOf" in file:
+                del file["partOf"]
+            if "resultOf" in file:
+                del file["resultOf"]
+            file["@type"] = list(map(lambda x: x.replace("MediaObject", "File"), file["@type"]))
+            crate_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties=file | {
                 "name": file["name"],
                 "encodingFormat": file["encodingFormat"],
-                "contentSize": file["contentSize"]
+                "contentSize": file["contentSize"],
             })
+            id_to_crate_id[part_id] = crate_file["@id"]
 
-        if ("mentions" in dataset) and (dataset["mentions"] is not None):
-            for action in map(lambda mention_id: objects[mention_id], dataset["mentions"]):
-                action = deepcopy(action)
-                del action["@context"]
-                action_id = action.pop("@id")
-                agent_id = action.get("agent", None)
-                action = crate.add(ContextEntity(crate, action_id, properties=action))
-                if agent_id:
-                    agent = objects[agent_id]
-                    agent = deepcopy(agent)
-                    del agent["@context"]
-                    agent_id = agent.pop("@id")
-                    added_agent = crate.add(Person(crate, agent_id, properties=agent))
-                    action["agent"] = added_agent
-                results_id = action.get("result", [])
-                del (action["result"])
-                for file in map(lambda id: objects[id], results_id):
-                    url = request.build_absolute_uri(self._connector.get_object_abs_url(file["@id"], file["contentUrl"]))
-                    if remote_urls:
-                        dest_path = None  # use payload URL as path
-                    else:
-                        dest_path = file["contentUrl"]
-                    crate_result_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties={
-                        "name": file["name"],
-                        "encodingFormat": file["encodingFormat"],
-                        "contentSize": file["contentSize"]
-                    })
-                    action.append_to("result", crate_result_file)
+        # add instrument if not added yet (for softwareapplication)
+        for instrument_id in filter(lambda id: "SoftwareApplication" in objects[id]["@type"], instruments_to_add):
+            instrument = objects[instrument_id]
+            del instrument["@context"]
+            del instrument["@id"]
+            crate.add(ContextEntity(crate, instrument_id, properties=instrument))
+            id_to_crate_id[instrument_id] = instrument_id
 
-                if "instrument" in action:
-                    instrument = deepcopy(objects[action["instrument"]])
-                    del instrument["@context"]
-                    instrument_id = instrument["@id"]
-                    action["instrument"] = crate.add(ContextEntity(crate, instrument_id, properties=instrument))
-                crate.root_dataset.append_to("mentions", action)
-        else:
-            logging.warn("No mentions found in Dataset {} while creating RO-Crate".format(id))
+        # add actions
+        for action in map(lambda action_id: objects[action_id], actions_to_add):
+            del action["@context"]
+            action_id = action.pop("@id")
+            if "agent" in action:
+                action["agent"] = { "@id": id_to_crate_id[action["agent"]] }
+
+            if "instrument" in action:
+                action["instrument"] = {"@id": id_to_crate_id[action["instrument"]]}
+
+            if "result" in action:
+                action["result"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, action["result"]))
+            # TODO backlink to workflow
+            crate.add(ContextEntity(crate, action_id, properties=action))
+            id_to_crate_id[action_id] = action_id
+
+        # update dataset entity
+        for (key, value) in dataset.items():
+            if key.startswith("@"):
+                continue
+            elif key in ["author", "hasPart", "mentions"]:
+                value = list(map(lambda id: {"@id": id_to_crate_id[id]}, value))
+            elif key in ["mainEntity", "license"]:
+                value = {"@id": id_to_crate_id[value]}
+            crate.root_dataset[key] = value
 
         return crate
 
@@ -224,11 +238,11 @@ class DatasetDetailView(TemplateView):
                 zs.writestr("ro-crate-preview.html", str.encode(html))
 
                 try:
-                    for object in objects.values():
-                        if "MediaObject" not in object["@type"]:
-                            continue
-                        url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
-                        name = object["contentUrl"]
+                    for data_entity in crate.data_entities:
+                        url = data_entity["sameAs"]
+                        name = data_entity["name"]
+                        # url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
+                        # name = object["contentUrl"]
                         object_response = requests.get(url, verify=False, stream=True)
                         if object_response.status_code == 200:
                             zs.write_iter(name, object_response.iter_content(chunk_size=1024))
