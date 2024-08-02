@@ -147,8 +147,9 @@ class DatasetDetailView(TemplateView):
         id_to_crate_id = {}
 
         # add license
-        crate.add(ContextEntity(crate, license_to_add, {"@type": "CreativeWork"}))
-        id_to_crate_id[license_to_add] = license_to_add
+        if license_to_add is not None:
+            license = crate.add(ContextEntity(crate, license_to_add, {"@type": "CreativeWork"}))
+            id_to_crate_id[license_to_add] = license["@id"]
 
         # add persons
         for jsonld in map(lambda person_id: objects[person_id], persons_to_add):
@@ -158,8 +159,8 @@ class DatasetDetailView(TemplateView):
                 del jsonld["affiliation"]  # TODO add affiliation to crate
             person_id = jsonld.pop("@id")
             person_identifier = jsonld.pop("identifier", person_id)
-            crate.add(Person(crate, identifier=person_identifier, properties=jsonld))
-            id_to_crate_id[person_id] = person_identifier
+            person = crate.add(Person(crate, identifier=person_identifier, properties=jsonld))
+            id_to_crate_id[person_id] = person["@id"]
 
         # add all files
         for (part_id, file) in [(part_id, objects[part_id]) for part_id in files_to_add]:
@@ -186,27 +187,27 @@ class DatasetDetailView(TemplateView):
 
         # add instrument if not added yet (for softwareapplication)
         for instrument_id in filter(lambda id: "SoftwareApplication" in objects[id]["@type"], instruments_to_add):
-            instrument = objects[instrument_id]
-            del instrument["@context"]
-            del instrument["@id"]
-            crate.add(ContextEntity(crate, instrument_id, properties=instrument))
-            id_to_crate_id[instrument_id] = instrument_id
+            jsonld = objects[instrument_id]
+            del jsonld["@context"]
+            del jsonld["@id"]
+            instrument = crate.add(ContextEntity(crate, instrument_id, properties=jsonld))
+            id_to_crate_id[instrument_id] = instrument["@id"]
 
         # add actions
-        for action in map(lambda action_id: objects[action_id], actions_to_add):
-            del action["@context"]
-            action_id = action.pop("@id")
-            if "agent" in action:
-                action["agent"] = { "@id": id_to_crate_id[action["agent"]] }
+        for jsonld in map(lambda action_id: objects[action_id], actions_to_add):
+            del jsonld["@context"]
+            action_id = jsonld.pop("@id")
+            if "agent" in jsonld:
+                jsonld["agent"] = { "@id": id_to_crate_id[jsonld["agent"]] }
 
-            if "instrument" in action:
-                action["instrument"] = {"@id": id_to_crate_id[action["instrument"]]}
+            if "instrument" in jsonld:
+                jsonld["instrument"] = {"@id": id_to_crate_id[jsonld["instrument"]]}
 
-            if "result" in action:
-                action["result"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, action["result"]))
+            if "result" in jsonld:
+                jsonld["result"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, jsonld["result"]))
             # TODO backlink to workflow
-            crate.add(ContextEntity(crate, action_id, properties=action))
-            id_to_crate_id[action_id] = action_id
+            action = crate.add(ContextEntity(crate, action_id, properties=jsonld))
+            id_to_crate_id[action_id] = action["@id"]
 
         # update dataset entity
         for (key, value) in dataset.items():
