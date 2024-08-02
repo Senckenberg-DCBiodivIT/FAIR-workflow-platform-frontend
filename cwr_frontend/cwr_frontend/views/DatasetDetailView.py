@@ -217,6 +217,18 @@ class DatasetDetailView(TemplateView):
                 value = {"@id": id_to_crate_id[value]}
             crate.root_dataset[key] = value
 
+        # make this a valid workflow run RO-Crate
+        crate.metadata.extra_contexts.append("https://w3id.org/ro/terms/workflow-run/context")
+        crate.root_dataset["conformsTo"] = [
+            {"@id": "https://w3id.org/ro/wfrun/process/0.1"},
+            {"@id": "https://w3id.org/ro/wfrun/workflow/0.1"},
+            {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
+        ]
+        crate.metadata["conformsTo"] = [
+            {"@id": "https://w3id.org/ro/crate/1.1"},
+            {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
+        ]
+
         return crate
 
     def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download=False) -> HttpResponseBase:
