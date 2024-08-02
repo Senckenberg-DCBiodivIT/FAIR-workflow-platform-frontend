@@ -21,7 +21,9 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+    {% load settings_value %}
     <div class="w-100 bb white ph3 pv2 bg-dark-green tr" style="position: absolute; bottom: 0">
+        <a href="{% cordra_url %}/" class="mr3 ma0 no-underline dim white">Object Repository</a>
         <a href="{% url 'imprint' %}" class="ma0 no-underline dim white">Imprint and Copyright</a>
     </div>
 </div>

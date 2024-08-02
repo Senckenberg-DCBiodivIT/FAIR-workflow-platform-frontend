@@ -89,6 +89,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'settings_value': 'cwr_frontend.templatetags.settings_value',
+            }
         },
     },
 ]
