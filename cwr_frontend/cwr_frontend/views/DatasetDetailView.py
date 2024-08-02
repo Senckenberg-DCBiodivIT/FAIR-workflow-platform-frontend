@@ -157,8 +157,9 @@ class DatasetDetailView(TemplateView):
             if "affiliation" in jsonld:
                 del jsonld["affiliation"]  # TODO add affiliation to crate
             person_id = jsonld.pop("@id")
-            crate.add(Person(crate, identifier=person_id, properties=jsonld))
-            id_to_crate_id[person_id] = person_id
+            person_identifier = jsonld.pop("identifier", person_id)
+            crate.add(Person(crate, identifier=person_identifier, properties=jsonld))
+            id_to_crate_id[person_id] = person_identifier
 
         # add all files
         for (part_id, file) in [(part_id, objects[part_id]) for part_id in files_to_add]:
