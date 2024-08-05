@@ -72,6 +72,7 @@ class WorkflowsView(TemplateView):
                 if workflow_path.exists():
                     workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
                     # TODO validate with backend
+                    # TODO supply parameters for workflow based on formal parameters?
                     request.session["workflow"] = workflow
                     return self.get(request, step=2)
 
