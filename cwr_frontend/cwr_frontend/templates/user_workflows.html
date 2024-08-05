@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Crop wild relatives: Workflows{% endblock %}
+{% block headline %}Workflows{% endblock %}
+
+{% block content %}
+Your user name is <b>{{ user.username }}</b>.
+Your ORCID (<b><a href="https://orcid.org/{{ user.orcid }}" target="_blank">{{ user.orcid }}</a></b>) will be used to provide workflow run provenance.
+
+<h2>Submit workflow as RO-Crate</h2>
+<div>
+    <h3>1. Upload Workflow RO-Crate</h3>
+    <p>Upload must be a zip file following the <a href="https://about.workflowhub.eu/Workflow-RO-Crate/" target="_blank">Workflow RO-Crate</a> specification.
+    The workflow must be in yaml format and be a valid <a href="https://argoproj.github.io/workflows/" target="_blank">Argo Workflow</a>.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" accept="application/zip" name="rocratefile">
+        <button type="submit">Create</button>
+    </form>
+</div>
+
+{% if step == 2 %}
+<div>
+    <h3>2. Loaded workflow</h3>
+    <p>{{ workflow|safe }}</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button type="submit" name="submit" value="Submit">Submit workflow</button>
+        <button type="submit" name="cancel" value="Cancel">Cancel</button>
+    </form>
+</div>
+{% endif %}
+
+{% if step == 3 %}
+<div>
+    <h3>Workflow submitted!</h3>
+</div>
+{% endif %}
+{% endblock %}
