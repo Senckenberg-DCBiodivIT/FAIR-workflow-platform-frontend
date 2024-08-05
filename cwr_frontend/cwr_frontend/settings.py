@@ -113,6 +113,9 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+SOCIALACCOUNT_ONLY = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
 if env("ORCID_CLIENT_ID", default=None) is not None:
     SOCIALACCOUNT_PROVIDERS = {
         'orcid': {
