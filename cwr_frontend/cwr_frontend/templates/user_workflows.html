@@ -3,9 +3,6 @@
 {% block headline %}Workflows{% endblock %}
 
 {% block content %}
-Your user name is <b>{{ username }}</b>.
-Your ORCID (<b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>) will be used to provide workflow run provenance.
-
 <h2>Submit workflow as RO-Crate</h2>
 <div>
     <h3>1. Upload Workflow RO-Crate</h3>
@@ -22,6 +19,9 @@ Your ORCID (<b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid 
 <div>
     <h3>2. Loaded workflow</h3>
     <p>{{ workflow|safe }}</p>
+    <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
+        will be used to provide run provenance for this workflow!
+    </i></p>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <button type="submit" name="submit" value="Submit">Submit workflow</button>
