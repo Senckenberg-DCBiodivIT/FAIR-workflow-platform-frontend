@@ -30,6 +30,10 @@ FORCE_SCRIPT_NAME = env("FORCE_SCRIPT_NAME", default=None)
 # if django is run behind a reverse proxy like nginx
 USE_X_FORWARDED_HOST = True
 
+# fix for CSRF issues behind caddy
+# see https://stackoverflow.com/questions/72584282/django-caddy-csrf-protection-issues
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # disable trailing slash warning (required to make it work with a forced script name)
 SILENCED_SYSTEM_CHECKS = ["urls.W002"]
 
