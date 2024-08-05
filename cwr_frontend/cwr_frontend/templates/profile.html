@@ -1,0 +1,9 @@
+{% extends "allauth/layouts/manage.html" %}
+{% load allauth %}
+{% load account %}
+{% block content %}
+{% element h1 %}
+Profile
+{% endelement %}
+<p>Welcome to your profile. Your user name is <i>{% user_display user %}</i>.</p>
+{% endblock content %}

@@ -57,6 +57,10 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.orcid',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -73,6 +77,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'cwr_frontend.urls'
@@ -95,6 +100,28 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+if env("ORCID_CLIENT_ID", default=None) is not None:
+    SOCIALACCOUNT_PROVIDERS = {
+        'orcid': {
+            "BASE_DOMAIN": env("ORCID_BASE_DOMAIN", default="orcid.org"),
+            "MEMBER_API": False,  # only need public api for login
+            "APP": {
+                'client_id': env("ORCID_CLIENT_ID"),
+                'secret': env("ORCID_SECRET"),
+                'key': ""
+            }
+
+        }
+    }
 
 if DEBUG:
     CACHES = {
