@@ -23,10 +23,8 @@ class WorkflowsView(TemplateView):
         context = {}
         try:
             social_account = SocialAccount.objects.get(user=request.user, provider="orcid")
-            context["user"] = {
-                "username": f"{social_account.user.first_name} {social_account.user.last_name}".rstrip(),
-                "orcid": social_account.uid
-            }
+            context["username"] = f"{social_account.user.first_name} {social_account.user.last_name}".rstrip()
+            context["orcid"] = social_account.uid
         except SocialAccount.DoesNotExist:
             raise Exception("User has no ORCID")
 

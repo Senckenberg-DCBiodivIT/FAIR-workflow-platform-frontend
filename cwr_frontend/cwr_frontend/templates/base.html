@@ -8,8 +8,22 @@
 <body>
 <div class="page-container" style="position: relative; min-height: 100vh">
     <div class="w-100 bb white pa3 bg-dark-green">
-        <p class="ma0"><a class="white no-underline dim" href="{% url 'dataset_list' %}">Crop Wild Relatives</a></p>
-        <h1 class="" style="margin: 0em">{% block headline %}{% endblock %}</h1>
+        <div class="flex">
+            <div class="flex-grow-1">
+                <p class="ma0"><a class="white no-underline dim" href="{% url 'dataset_list' %}">Crop Wild Relatives</a></p>
+                <h1 class="" style="margin: 0em">{% block headline %}{% endblock %}</h1>
+            </div>
+            <div style="flex-schrink: 0;">
+                <a href="{% url 'dataset_list' %}" class="mr3 ma0 no-underline dim white">Datasets</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'workflows' %}" class="mr3 ma0 no-underline dim white">Workflows</a>
+                <a href="{% url 'account_logout' %}" class="ma0 no-underline dim white">Logout</a>
+                {% else %}
+                {% load socialaccount %}
+                <a href="{% provider_login_url 'orcid' next=request.path %}" class="ma0 no-underline dim white">Login</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
     {% block banner %}
     {% if banner_text %}
