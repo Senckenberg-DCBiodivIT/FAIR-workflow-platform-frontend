@@ -130,7 +130,8 @@ if env("ORCID_CLIENT_ID", default=None) is not None:
         }
     }
     SOCIALACCOUNT_ADAPTER = 'cwr_frontend.orcid_adapter.OrcidAdapter'
-    ORCID_ALLOWLIST = env("ORCID_ALLOWLIST", default="").split(",")
+    ORCID_ALLOW_LIST = env("ORCID_ALLOW_LIST", default="").split(",")
+    ORCID_ADMIN_LIST = env("ORCID_ADMIN_LIST", default="").split(",")
 
 if DEBUG:
     CACHES = {
