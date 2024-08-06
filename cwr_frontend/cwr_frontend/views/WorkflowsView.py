@@ -4,8 +4,6 @@ import tempfile
 import zipfile
 
 import yaml
-from django.core.files.storage import FileSystemStorage
-from rocrate.model import DataEntity
 from rocrate.rocrate import ROCrate
 
 from django.core.exceptions import BadRequest
@@ -13,10 +11,14 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from allauth.socialaccount.models import SocialAccount
 
+from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
+
+
 class WorkflowsView(TemplateView):
     template_name = "user_workflows.html"
 
     _logger = logging.getLogger(__name__)
+    _connector = WorkflowServiceConnector()
 
     def get(self, request, **kwargs):
         step = kwargs.get("step", 1)
@@ -28,7 +30,14 @@ class WorkflowsView(TemplateView):
         except SocialAccount.DoesNotExist:
             raise Exception("User has no ORCID")
 
-        context["workflow"] = request.session.get("workflow", None)
+        if step == 2:
+            context["workflow"] = request.session.get("workflow", None)
+            if not request.session.get("workflow_check_status", True):
+                context["workflow_check_result"] = request.session.get("workflow_check_result")
+        elif step == 3:
+            if not request.session.get("submit_status", True):
+                context["submit_result"] = request.session.get("submit_result")
+
         context["step"] = step
         return render(request, self.template_name, context)
 
@@ -36,13 +45,16 @@ class WorkflowsView(TemplateView):
         if "rocratefile" in request.FILES:
             return self.handle_crate_upload(request)
         elif "submit" in request.POST:
+            submit_status, submit_result = self._connector.submit_workflow(request.session["workflow"], dry_run=request.POST.get("dryrun", None)  == "DryRun")
             request.session["workflow"] = None
+            request.session["submit_status"] = submit_status
+            request.session["submit_result"] = submit_result
             return self.get(request, step=3)
         elif "cancel" in request.POST:
             request.session["workflow"] = None
             return self.get(request, step=1)
         else:
-            raise Exception("Invalid request")
+            return self.get(request)
 
     def handle_crate_upload(self, request):
         file = request.FILES["rocratefile"]
@@ -71,8 +83,10 @@ class WorkflowsView(TemplateView):
 
                 if workflow_path.exists():
                     workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
-                    # TODO validate with backend
+                    workflow_lint_status, workflow_lint_result = self._connector.check_workflow(workflow)
                     # TODO supply parameters for workflow based on formal parameters?
+                    request.session["workflow_check_status"] = workflow_lint_status
+                    request.session["workflow_check_result"] = workflow_lint_result
                     request.session["workflow"] = workflow
                     return self.get(request, step=2)
 

@@ -19,6 +19,10 @@
 <div>
     <h3>2. Loaded workflow</h3>
     <p>{{ workflow|safe }}</p>
+
+    {% if workflow_check_result %}
+    <p class="dark-red">Workflow file validation failed: {{ workflow_check_result }}</p>
+    {% else %}
     <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
         will be used to provide run provenance for this workflow!
     </i></p>
@@ -26,13 +30,18 @@
         {% csrf_token %}
         <button type="submit" name="submit" value="Submit">Submit workflow</button>
         <button type="submit" name="cancel" value="Cancel">Cancel</button>
+        <input class="ml2 mr1" type="checkbox" name="dryrun" value="DryRun">Dry Run</input>
     </form>
+    {% endif %}
 </div>
 {% endif %}
 
 {% if step == 3 %}
 <div>
     <h3>Workflow submitted!</h3>
+    {% if submit_result %}
+    <p class="dark-red">Workflow submission failed: {{ submit_result }}</p>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

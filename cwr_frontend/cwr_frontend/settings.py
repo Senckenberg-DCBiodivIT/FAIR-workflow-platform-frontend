@@ -50,6 +50,12 @@ CORDRA = {
     "PASSWORD": env("CORDRA_PASSWORD", default=None),
 }
 
+WORKFLOW_SERVICE = {
+    "URL": env("WORKFLOW_SERVICE_URL", default="http://localhost:8001"),
+    "USER": env("WORKFLOW_SERVICE_USER", default="test"),
+    "PASSWORD": env("WORKFLOW_SERVICE_PASSWORD", default="test"),
+}
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
