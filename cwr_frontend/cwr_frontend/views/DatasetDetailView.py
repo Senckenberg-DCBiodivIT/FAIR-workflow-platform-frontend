@@ -258,7 +258,7 @@ class DatasetDetailView(TemplateView):
                 try:
                     for data_entity in crate.data_entities:
                         url = data_entity["sameAs"]
-                        name = data_entity["name"]
+                        name = data_entity["@id"]
                         # url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
                         # name = object["contentUrl"]
                         object_response = requests.get(url, verify=False, stream=True)
