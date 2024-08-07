@@ -25,7 +25,7 @@ class WorkflowsView(TemplateView):
         context = {}
         try:
             social_account = SocialAccount.objects.get(user=request.user, provider="orcid")
-            context["username"] = f"{social_account.user.first_name} {social_account.user.last_name}".rstrip()
+            context["username"] = f"{social_account.user.first_name.title()} {social_account.user.last_name.title()}"
             context["orcid"] = social_account.uid
         except SocialAccount.DoesNotExist:
             raise Exception("User has no ORCID")
@@ -45,7 +45,10 @@ class WorkflowsView(TemplateView):
         if "rocratefile" in request.FILES:
             return self.handle_crate_upload(request)
         elif "submit" in request.POST:
-            submit_status, submit_result = self._connector.submit_workflow(request.session["workflow"], dry_run=request.POST.get("dryrun", None)  == "DryRun")
+            social_acc = SocialAccount.objects.get(user=request.user, provider="orcid")
+            name = social_acc.user.first_name.title() + " " + social_acc.user.last_name.title()
+            orcid = social_acc.uid
+            submit_status, submit_result = self._connector.submit_workflow(request.session["workflow"], submitter_name=name, submitter_orcid=orcid, dry_run=request.POST.get("dryrun", None)  == "DryRun")
             request.session["workflow"] = None
             request.session["submit_status"] = submit_status
             request.session["submit_result"] = submit_result
