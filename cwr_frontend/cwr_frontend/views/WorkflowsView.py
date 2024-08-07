@@ -31,7 +31,7 @@ class WorkflowsView(TemplateView):
             raise Exception("User has no ORCID")
 
         if step == 2:
-            context["workflow"] = request.session.get("workflow", None)
+            context["workflow"] = yaml.dump(request.session.get("workflow", None))
             if not request.session.get("workflow_check_status", True):
                 context["workflow_check_result"] = request.session.get("workflow_check_result")
         elif step == 3:

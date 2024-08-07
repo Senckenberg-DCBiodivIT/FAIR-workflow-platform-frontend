@@ -18,7 +18,9 @@
 {% if step == 2 %}
 <div>
     <h3>2. Loaded workflow</h3>
-    <p>{{ workflow|safe }}</p>
+    <div class="bg-dark-gray pa2 white">
+        <code class="f6"><pre>{{ workflow }}</pre></code>
+    </div>
 
     {% if workflow_check_result %}
     <p class="dark-red">Workflow file validation failed: {{ workflow_check_result }}</p>
