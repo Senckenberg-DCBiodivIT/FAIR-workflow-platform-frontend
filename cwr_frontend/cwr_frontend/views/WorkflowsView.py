@@ -2,6 +2,7 @@ import io
 import logging
 import tempfile
 import zipfile
+from pathlib import Path
 
 import yaml
 from rocrate.rocrate import ROCrate
@@ -61,7 +62,7 @@ class WorkflowsView(TemplateView):
                 tmp.flush()
 
                 crate = ROCrate(tmp.name)
-                workflow_path = crate.source / crate.root_dataset["mainEntity"]["name"]
+                workflow_path = crate.source / str(crate.root_dataset["mainEntity"])
 
                 # check workflow file and set it to the session
                 if workflow_path.exists():

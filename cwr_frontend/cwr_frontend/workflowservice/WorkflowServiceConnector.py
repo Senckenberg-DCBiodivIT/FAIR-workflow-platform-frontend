@@ -20,7 +20,7 @@ class WorkflowServiceConnector:
         files = {"file": ("workflow.yaml", yaml.dump(workflow, indent=2))}
         response = requests.post(urljoin(self._base_url, "workflow/check"), files=files, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
-            if response.status_code == 400 and "message" in response.json()["detail"]:
+            if response.status_code == 400 and "detail" in response.json():
                 return False, response.json()
             else:
                 response.raise_for_status()
