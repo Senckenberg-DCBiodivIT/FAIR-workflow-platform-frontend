@@ -25,16 +25,22 @@
         <code class="f6"><pre>{{ workflow }}</pre></code>
     </div>
 
+
     {% if not workflow_error %}
-    <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
-        will be used to provide run provenance for this workflow!
-    </i></p>
-    <form method="post" enctype="multipart/form-data">
+    <h4>Override Workflow Parameters:</h4>
+    {% for key, value in parameters.items %}
+    <label for="{{ key }}" form="submit-form">{{ key }}:</label>
+    <input id="{{ key }}" name="param-{{ key }}" type="text" value="{{ value }}" form="submit-form">
+    {% endfor %}
+    <form class="mt4" method="post" enctype="multipart/form-data" id="submit-form">
         {% csrf_token %}
         <button type="submit" name="submit" value="Submit">Submit workflow</button>
         <button type="submit" name="cancel" value="Cancel">Cancel</button>
         <input class="ml2 mr1" type="checkbox" name="dryrun" value="DryRun">Dry Run</input>
     </form>
+    <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
+        will be used to provide run provenance for this workflow!
+    </i></p>
     {% endif %}
 </div>
 {% endif %}

@@ -83,9 +83,12 @@ class WorkflowsView(TemplateView):
             "workflow": yaml.dump(workflow, indent=2),
             "username": f"{social_account.user.first_name.title()} {social_account.user.last_name.title()}",
             "orcid": social_account.uid,
+            "parameters": [],
         }
         if not workflow_lint_status:
             context["workflow_error"] = workflow_lint_result
+        else:
+            context["parameters"] = dict([(param["name"], param["value"]) for param in workflow_lint_result["parameters"]])
         return render(request, self.template_name, context=context)
 
     def step_3(self, request):
@@ -94,8 +97,14 @@ class WorkflowsView(TemplateView):
         name = social_acc.user.first_name.title() + " " + social_acc.user.last_name.title()
         orcid = social_acc.uid
 
+        override_parameters = {}
+        for key, value in request.POST.items():
+            if key.startswith("param-"):
+                param_name = key[len("param-"):]
+                override_parameters[param_name] = value
+
         # submit workflow to workflow service
-        submit_status, submit_result = self._connector.submit_workflow(request.session["workflow"], submitter_name=name, submitter_orcid=orcid, dry_run=request.POST.get("dryrun", None)  == "DryRun")
+        submit_status, submit_result = self._connector.submit_workflow(request.session["workflow"], submitter_name=name, submitter_orcid=orcid, override_parameters=override_parameters, dry_run=request.POST.get("dryrun", None)  == "DryRun")
         del request.session["workflow"]
 
         context = {

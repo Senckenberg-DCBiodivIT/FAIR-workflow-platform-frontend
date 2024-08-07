@@ -26,12 +26,13 @@ class WorkflowServiceConnector:
                 response.raise_for_status()
         return True, response.json()
 
-    def submit_workflow(self, workflow: dict[str, Any], submitter_name: str, submitter_orcid: str, dry_run: bool = False) -> tuple[bool, dict[str, Any]]:
+    def submit_workflow(self, workflow: dict[str, Any], submitter_name: str, submitter_orcid: str, override_parameters: dict[str, str] = {}, dry_run: bool = False) -> tuple[bool, dict[str, Any]]:
         files = {"file": ("workflow.yaml", yaml.dump(workflow, indent=2))}
         parameter = {
             "dryRun": dry_run,
             "submitterName": submitter_name,
-            "submitterOrcid": submitter_orcid
+            "submitterOrcid": submitter_orcid,
+            "overrideParameters": ",".join([f"{key}:{value}" for key, value in override_parameters.items()])
         }
         response = requests.post(urljoin(self._base_url, "workflow/submit"), files=files, params=parameter, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
