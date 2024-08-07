@@ -4,6 +4,7 @@
 
 {% block content %}
 <h2>Submit workflow as RO-Crate</h2>
+{% if not step or step <= 2 %}
 <div>
     <h3>1. Upload Workflow RO-Crate</h3>
     <p>Upload must be a zip file following the <a href="https://about.workflowhub.eu/Workflow-RO-Crate/" target="_blank">Workflow RO-Crate</a> specification.
@@ -14,17 +15,17 @@
         <button type="submit">Create</button>
     </form>
 </div>
-
 {% if step == 2 %}
 <div>
-    <h3>2. Loaded workflow</h3>
+    <h3>2. Submit workflow</h3>
+    {% if workflow_error %}
+    <p class="dark-red">Workflow file validation failed: {{ workflow_error }}</p>
+    {% endif %}
     <div class="bg-dark-gray pa2 white">
         <code class="f6"><pre>{{ workflow }}</pre></code>
     </div>
 
-    {% if workflow_check_result %}
-    <p class="dark-red">Workflow file validation failed: {{ workflow_check_result }}</p>
-    {% else %}
+    {% if not workflow_error %}
     <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
         will be used to provide run provenance for this workflow!
     </i></p>
@@ -37,11 +38,11 @@
     {% endif %}
 </div>
 {% endif %}
-
-{% if step == 3 %}
+{% elif step == 3 %}
 <div>
     <h3>Workflow submitted!</h3>
-    {% if submit_result %}
+    <a href="{% url 'workflows' %}">Back</a>
+    {% if not submit_status %}
     <p class="dark-red">Workflow submission failed: {{ submit_result }}</p>
     {% endif %}
 </div>
