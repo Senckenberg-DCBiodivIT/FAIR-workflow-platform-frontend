@@ -72,7 +72,7 @@
 
 <section class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Provenance</h1>
-{% if provenance %}
+    {% if provenance %}
     <table class="f6 w-100 mw8">
         <tbody>
         <tr class="stripe-dark">
@@ -100,11 +100,21 @@
             <td class="pa1">End Time</td>
             <td class="pa1">{{ provenance.end_time|date:"d M. Y H:m" }} UTC</td>
         </tr>
+        {% if provenance.parameters %}
+        <tr class="stripe-dark">
+            <td class="pa1">Parameters</td>
+            <td class="pa1">
+                {% for key, value in provenance.parameters %}
+                <span><span class="b">{{ key }}:</span> {{ value }}</span>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endif %}
         </tbody>
     </table>
-{% else %}
+    {% else %}
     Dataset has no provenance data
-{% endif %}
+    {% endif %}
 </section>
 
 <section class="mt2 bg-white shadow-1 pa2">
