@@ -11,7 +11,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="file" accept="application/zip" name="rocratefile">
-        <button type="submit">Upload</button>
+        <button class="ba border-box bg-dark-green white pa2" type="submit">Upload</button>
     </form>
     {% if step == 2 %}
     <div>
@@ -27,25 +27,25 @@
 </div>
 {% if step == 2 and not workflow_error %}
 <div class="mt2 bg-white shadow-1 pa2">
-    <h1 class="f4 mb3">2. Update Workflow parameters</h1>
+    <h1 class="f4 mb3">2. Edit Workflow parameters</h1>
     {% for key, value in parameters.items %}
     <div class="mb2">
-        <label for="{{ key }}" form="submit-form">{{ key }}:</label>
-        <input id="{{ key }}" name="param-{{ key }}" type="text" value="{{ value }}" form="submit-form">
+        <label class="f6 b db mb2" for="{{ key }}" form="submit-form">{{ key }}:</label>
+        <input class="input-reset ba b--black-20 pa2 mb2 db w-100" id="{{ key }}" name="param-{{ key }}" type="text" value="{{ value }}" form="submit-form">
     </div>
     {% endfor %}
 </div>
 <div class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">3. Submit workflow</h1>
-    <form class="mt4" method="post" enctype="multipart/form-data" id="submit-form">
+    <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
+        will be used to provide run provenance for this workflow run!
+    </i></p>
+    <form class="mt2" method="post" enctype="multipart/form-data" id="submit-form">
         {% csrf_token %}
-        <button type="submit" name="submit" value="Submit">Submit workflow</button>
-        <button type="submit" name="cancel" value="Cancel">Cancel</button>
+        <button class="ba border-box bg-dark-green white pa2" type="submit" name="submit" value="Submit">Submit workflow</button>
+        <button class="ba border-box bg-dark-green white pa2" type="submit" name="cancel" value="Cancel">Cancel</button>
         <input class="ml2 mr1" type="checkbox" name="dryrun" value="DryRun">Dry Run</input>
     </form>
-    <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
-        will be used to provide run provenance for this workflow!
-    </i></p>
 </div>
 {% endif %}
 {% elif step == 3 %}
