@@ -36,8 +36,12 @@ class DatasetListView(TemplateView):
                 id=id,
                 name=name,
                 description=content["description"],
+                license=content["license"] if "license" in content else None,
                 file_count=len(content["hasPart"]),
-                date_modified=datetime.strptime(content["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                has_workflow="mainEntity" in content,
+                has_provenance="mentions" in content and len(content["mentions"]) > 0,
+                date_modified=datetime.strptime(content["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                date_created=datetime.strptime(content["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
             ))
 
         # render response

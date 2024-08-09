@@ -3,16 +3,19 @@
 {% block headline %}Datasets{% endblock %}
 
 {% block content %}
-<p class="mv2">Datasets: {{ total_size }}</p>
-<div class="dataset-list">
+<p class="mv2"><i>Datasets found: {{ total_size }}</i></p>
+<div class="dataset-list pt3">
     {% for item in items %}
-    <section class="dataset-list-item pv3 bb b--black-30 ph3 ph0-l">
-
-        <h3 class="f3 athelas mt0 lh-title mb1"><a class="dark-green underline-hover no-underline"
-                                                   href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h3>
-        <p class="mt0 b">{{ item.id }}</p>
-        <p>Description: <span class="i">{{ item.description }}</span> ({{ item.file_count }} files)</p>
-        <p>Last Modified: {{ item.date_modified|date:"SHORT_DATETIME_FORMAT" }}</p>
+    <section class="mt2 bg-white shadow-1 pa2">
+        <h1 class="f4 pv0 mb1"><a class="link dark-green no-underline dim" href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h1>
+        <p class="f6 lh-copy gray mv0">{{ item.id }}</p>
+<!--        <p class="mv2 f6"><span class="fw6">Name:</span> {{ item.name }}</p>-->
+        <p class="mv2 f6"><span class="fw6">Description:</span> {{ item.description }}</p>
+        <p class="mv2 f6"><span class="fw6">Files:</span> {{ item.file_count }}</p>
+        <p class="mv2 f6"><span class="fw6">License:</span> <a class="link dim black" href="{{ item.license }}">{{ item.license }}</a></p>
+        <p class="mv2 f6"><span class="fw6">Has workflow?</span> {% if item.has_workflow %}<span class="b dark-green">Yes</span>{% else %}No{% endif %}</p>
+        <p class="mv2 f6"><span class="fw6">Has Provenance?</span> {% if item.has_provenance %}<span class="b dark-green">Yes</span>{% else %}No{% endif %}</p>
+        <p class="f6 lh-copy gray mb0">Created: {{ item.date_created|date:"d M. Y H:m" }} UTC, Last modified: {{ item.date_modified|date:"d M. Y H:m" }} UTC </p>
     </section>
     {% endfor %}
 </div>
