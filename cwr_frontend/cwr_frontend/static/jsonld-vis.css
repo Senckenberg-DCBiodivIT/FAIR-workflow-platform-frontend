@@ -1,0 +1,36 @@
+/*
+ jsonld-vis.css
+ @url		https://github.com/json-ld/json-ld.org/tree/e0c434fdd53e731b2853f25b685021dff975fee0
+ @licence	W3C Software and Document license - 2023 version
+*/
+svg {
+  border: none;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.node text {
+  font-size: 14px;
+  fill: #333333;
+}
+
+.d3-tip {
+  font-size: 14px;
+  color: #333333;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+  padding: 10px 20px;
+  max-width: 250px;
+  word-wrap: break-word;
+  background-color: rgba(255, 255, 255, 0.9);
+  text-align: left;
+}
+
+.link {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 2px;
+
+}

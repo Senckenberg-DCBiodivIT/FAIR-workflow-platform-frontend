@@ -116,6 +116,24 @@
     Dataset has no provenance data
     {% endif %}
 </section>
+<section class="mt2 bg-white shadow-1 pa2" id="container">
+    <h1 class="f4 mb3">Graph view</h1>
+    <script src="{% static 'ajax.min.js' %}"></script>
+    <script src="{% static 'd3.min.js' %}"></script>
+    <script src="{% static 'd3-tip.min.js' %}"></script>
+    <script src="{% static 'jsonld-vis.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'jsonld-vis.css' %}"/>
+    <script type="module">
+        var url = "http://localhost:8000/dataset/{{ id }}?format=ROCrate";
+        var content = Ajax.load({
+            url: url,
+            method: "get",
+            success: function (data) {
+                d3.jsonldVis(data, "#container");
+            }
+        });
+    </script>
+</section>
 
 <section class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Content ({{ images|length }} files)</h1>
