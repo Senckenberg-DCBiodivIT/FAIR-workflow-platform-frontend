@@ -101,7 +101,7 @@
                 {% if is_img %}
                 <img src="{{ img_url }}" class="w-100 db outline black-10"/>
                 {% else %}
-                <img src="{% url 'placeholder_img' %}" class="w-100 db outline black-10"/>
+                <img src="{% static 'placeholder.png' %}" class="w-100 db outline black-10"/>
                 {% endif %}
                 <dl class="mt2 f6 lh-copy">
                     <dt class="clip">Title</dt>

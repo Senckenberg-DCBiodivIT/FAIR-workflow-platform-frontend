@@ -4,3 +4,4 @@ __pycache__
 .idea
 *.iml
 .env
+cwr_frontend/staticfiles

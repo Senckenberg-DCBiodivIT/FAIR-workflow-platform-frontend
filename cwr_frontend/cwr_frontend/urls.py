@@ -22,7 +22,6 @@ from django.contrib import admin
 from cwr_frontend.views.WorkflowsView import WorkflowsView
 from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
-from cwr_frontend.views.PlaceholderImageView import PlaceholderImageView
 
 urlpatterns = [
     # list of datasets
@@ -33,7 +32,6 @@ urlpatterns = [
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # an ugly hack to serve a placeholder image without using static files
     # replace with actual static file servement!
-    re_path("placeholder_img", PlaceholderImageView.as_view(), name="placeholder_img"),
     path('admin/', admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("accounts/profile/", TemplateView.as_view(template_name="profile.html")),
