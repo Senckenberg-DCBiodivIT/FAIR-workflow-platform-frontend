@@ -1,37 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Crop wild relatives: Workflows{% endblock %}
-{% block headline %}Workflows{% endblock %}
+{% block title %}Crop wild relatives: Workflow Submission{% endblock %}
+{% block headline %}Submit workflow as RO-Crate{% endblock %}
 
 {% block content %}
-<h2>Submit workflow as RO-Crate</h2>
 {% if not step or step <= 2 %}
-<div>
-    <h3>1. Upload Workflow RO-Crate</h3>
-    <p>Upload must be a zip file following the <a href="https://about.workflowhub.eu/Workflow-RO-Crate/" target="_blank">Workflow RO-Crate</a> specification.
+<div class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">1. Upload Workflow RO-Crate</h1>
+    <p class="i"><span class="b">Note:</span> Upload must be a zip file following the <a href="https://about.workflowhub.eu/Workflow-RO-Crate/" target="_blank">Workflow RO-Crate</a> specification.
     The workflow must be in yaml format and be a valid <a href="https://argoproj.github.io/workflows/" target="_blank">Argo Workflow</a>.</p>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="file" accept="application/zip" name="rocratefile">
         <button type="submit">Upload</button>
     </form>
-</div>
-{% if step == 2 %}
-<div>
-    <h3>2. Submit workflow</h3>
-    {% if workflow_error %}
-    <p class="dark-red">Workflow file validation failed: {{ workflow_error }}</p>
-    {% endif %}
-    <div class="bg-dark-gray pa2 white">
-        <code class="f6"><pre>{{ workflow }}</pre></code>
+    {% if step == 2 %}
+    <div>
+        <h1 class="f5 mb3">Parsed workflow:</h1>
+        {% if workflow_error %}
+        <p class="dark-red">Workflow file validation failed: {{ workflow_error }}</p>
+        {% endif %}
+        <div class="bg-dark-gray pa2 white mt2">
+            <code class="f6"><pre>{{ workflow }}</pre></code>
+        </div>
     </div>
-
-
-    {% if not workflow_error %}
-    <h4>Override Workflow Parameters:</h4>
+    {% endif %}
+</div>
+{% if step == 2 and not workflow_error %}
+<div class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">2. Update Workflow parameters</h1>
     {% for key, value in parameters.items %}
-    <label for="{{ key }}" form="submit-form">{{ key }}:</label>
-    <input id="{{ key }}" name="param-{{ key }}" type="text" value="{{ value }}" form="submit-form">
+    <div class="mb2">
+        <label for="{{ key }}" form="submit-form">{{ key }}:</label>
+        <input id="{{ key }}" name="param-{{ key }}" type="text" value="{{ value }}" form="submit-form">
+    </div>
     {% endfor %}
+</div>
+<div class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">3. Submit workflow</h1>
     <form class="mt4" method="post" enctype="multipart/form-data" id="submit-form">
         {% csrf_token %}
         <button type="submit" name="submit" value="Submit">Submit workflow</button>
@@ -41,12 +46,11 @@
     <p class="dark-red"><i><b>Note</b>: Your name <b>{{ username }}</b> and ORCID <b><a href="https://orcid.org/{{ orcid }}" target="_blank">{{ orcid }}</a></b>
         will be used to provide run provenance for this workflow!
     </i></p>
-    {% endif %}
 </div>
 {% endif %}
 {% elif step == 3 %}
-<div>
-    <h3>Workflow submitted!</h3>
+<div class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">Workflow submitted!</h1>
     <a href="{% url 'workflows' %}">Back</a>
     {% if not submit_status %}
     <p class="dark-red">Workflow submission failed: {{ submit_result }}</p>

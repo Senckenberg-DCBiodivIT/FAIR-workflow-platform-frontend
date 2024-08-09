@@ -16,7 +16,7 @@ from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServic
 
 
 class WorkflowsView(TemplateView):
-    template_name = "user_workflows.html"
+    template_name = "submit_workflow.html"
 
     _logger = logging.getLogger(__name__)
     _connector = WorkflowServiceConnector()
@@ -62,7 +62,7 @@ class WorkflowsView(TemplateView):
                 tmp.flush()
 
                 crate = ROCrate(tmp.name)
-                workflow_path = crate.source / str(crate.root_dataset["mainEntity"])
+                workflow_path = crate.source / crate.root_dataset["mainEntity"].id
 
                 # check workflow file and set it to the session
                 if workflow_path.exists():
