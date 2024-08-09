@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Crop wild relatives: {{ name }}{% endblock %}
+{% block title %}{{ name }}{% endblock %}
 {% block headline %}{{ name }}{% endblock %}
 {% block banner %}
 {% with "This site uses fair signposting. <a class=\"link underline black dim\" href=\"https://signposting.org/FAIR/\">Learn more</a> or install <a class=\"black underline dim link\" href=\"https://chromewebstore.google.com/detail/signposting-sniffing/pahanegeimljfcnjogglnamnlcgipmbc\">this chrome extension</a> to visualize it." as banner_text %}
@@ -8,7 +8,8 @@
 {% endblock %}
 {% block content %}
 {% load static %}
-<div class="">
+<section class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">Details</h1>
     <table class="f6 w-100 mw8">
         <tbody>
         <tr class="stripe-dark">
@@ -28,7 +29,7 @@
             <td class="pa1">{{ datePublished }}</td>
         </tr>
         <tr class="stripe-dark">
-            <td class="pa1">Authors:</td>
+            <td class="pa1">Author(s):</td>
             <td class="pa1">
                 {% for author, author_id in authors %}
                 {{ author }} (<a href="{{ author_id }}">{{ author_id }}</a>){% if not forloop.last %}, {% endif %}
@@ -45,17 +46,32 @@
                 {% endif %}
             </td>
         </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Created at:</td>
+            <td class="pa1">
+                {{ date_created|date:"d M. Y H:m" }} UTC
+            </td>
+        </tr>
+        <tr class="stripe-dark">
+            <td class="pa1">Last modified:</td>
+            <td class="pa1">
+                {{ date_modified|date:"d M. Y H:m" }} UTC
+            </td>
+        </tr>
         </tbody>
     </table>
-</div>
+</section>
 
 <div class="mv3">
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object</a>
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate">View RO-Crate</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1" href="{% url 'dataset_detail' id=id %}?format=json">View Digital Object</a>
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1" href="{% url 'dataset_detail' id=id %}?format=ROCrate">View RO-Crate</a>
+    or
+    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
 </div>
 
-<div>
-<h2>Provenance for this record</h2>
+
+<section class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">Provenance</h1>
 {% if provenance %}
     <table class="f6 w-100 mw8">
         <tbody>
@@ -78,22 +94,21 @@
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Start Time</td>
-            <td class="pa1">{{ provenance.start_time | default_if_none:"N/A" }}</td>
+            <td class="pa1">{{ provenance.start_time|date:"d M. Y H:m" }} UTC</td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">End Time</td>
-            <td class="pa1">{{ provenance.end_time | default_if_none:"N/A" }}</td>
+            <td class="pa1">{{ provenance.end_time|date:"d M. Y H:m" }} UTC</td>
         </tr>
         </tbody>
     </table>
 {% else %}
     Dataset has no provenance data
 {% endif %}
-</div>
+</section>
 
-<div>
-    <h2>Content</h2>
-    <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
+<section class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 mb3">Content ({{ images|length }} files)</h1>
     <div class="cf">
     {% for name, img_url, is_img in images %}
         <div class="fl w-25 w-25-m w-20-l pa2">
@@ -111,5 +126,5 @@
         </div>
     {% endfor %}
     </div>
-</div>
+</section>
 {% endblock %}

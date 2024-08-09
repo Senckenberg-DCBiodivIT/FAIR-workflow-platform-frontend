@@ -1,5 +1,6 @@
 import json
 import tempfile
+from datetime import datetime
 from typing import Any
 
 import requests
@@ -77,8 +78,8 @@ class DatasetDetailView(TemplateView):
                 "agent_id": prov_agent_id,
                 "agent_name": prov_agent_name,
                 "instrument": prov_instrument,
-                "start_time": prov_start_time,
-                "end_time": prov_end_time
+                "start_time": datetime.strptime(prov_start_time, "%Y-%m-%dT%H:%M:%SZ"),
+                "end_time": datetime.strptime(prov_end_time, "%Y-%m-%dT%H:%M:%SZ"),
             }
         else:
             prov_context = None
@@ -95,7 +96,10 @@ class DatasetDetailView(TemplateView):
             "images": [],
             "link_rocrate": link_rocrate,
             "link_digital_object": link_digital_object,
-            "provenance": prov_context
+            "provenance": prov_context,
+            "date_modified": datetime.strptime(dataset["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+            "date_created": datetime.strptime(dataset["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+
         }
 
         # get list of images and their content type
