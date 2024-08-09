@@ -3,7 +3,7 @@
 <head>
     {% load static %}
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
+    <link rel="stylesheet" href="{% static 'tachyons.min.css' %}"/>
 </head>
 <body>
 <div class="page-container" style="position: relative; min-height: 100vh">
