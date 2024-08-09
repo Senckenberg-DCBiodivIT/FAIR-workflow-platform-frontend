@@ -78,8 +78,8 @@ class DatasetDetailView(TemplateView):
                 "agent_id": prov_agent_id,
                 "agent_name": prov_agent_name,
                 "instrument": prov_instrument,
-                "start_time": datetime.strptime(prov_start_time, "%Y-%m-%dT%H:%M:%SZ"),
-                "end_time": datetime.strptime(prov_end_time, "%Y-%m-%dT%H:%M:%SZ"),
+                "start_time": datetime.strptime(prov_start_time, "%Y-%m-%dT%H:%M:%SZ") if prov_start_time is not None else None,
+                "end_time": datetime.strptime(prov_end_time, "%Y-%m-%dT%H:%M:%SZ") if prov_end_time is not None else None,
             }
         else:
             prov_context = None
