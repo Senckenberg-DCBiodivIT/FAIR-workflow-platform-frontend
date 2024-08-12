@@ -12,12 +12,14 @@ svg {
 }
 
 .node text {
-  font-size: 14px;
+  font-size: 0.875rem;
+  font-family: sans-serif;
   fill: #333333;
 }
 
 .d3-tip {
-  font-size: 14px;
+  font-size: 0.875rem;
+  font-family: sans-serif;
   color: #333333;
   border: 1px solid #CCCCCC;
   border-radius: 5px;

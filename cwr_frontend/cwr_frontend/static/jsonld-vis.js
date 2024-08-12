@@ -30,7 +30,7 @@
     var color2Accent = adjust(color2, -10)
 
 
-    var tree = d3.layout.tree()
+    var tree = d3.layout.cluster()
       .size([h, w]);
 
     var diagonal = d3.svg.diagonal()
@@ -41,7 +41,8 @@
       .attr('height', h)
 //      .attr("style", "background-color:gray")  // for debugging
       .append('g')
-      .attr('transform', 'translate(' + maxLabelWidth + ',0)');
+      // x offset can be smaller than maxLabelWidth since first element is './'
+      .attr('transform', 'translate(' + maxLabelWidth / 3 + ',0)');
 
     var tip = d3.tip()
       .direction(function(d) {
