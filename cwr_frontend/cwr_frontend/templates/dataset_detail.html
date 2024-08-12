@@ -116,8 +116,8 @@
     Dataset has no provenance data
     {% endif %}
 </section>
-<section class="mt2 bg-white shadow-1 pa2" id="container">
-    <h1 class="f4 mb3">Graph view</h1>
+<section class="mt2 bg-white shadow-1 pa2" id="graph-container" style="overflow: scroll">
+    <h1 class="f4 mb3">Visualization</h1>
     <script src="{% static 'ajax.min.js' %}"></script>
     <script src="{% static 'd3.min.js' %}"></script>
     <script src="{% static 'd3-tip.min.js' %}"></script>
@@ -125,7 +125,7 @@
     <link rel="stylesheet" href="{% static 'jsonld-vis.css' %}"/>
     <script type="module">
         var url = "{% url 'dataset_detail' id=id  %}?format=ROCrate";
-        var container = document.getElementById('container');
+        var container = document.getElementById('graph-container');
         var style = window.getComputedStyle(container);
         var config = {
             "h": 600,
@@ -135,7 +135,7 @@
             url: url,
             method: "get",
             success: function (data) {
-                d3.jsonldVis(data, "#container", config);
+                d3.jsonldVis(data, "#graph-container", config);
             }
         });
     </script>
