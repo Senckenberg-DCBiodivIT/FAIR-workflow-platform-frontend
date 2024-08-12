@@ -124,7 +124,7 @@
     <script src="{% static 'jsonld-vis.js' %}"></script>
     <link rel="stylesheet" href="{% static 'jsonld-vis.css' %}"/>
     <script type="module">
-        var url = "http://localhost:8000/dataset/{{ id }}?format=ROCrate";
+        var url = "{% url 'dataset_detail' id=id  %}?format=ROCrate";
         var content = Ajax.load({
             url: url,
             method: "get",
