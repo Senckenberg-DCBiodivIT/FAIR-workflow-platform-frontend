@@ -1,5 +1,5 @@
 /*
- jsonld-vis.js
+ Adopted from jsonld-vis.js
  @url		https://github.com/json-ld/json-ld.org/tree/e0c434fdd53e731b2853f25b685021dff975fee0
  @licence	W3C Software and Document license - 2023 version
 */
