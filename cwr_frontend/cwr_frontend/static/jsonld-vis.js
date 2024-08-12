@@ -16,7 +16,7 @@
       , transitionDuration = config.transitionDuration || 750
       , transitionEase = config.transitionEase || 'cubic-in-out'
       , minRadius = config.minRadius || 5
-      , scalingFactor = config.scalingFactor || 2;
+      , maxRadius = config.maxRadius || 50;
 
     var i = 0;
 
@@ -29,6 +29,7 @@
     var svg = d3.select(selector).append('svg')
       .attr('width', w)
       .attr('height', h)
+//      .attr("style", "background-color:gray")  // for debugging
       .append('g')
       .attr('transform', 'translate(' + maxLabelWidth + ',0)');
 
@@ -50,6 +51,9 @@
     root.x0 = h / 2;
     root.y0 = 0;
     root.children.forEach(collapse);
+
+    // set scaling factor of nodes in such a way, that the root node has maxRadius.
+    var scalingFactor = maxRadius / numEndNodes(root)
 
     function changeSVGWidth(newWidth) {
       if (w !== newWidth) {
@@ -234,7 +238,8 @@
 
     function computeRadius(d) {
       if (d.children || d._children) {
-        return minRadius + (numEndNodes(d) / scalingFactor);
+        var computedRadius = (numEndNodes(d) * scalingFactor);
+        return Math.max(minRadius, Math.min(computedRadius, maxRadius))
       } else {
         return minRadius;
       }
