@@ -19,7 +19,7 @@ from django.urls import re_path, path, include
 from django.views.generic import TemplateView
 from django.contrib import admin
 
-from cwr_frontend.views.WorkflowsView import WorkflowsView
+from cwr_frontend.views.WorkflowSubmissionView import WorkflowsView
 from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 
@@ -28,7 +28,7 @@ urlpatterns = [
     re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
     re_path(r'dataset/(?P<id>[a-z0-9\/]+)', DatasetDetailView.as_view(), name="dataset_detail"),
-    re_path('workflows', login_required(WorkflowsView.as_view()), name="workflows"),
+    re_path('workflows/submit', login_required(WorkflowsView.as_view()), name="submit_workflow"),
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # an ugly hack to serve a placeholder image without using static files
     # replace with actual static file servement!

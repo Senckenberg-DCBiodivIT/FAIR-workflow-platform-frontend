@@ -69,7 +69,7 @@
 {% elif step == 3 %}
 <div class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Workflow submitted!</h1>
-    <a href="{% url 'workflows' %}">Back</a>
+    <a href="{% url 'submit_workflow' %}">Back</a>
     {% if not submit_status %}
     <p class="dark-red">Workflow submission failed: {{ submit_result }}</p>
     {% endif %}
