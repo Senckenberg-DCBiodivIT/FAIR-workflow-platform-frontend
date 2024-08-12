@@ -118,7 +118,9 @@
 </section>
 <section class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Visualization</h1>
-    <div id="graph-container" style="overflow: scroll"/>
+    <div id="graph-container" style="overflow: scroll">
+        <p id="graph-loading">Loading ...</p>
+    </div>
     <script src="{% static 'ajax.min.js' %}"></script>
     <script src="{% static 'd3.min.js' %}"></script>
     <script src="{% static 'd3-tip.min.js' %}"></script>
@@ -135,6 +137,7 @@
             url: url,
             method: "get",
             success: function (data) {
+                document.getElementById('graph-loading').remove()
                 d3.jsonldVis(data, "#graph-container", config);
             }
         });
