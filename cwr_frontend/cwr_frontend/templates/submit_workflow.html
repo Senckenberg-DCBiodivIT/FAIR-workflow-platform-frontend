@@ -27,7 +27,23 @@
 </div>
 {% if step == 2 and not workflow_error %}
 <div class="mt2 bg-white shadow-1 pa2">
-    <h1 class="f4 mb3">2. Edit Workflow parameters</h1>
+    <h1 class="f4 mb3">2. Edit Workflow</h1>
+    <h1 class="f5 mb3">Metadata</h1>
+    <div class="mb2">
+        <label class="f6 b db mb2" for="title" form="submit-form">Title:</label>
+        <input class="input-reset ba b--black-20 pa2 mb2 db w-100" id="title" name="title" type="text" value="{{ workflow_title }}" form="submit-form">
+        <label class="f6 b db mb2" for="description" form="submit-form">Description:</label>
+        <input class="input-reset ba b--black-20 pa2 mb2 db w-100" id="description" name="description" type="text" value="{{ workflow_description }}" form="submit-form">
+        <label class="f6 b db mb2" for="keywords" form="submit-form">Keywords:</label>
+        <input class="input-reset ba b--black-20 pa2 mb2 db w-100" id="keywords" name="keywords" type="text" value="{{ workflow_keywords }}" form="submit-form">
+        <label class="f6 b db mb2" for="license" form="submit-form">License:</label>
+        <select class="input-reset ba b--black-20 pa2 mb2 db w-100" id="license" name="license" form="submit-form">
+            {% for license in licenses %}
+            <option value="{{ license.url }}" {% if workflow_license == license.url %}selected="selected"{% endif %}">{{ license.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <h1 class="f5 mb3">Workflow Parameters</h1>
     {% for key, value in parameters.items %}
     <div class="mb2">
         <label class="f6 b db mb2" for="{{ key }}" form="submit-form">{{ key }}:</label>

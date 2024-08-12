@@ -1,10 +1,11 @@
 import io
+import json
 import logging
 import tempfile
 import zipfile
-from pathlib import Path
 
 import yaml
+from django.conf import settings
 from rocrate.rocrate import ROCrate
 
 from django.core.exceptions import BadRequest
@@ -63,6 +64,10 @@ class WorkflowsView(TemplateView):
 
                 crate = ROCrate(tmp.name)
                 workflow_path = crate.source / crate.root_dataset["mainEntity"].id
+                workflow_name = crate.root_dataset.get("name", "Workflow")
+                workflow_description = crate.root_dataset.get("description", None)
+                workflow_keywords = ",".join(crate.root_dataset.get("keywords", []))
+                workflow_license = crate.root_dataset.get("license", None)
 
                 # check workflow file and set it to the session
                 if workflow_path.exists():
@@ -79,9 +84,17 @@ class WorkflowsView(TemplateView):
         request.session["workflow_check_result"] = workflow_lint_result
 
         social_account = SocialAccount.objects.get(user=request.user, provider="orcid")
+        licenses = [{"name": "No License", "url": None}] + [{"name": license["name"], "url": license["reference"].replace(".html", "")} for license in json.load(open(settings.BASE_DIR / "cwr_frontend/workflow_licenses.json", "r"))["licenses"]]
+        if workflow_license not in [license["url"] for license in licenses]:
+            workflow_license = None
         context = {
             "step": 2,
+            "licenses": [{"name": "No License", "url": ""}] + [{"name": license["name"], "url": license["reference"].replace(".html", "")} for license in json.load(open(settings.BASE_DIR / "cwr_frontend/workflow_licenses.json", "r"))["licenses"]],
             "workflow": yaml.dump(workflow, indent=2),
+            "workflow_title": workflow_name,
+            "workflow_description": workflow_description,
+            "workflow_keywords": workflow_keywords,
+            "workflow_license": workflow_license,
             "username": f"{social_account.user.first_name.title()} {social_account.user.last_name.title()}",
             "orcid": social_account.uid,
             "parameters": [],
@@ -105,7 +118,17 @@ class WorkflowsView(TemplateView):
                 override_parameters[param_name] = value
 
         # submit workflow to workflow service
-        submit_status, submit_result = self._connector.submit_workflow(request.session["workflow"], submitter_name=name, submitter_orcid=orcid, override_parameters=override_parameters, dry_run=request.POST.get("dryrun", None)  == "DryRun")
+        submit_status, submit_result = self._connector.submit_workflow(
+            request.session["workflow"],
+            title=request.POST["title"],
+            description=request.POST["description"],
+            keywords=request.POST["keywords"].split(","),
+            license=request.POST["license"],
+            submitter_name=name,
+            submitter_orcid=orcid,
+            override_parameters=override_parameters,
+            dry_run=request.POST.get("dryrun", None)  == "DryRun",
+        )
         del request.session["workflow"]
 
         context = {
