@@ -20,6 +20,16 @@
 
     var i = 0;
 
+    // make colors darker or lighter
+    function adjust(color, amount) {
+        return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+    }
+    var color1 = "#96CCFF"  // light blue
+    var color1Accent = adjust(color1, -40)
+    var color2 = "#137752"  // dark green
+    var color2Accent = adjust(color2, -10)
+
+
     var tree = d3.layout.tree()
       .size([h, w]);
 
@@ -146,13 +156,13 @@
           return d.isIdNode ? '2px' : '1px';
         })
         .style('stroke', function(d) {
-          return d.isIdNode ? '#F7CA18' : '#4ECDC4';
+          return d.isIdNode ? color2Accent : color1Accent;
         })
         .style('fill', function(d) {
           if (d.isIdNode) {
-            return d._children ? '#F5D76E' : 'white';
+            return d._children ? color2 : 'white';
           } else {
-            return d._children ? '#86E2D5' : 'white';
+            return d._children ? color1 : 'white';
           }
         })
         .on('mouseover', function(d) { if (d.valueExtended) tip.show(d); })
@@ -185,13 +195,13 @@
           return d.isIdNode ? '2px' : '1px';
         })
         .style('stroke', function(d) {
-          return d.isIdNode ? '#F7CA18' : '#4ECDC4';
+          return d.isIdNode ? color2Accent : color1Accent;
         })
         .style('fill', function(d) {
           if (d.isIdNode) {
-            return d._children ? '#F5D76E' : 'white';
+            return d._children ? color2 : 'white';
           } else {
-            return d._children ? '#86E2D5' : 'white';
+            return d._children ? color1 : 'white';
           }
         });
 
