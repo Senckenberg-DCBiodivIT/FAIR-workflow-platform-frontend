@@ -16,7 +16,7 @@ from allauth.socialaccount.models import SocialAccount
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 
 
-class WorkflowsView(TemplateView):
+class WorkflowSubmissionView(TemplateView):
     template_name = "submit_workflow.html"
 
     _logger = logging.getLogger(__name__)
