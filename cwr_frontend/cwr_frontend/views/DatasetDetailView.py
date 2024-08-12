@@ -185,6 +185,18 @@ class DatasetDetailView(TemplateView):
                 del file["partOf"]
             if "resultOf" in file:
                 del file["resultOf"]
+            if "input" in file:
+                for input_id in file["input"]:
+                    input_jsonld = objects[input_id]
+                    input = crate.add(ContextEntity(crate, input_id, properties=input_jsonld))
+                    id_to_crate_id[input_id] = input["@id"]
+                file["input"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, file["input"]))
+            if "output" in file:
+                for output_id in file["output"]:
+                    output_jsonld = objects[output_id]
+                    output = crate.add(ContextEntity(crate, output_id, properties=output_jsonld))
+                    id_to_crate_id[output_id] = output["@id"]
+                file["output"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, file["output"]))
             file["@type"] = list(map(lambda x: x.replace("MediaObject", "File"), file["@type"]))
             crate_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties=file | {
                 "name": file["name"],
@@ -213,6 +225,13 @@ class DatasetDetailView(TemplateView):
 
             if "result" in jsonld:
                 jsonld["result"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, jsonld["result"]))
+
+            if "object" in jsonld:
+                for object_id in jsonld["object"]:
+                    object_jsonld = objects[object_id]
+                    object = crate.add(ContextEntity(crate, object_id, properties=object_jsonld))
+                    id_to_crate_id[object_id] = object["@id"]
+                jsonld["object"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, jsonld["object"]))
             # TODO backlink to workflow
             action = crate.add(ContextEntity(crate, action_id, properties=jsonld))
             id_to_crate_id[action_id] = action["@id"]
