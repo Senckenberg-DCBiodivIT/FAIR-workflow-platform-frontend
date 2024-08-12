@@ -121,12 +121,12 @@
     <div id="graph-container" style="overflow: scroll">
         <p id="graph-loading">Loading ...</p>
     </div>
-    <script src="{% static 'ajax.min.js' %}"></script>
-    <script src="{% static 'd3.min.js' %}"></script>
-    <script src="{% static 'd3-tip.min.js' %}"></script>
-    <script src="{% static 'jsonld-vis.js' %}"></script>
     <link rel="stylesheet" href="{% static 'jsonld-vis.css' %}"/>
-    <script type="module">
+    <script defer src="{% static 'ajax.min.js' %}"></script>
+    <script defer src="{% static 'd3.min.js' %}"></script>
+    <script defer src="{% static 'd3-tip.min.js' %}"></script>
+    <script defer src="{% static 'jsonld-vis.js' %}"></script>
+    <script defer type="module">
         var url = "{% url 'dataset_detail' id=id  %}?format=ROCrate";
         var container = document.getElementById('graph-container');
         var config = {

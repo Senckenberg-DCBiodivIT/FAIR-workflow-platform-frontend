@@ -91,7 +91,6 @@
       var tree = {};
 
       if ('@id' in source) {
-        console.log(source["@id"])
         tree.isIdNode = true;
         tree.name = source['@id'];
         if (tree.name.length > maxLabelWidth / 9) {
@@ -113,7 +112,6 @@
         // random id, can replace with actual uuid generator if needed
         tree.name = '_' + Math.random().toString(10).slice(-7);
       }
-      console.log(source)
       var children = [];
       Object.keys(source).forEach(function(key) {
         if (key === '@id' || key === '@context' || source[key] === null) return;
