@@ -117,6 +117,14 @@
       var children = [];
       Object.keys(source).forEach(function(key) {
         if (key === '@id' || key === '@context' || source[key] === null) return;
+        if (key === "@type") {
+          var value = source[key];
+          if (Array.isArray(source[key])) {
+              value = source[key].join(", ")
+          }
+          children.push({name: "@type", value: value})
+          return
+        }
 
         var valueExtended, value;
         if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
