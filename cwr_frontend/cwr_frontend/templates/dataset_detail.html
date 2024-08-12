@@ -125,11 +125,17 @@
     <link rel="stylesheet" href="{% static 'jsonld-vis.css' %}"/>
     <script type="module">
         var url = "{% url 'dataset_detail' id=id  %}?format=ROCrate";
+        var container = document.getElementById('container');
+        var style = window.getComputedStyle(container);
+        var config = {
+            "h": 600,
+            "w": container.offsetWidth - parseInt(style.paddingRight) - parseInt(style.paddingLeft)
+        };
         var content = Ajax.load({
             url: url,
             method: "get",
             success: function (data) {
-                d3.jsonldVis(data, "#container");
+                d3.jsonldVis(data, "#container", config);
             }
         });
     </script>
