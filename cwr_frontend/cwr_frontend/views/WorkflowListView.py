@@ -1,7 +1,7 @@
 import logging
 
 from django.views.generic import TemplateView
-
+from django.shortcuts import render
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 
 
@@ -12,4 +12,5 @@ class WorkflowListView(TemplateView):
     _connector = WorkflowServiceConnector()
 
     def get(self, request):
-        raise Exception()
+        workflows = self._connector.list_workflows()
+        return render(request, self.template_name, context={"workflows": workflows})

@@ -15,6 +15,7 @@
             <div class="db dtc-ns v-mid w-100 tl tr-ns mt2 mt0-ns">
                 <a href="{% url 'dataset_list' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Datasets</a>
                 {% if user.is_authenticated %}
+                <a href="{% url 'list_workflows' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Workflows</a>
                 <a href="{% url 'submit_workflow' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Submit workflow</a>
                 <a href="{% url 'account_logout' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Logout</a>
                 {% else %}

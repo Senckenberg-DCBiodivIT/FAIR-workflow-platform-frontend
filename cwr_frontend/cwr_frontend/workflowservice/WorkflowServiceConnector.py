@@ -52,16 +52,10 @@ class WorkflowServiceConnector:
                 response.raise_for_status()
         return True, response.json()
 
-    def list_datasets(self, page_size=100, page_num=0) -> list[dict[str, str]]:
+    def list_workflows(self) -> list[dict[str, Any]]:
         """ retrieve list of objects from cordra """
-        params = {
-            "pageNum": page_num,
-            "pageSize": page_size,
-            "query": "type:Dataset",
-            "sortFields": 'metadata/modifiedOn DESC '
-        }
-        url = f'{urljoin(self._base_url, "search")}?{urlencode(params)}'
-        response = requests.get(url, verify=False)
+        url = f'{urljoin(self._base_url, "workflow/list")}'
+        response = requests.get(url, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
             raise Exception(response.text)
 

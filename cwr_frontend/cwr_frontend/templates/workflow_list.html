@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Crop wild relatives: Workflows{% endblock %}
+{% block headline %}Workflows{% endblock %}
+
+{% block content %}
+<div class="mt2 bg-white shadow-1 pa2">
+<table class="workflow-list w-100 center">
+    <thead>
+        <tr class="stripe-dark">
+            <th class="fw6 tl pa1">Name</th>
+            <th class="fw6 tl pa1">Started</th>
+            <th class="fw6 tl pa1">Finished</th>
+            <th class="fw6 tl pa1">Duration</th>
+            <th class="fw6 tl pa1">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for wfl in workflows %}
+    <tr class="mt5 stripe-dark pa2">
+        <td>{{ wfl.name }}</td>
+        <td>{{ wfl.startedAt }}</td>
+        <td>{{ wfl.finishedAt }}</td>
+        <td>Implement me</td>
+        <td>{{ wfl.status }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
