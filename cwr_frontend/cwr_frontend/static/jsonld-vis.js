@@ -57,7 +57,23 @@
 
     svg.call(tip);
 
-    var root = jsonldTree(jsonld);
+    var graph = jsonld["@graph"];
+    // find dataset entity
+    var datasetNode;
+    for (var elem in graph) {
+        if (graph[elem]["@id"] == "ro-crate-metadata.json") {
+            datasetNode = graph[elem];
+            break;
+        }
+    }
+    for (var elem in graph) {
+        if (graph[elem]["@id"] == datasetNode["about"]["@id"]) {
+            datasetNode = graph[elem];
+            break;
+        }
+    }
+
+    var root = jsonldTree(datasetNode, graph);
     root.x0 = h / 2;
     root.y0 = 0;
     root.children.forEach(collapse);
@@ -71,15 +87,25 @@
       }
     }
 
-    function jsonldTree(source) {
+    function jsonldTree(source, graph, depth=5) {
       var tree = {};
 
       if ('@id' in source) {
+        console.log(source["@id"])
         tree.isIdNode = true;
         tree.name = source['@id'];
         if (tree.name.length > maxLabelWidth / 9) {
           tree.valueExtended = tree.name;
           tree.name = '...' + tree.valueExtended.slice(-Math.floor(maxLabelWidth / 9));
+        }
+        // expand json from id
+        if (Object.keys(source).length == 1 && depth > 0) {
+            for (var elem in graph) {
+                if (graph[elem]["@id"] == source["@id"]) {
+                    source = graph[elem]
+                    break
+                }
+            }
         }
       } else {
         tree.isIdNode = true;
@@ -87,7 +113,7 @@
         // random id, can replace with actual uuid generator if needed
         tree.name = '_' + Math.random().toString(10).slice(-7);
       }
-
+      console.log(source)
       var children = [];
       Object.keys(source).forEach(function(key) {
         if (key === '@id' || key === '@context' || source[key] === null) return;
@@ -96,14 +122,14 @@
         if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
           children.push({
             name: key,
-            children: [jsonldTree(source[key])]
+            children: [jsonldTree(source[key], graph, depth-1)]
           });
         } else if (Array.isArray(source[key])) {
           children.push({
             name: key,
             children: source[key].map(function(item) {
               if (typeof item === 'object') {
-                return jsonldTree(item);
+                return jsonldTree(item, graph, depth-1);
               } else {
                 return { name: item };
               }
