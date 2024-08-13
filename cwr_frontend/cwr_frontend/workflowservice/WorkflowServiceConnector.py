@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from urllib.parse import urlencode, urljoin
 import requests
@@ -45,7 +46,6 @@ class WorkflowServiceConnector:
         }
         response = requests.post(urljoin(self._base_url, "workflow/submit"), files=files, data=form_data, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
-            print(response.text)
             if response.status_code == 400 and "message" in response.json()["detail"]:
                 return False, response.json()
             else:
@@ -59,4 +59,10 @@ class WorkflowServiceConnector:
         if response.status_code != 200:
             raise Exception(response.text)
 
-        return response.json()
+        json = response.json()
+        for i in range(len(json)):
+            json[i]["createdAt"] = datetime.strptime(json[i]["createdAt"], "%Y-%m-%dT%H:%M:%SZ")
+            json[i]["startedAt"] = datetime.strptime(json[i]["startedAt"], "%Y-%m-%dT%H:%M:%SZ")
+            if "finishedAt" in json[i] and json[i]["finishedAt"] is not None:
+                json[i]["finishedAt"] = datetime.strptime(json[i]["finishedAt"], "%Y-%m-%dT%H:%M:%SZ")
+        return json
