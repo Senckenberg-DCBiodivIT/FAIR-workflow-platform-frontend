@@ -35,7 +35,7 @@
         <label class="f6 b db mb2" for="license" form="submit-form">License:</label>
         <select class="input-reset ba b--black-20 pa2 mb2 db w-100" id="license" name="license" form="submit-form">
             {% for license in licenses %}
-            <option value="{{ license.url }}" {% if workflow_license == license.url %}selected="selected"{% endif %}">{{ license.name }}</option>
+            <option value="{{ license.url }}"{% if workflow_license == license.url %} selected{% endif %}>{{ license.name }}</option>
             {% endfor %}
         </select>
         <label class="f6 b db mb2" for="description" form="submit-form">Description:</label>

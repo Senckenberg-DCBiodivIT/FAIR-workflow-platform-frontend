@@ -67,7 +67,8 @@ class WorkflowSubmissionView(TemplateView):
                 workflow_name = crate.root_dataset.get("name", "Workflow")
                 workflow_description = crate.root_dataset.get("description", None)
                 workflow_keywords = ",".join(crate.root_dataset.get("keywords", []))
-                workflow_license = crate.root_dataset.get("license", None)
+                if crate.root_dataset["license"] is not None:
+                    workflow_license = crate.root_dataset["license"].id
 
                 # check workflow file and set it to the session
                 if workflow_path.exists():
