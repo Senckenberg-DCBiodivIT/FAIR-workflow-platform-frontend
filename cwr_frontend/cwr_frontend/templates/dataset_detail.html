@@ -146,9 +146,9 @@
 
 <section class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Content ({{ items|length }} files)</h1>
-    <div class="cf">
+    <div class="flex flex-wrap">
     {% for item in items %}
-        <div class="fl w-25 w-25-m w-20-l pa2">
+        <div class="w-25 w-20-ns ph2">
             <a href="{{ item.url }}">
                 <img src="{% if item.is_image %}{{ item.url }}{% else %}{% static 'placeholder.png' %}{% endif %}" title="{{ item.url }}" class="w-100 db outline black-10"/>
                 <dl class="mt2 f6 lh-copy">
