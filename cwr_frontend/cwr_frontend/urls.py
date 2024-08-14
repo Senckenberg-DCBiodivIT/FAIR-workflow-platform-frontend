@@ -25,6 +25,8 @@ from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 
 urlpatterns = [
+    # browser reload in debug mode
+    path("__reload__/", include("django_browser_reload.urls")),
     # list of datasets
     re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
