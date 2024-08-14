@@ -8,7 +8,7 @@
 {% endblock %}
 {% block content %}
 {% load static %}
-<section class="mt2 bg-white shadow-1 pa2">
+<section id="Details" class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Details</h1>
     <table class="f6 w-100 mw8">
         <tbody>
@@ -69,8 +69,7 @@
     <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
 </div>
 
-
-<section class="mt2 bg-white shadow-1 pa2">
+<section id="Provenance" class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Provenance</h1>
     {% if provenance %}
     <table class="f6 w-100 mw8">
@@ -116,7 +115,7 @@
     Dataset has no provenance data
     {% endif %}
 </section>
-<section class="mt2 bg-white shadow-1 pa2">
+<section id="Visualization" class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Visualization</h1>
     <div id="graph-container" style="overflow: scroll">
         <p id="graph-loading">Loading ...</p>
@@ -144,7 +143,7 @@
     </script>
 </section>
 
-<section class="mt2 bg-white shadow-1 pa2">
+<section id="Content" class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Content ({{ items|length }} files)</h1>
     <div class="flex flex-wrap">
     {% for item in items %}
