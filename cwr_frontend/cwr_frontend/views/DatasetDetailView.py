@@ -106,7 +106,7 @@ class DatasetDetailView(TemplateView):
 
         }
 
-        # get list of images and their content type
+        # get list of items and their content type: tuple of absolute_url, content_type
         items = []
         for part_id in dataset["hasPart"]:
             item = next((elem for (key, elem) in objects.items() if key == part_id), None)
@@ -115,11 +115,18 @@ class DatasetDetailView(TemplateView):
             payload_contentUrl = item["contentUrl"]
             item_type = item["encodingFormat"]
             item_abs_url = self._connector.get_object_abs_url(part_id, payload_contentUrl)
-            is_image = item_type.startswith("image")
-            items.append((item_abs_url, item_type, is_image))
+            items.append((item_abs_url, item_type))
 
-        # add images to page: tuple of file_name, relative_url (or none if not an image)
-        context["images"] = [(image[0].split("=")[-1], image[0], image[2]) for image in items]
+        # add images to page context:
+        context["items"] = []
+        for item in items:
+            item_path = item[0].split("=")[-1]
+            context["items"].append({
+                "name": "/".join(item_path.split("/")[-2:]),
+                "path": item_path,
+                "url": item[0],
+                "is_image": item[1].startswith("image"),
+            })
 
         # render response and attach signposting links
         response = render(request, self.template_name, context)
@@ -127,7 +134,7 @@ class DatasetDetailView(TemplateView):
             abs_url=request.build_absolute_uri(reverse("dataset_detail", args=[id])),
             author_urls=[author_url for (_, author_url) in authors],
             license_url=license_id,
-            items=[(item[0], item[1]) for item in items],
+            items=items,
             additional_urls=[
                 (link_rocrate, "application/json+ld"),
                 (link_rocrate + "&download=true", "application/zip"),
