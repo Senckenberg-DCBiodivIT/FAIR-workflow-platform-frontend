@@ -111,16 +111,17 @@ class DatasetDetailView(TemplateView):
 
         # render response and attach signposting links
         signposts = {
-            "type": ["https://schema.org/Dataset", "https://schema.org/AboutPage"],
-            "cite-as": [request.build_absolute_uri(reverse("dataset_detail", args=[id]))],
+            "type": ["https://schema.org/ItemPage", "https://schema.org/Dataset"],
             "author": [author_url for (_, author_url) in authors],
             "license": license_id,
-            "item": items,
+            "cite-as": [request.build_absolute_uri(reverse("dataset_detail", args=[id]))],
             "describedBy": [
-                (link_rocrate, "application/json+ld"),
+                (link_rocrate, "application/ld+json"),
                 (link_rocrate + "&download=true", "application/zip"),
-                (link_digital_object, "application/json+ld"),
-            ]
+                # (link_digital_object, "application/ld+json"),
+            ],
+            "item": items,
+
         }
         response = render(request, self.template_name, context)
         add_signposts(response, **signposts)

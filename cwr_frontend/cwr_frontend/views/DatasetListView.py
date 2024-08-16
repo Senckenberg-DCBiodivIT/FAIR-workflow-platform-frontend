@@ -1,8 +1,11 @@
 from datetime import datetime
 
+from django.urls import reverse
 from django.views.generic import TemplateView
 from django.shortcuts import render
 import logging
+
+from django_signposting.utils import add_signposts
 
 from cwr_frontend.cordra.CordraConnector import CordraConnector
 
@@ -49,5 +52,6 @@ class DatasetListView(TemplateView):
             "items": items_reduced,
             "total_size": items_total_count
         }
-
-        return render(request, self.template_name, context)
+        response = render(request, self.template_name, context)
+        add_signposts(response, type="https://schema.org/CollectionPage", item=[request.build_absolute_uri(reverse("dataset_detail", args=[item["id"]])) for item in items])
+        return response
