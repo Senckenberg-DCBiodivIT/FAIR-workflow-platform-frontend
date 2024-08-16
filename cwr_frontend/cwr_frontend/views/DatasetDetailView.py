@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
+from requests import HTTPError
 from rocrate.model import ContextEntity, Person
 from rocrate.rocrate import ROCrate
 
@@ -299,7 +300,14 @@ class DatasetDetailView(TemplateView):
         id = kwargs.get("id")
 
         # get digital object from cordra
-        objects = self._connector.resolve_objects(id)
+        try:
+            objects = self._connector.resolve_objects(id)
+        except HTTPError as e:
+            # Cordra responds with 401 if not a public object is not found.
+            if e.response.status_code == 401:
+                raise Http404
+            raise
+
 
         if not id in objects or not "Dataset" in objects[id]["@type"]:
             raise Http404

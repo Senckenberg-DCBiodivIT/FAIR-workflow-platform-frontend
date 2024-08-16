@@ -107,10 +107,7 @@ class CordraConnector:
         url = urljoin(self._base_url, "cordra/call")
         url = f"{url}?{urlencode({'objectId': id, "method": "asGraph"})}"
         response = requests.get(url, verify=False)
-        if response.status_code != 200:
-            raise Exception(
-                f"Could not resolve list of ids (Backend responded with {response.status_code})"
-            )
+        response.raise_for_status()
 
         return response.json()["@graph"]
 
