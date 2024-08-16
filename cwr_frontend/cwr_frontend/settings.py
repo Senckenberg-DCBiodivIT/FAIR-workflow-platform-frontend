@@ -91,6 +91,7 @@ MIDDLEWARE = [
     'django.middleware.cache.FetchFromCacheMiddleware',
     "allauth.account.middleware.AccountMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "django_signposting.middleware.SignpostingMiddleware",
 ]
 
 ROOT_URLCONF = 'cwr_frontend.urls'

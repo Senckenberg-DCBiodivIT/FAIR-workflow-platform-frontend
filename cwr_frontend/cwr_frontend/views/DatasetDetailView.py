@@ -9,35 +9,16 @@ from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, H
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
+from django_signposting.utils import add_signposts
 from rocrate.model import ContextEntity, Person
 from rocrate.rocrate import ROCrate
 
 from cwr_frontend.cordra.CordraConnector import CordraConnector
-from cwr_frontend.utils import add_signposts
 
 
 class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
     _connector = CordraConnector()
-
-    def to_typed_link_set(self,
-                          abs_url: str,
-                          author_urls: list[str],
-                          license_url: str,
-                          items: list[tuple[str, str]],
-                          additional_urls: list[tuple[str, str]]) -> list[tuple[str, str, str | None]]:
-        """ build a list of typed links for sign posting. """
-        typed_links = [
-            ("https://schema.org/Dataset", "type", None),
-            ("https://schema.org/AboutPage", "type", None),
-            (abs_url, "cite-as", None),
-            (license_url, "license", None),
-        ]
-        typed_links += [(url, "author", None) for url in author_urls]
-        typed_links += [(url, "describedBy", content_type) for (url, content_type) in additional_urls]
-        typed_links += [(url, "item", content_type) for (url, content_type) in items]
-
-        return typed_links
 
     def render(self, request, id: str, objects: dict[str, dict[str, Any]]):
         """ Return a html representation with signposts from the given digital object """
@@ -129,19 +110,20 @@ class DatasetDetailView(TemplateView):
             })
 
         # render response and attach signposting links
-        response = render(request, self.template_name, context)
-        typed_links = self.to_typed_link_set(
-            abs_url=request.build_absolute_uri(reverse("dataset_detail", args=[id])),
-            author_urls=[author_url for (_, author_url) in authors],
-            license_url=license_id,
-            items=items,
-            additional_urls=[
+        signposts = {
+            "type": ["https://schema.org/Dataset", "https://schema.org/AboutPage"],
+            "cite-as": [request.build_absolute_uri(reverse("dataset_detail", args=[id]))],
+            "author": [author_url for (_, author_url) in authors],
+            "license": license_id,
+            "item": items,
+            "describedBy": [
                 (link_rocrate, "application/json+ld"),
                 (link_rocrate + "&download=true", "application/zip"),
                 (link_digital_object, "application/json+ld"),
             ]
-        )
-        add_signposts(response, typed_links)
+        }
+        response = render(request, self.template_name, context)
+        add_signposts(response, **signposts)
 
         return response
 
