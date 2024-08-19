@@ -172,10 +172,8 @@ class DatasetDetailView(TemplateView):
             del file["@id"]
             del file["@context"]
             del file["contentUrl"]
-            if "partOf" in file:
-                del file["partOf"]
-            if "resultOf" in file:
-                del file["resultOf"]
+            if "isPartOf" in file:
+                del file["isPartOf"]
             if "input" in file:
                 for input_id in file["input"]:
                     input_jsonld = objects[input_id]
