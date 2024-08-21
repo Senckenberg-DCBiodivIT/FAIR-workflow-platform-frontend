@@ -89,6 +89,8 @@
                 {% else %}
                 N/A
                 {% endif %}
+                <br />
+                <a class="f6 link dim ma2 ph3 dib black bg-light-blue shadow-1" href="{% url 'submit_workflow' %}?crate_id={{ id }}#Edit">Resubmit workflow</a>
             </td>
         </tr>
         <tr class="stripe-dark">

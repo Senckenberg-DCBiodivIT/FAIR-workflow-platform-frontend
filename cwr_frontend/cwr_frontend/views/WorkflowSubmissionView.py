@@ -3,9 +3,14 @@ import json
 import logging
 import tempfile
 import zipfile
+from pathlib import Path
+from typing import Any
 
+import django
 import yaml
 from django.conf import settings
+import requests
+from django.urls import reverse
 from rocrate.rocrate import ROCrate
 
 from django.core.exceptions import BadRequest
@@ -31,6 +36,9 @@ class WorkflowSubmissionView(TemplateView):
                 return self.step_1(request)
             elif "submit" in request.POST and "workflow" in request.session:
                 return self.step_3(request)
+        elif "crate_id" in request.GET:
+            return self.step_2(request)
+
         return self.step_1(request)
 
     def step_1(self, request):
@@ -38,46 +46,82 @@ class WorkflowSubmissionView(TemplateView):
         context = {"step": 1}
         return render(request, self.template_name, context=context)
 
-    def step_2(self, request):
-        self._logger.info("Render step 2")
-        file = request.FILES["rocratefile"]
-
+    def get_crate_workflow_from_zip(self, file) -> tuple[ROCrate, dict[str, Any]]:
         # check if this is a zip file
         if (file.content_type != "application/zip"):
             raise BadRequest("File is not a zip file")
 
+        # assert zip file is valid
+        try:
+            bytes = io.BytesIO(file.read())
+            zipfile.ZipFile(bytes)
+            file.seek(0)
+        except zipfile.BadZipFile as e:
+            file.close()
+            raise BadRequest("File is not a zip file")
+
         # Parse RO crate and extract workflow
         with file as f:
-            # assert zip file is valid
-            try:
-                bytes = io.BytesIO(f.read())
-                zipfile.ZipFile(bytes)
-            except zipfile.BadZipFile as e:
-                raise BadRequest("File is not a zip file")
-
             # parse ro-crate and find workflow file
-            f.seek(0)
             with tempfile.NamedTemporaryFile(delete=True) as tmp:
-                for chunk in file.chunks():
+                if isinstance(f, django.core.files.base.File):
+                    # django file object
+                    chunks = f.chunks()
+                else:
+                    # object is http request
+                    chunks = f.iter_content(chunk_size=8192)
+
+                for chunk in chunks:
                     tmp.write(chunk)
                 tmp.flush()
 
                 crate = ROCrate(tmp.name)
                 workflow_path = crate.source / crate.root_dataset["mainEntity"].id
-                workflow_name = crate.root_dataset.get("name", "Workflow")
-                workflow_description = crate.root_dataset.get("description", None)
-                workflow_keywords = ",".join(crate.root_dataset.get("keywords", []))
-                if "license" in crate.root_dataset:
-                    license = crate.root_dataset["license"]
-                    workflow_license = license if isinstance(license, str) else license.id
-                else:
-                    workflow_license = None
 
                 # check workflow file and set it to the session
                 if workflow_path.exists():
                     workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
                 else:
                     raise Exception("Workflow file not found in RO-Crate")
+
+                return crate, workflow
+
+    def get_crate_workflow_from_id(self, request, crate_id):
+        crate_url = request.build_absolute_uri(reverse("dataset_detail", kwargs={"id": crate_id}))
+        crate_url += "?format=ROCrate"
+        response = requests.get(crate_url, stream=True, verify=False)
+        response.raise_for_status()
+        with tempfile.TemporaryDirectory(delete=True) as tmp_dir:
+            file = open(tmp_dir + "/ro-crate-metadata.json", "wb")
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+            file.flush()
+
+            crate = ROCrate(source=tmp_dir)
+            workflow_url = crate.root_dataset["mainEntity"].id
+            workflow_response = requests.get(workflow_url, verify=False)
+            workflow_response.raise_for_status()
+            workflow = yaml.load(workflow_response.content, Loader=yaml.CLoader)
+            return crate, workflow
+
+    def step_2(self, request):
+        self._logger.info("Render step 2")
+
+        if request.method == "POST":
+            file = request.FILES["rocratefile"]
+            crate, workflow = self.get_crate_workflow_from_zip(file)
+        else:
+            crate_id = request.GET["crate_id"]
+            crate, workflow = self.get_crate_workflow_from_id(request, crate_id)
+
+        workflow_name = crate.root_dataset.get("name", "Workflow")
+        workflow_description = crate.root_dataset.get("description", None)
+        workflow_keywords = ",".join(crate.root_dataset.get("keywords", []))
+        if "license" in crate.root_dataset:
+            license = crate.root_dataset["license"]
+            workflow_license = license if isinstance(license, str) else license.id
+        else:
+            workflow_license = None
 
         # check if workflow is valid
         workflow_lint_status, workflow_lint_result = self._connector.check_workflow(workflow)
