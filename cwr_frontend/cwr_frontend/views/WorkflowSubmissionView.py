@@ -68,7 +68,8 @@ class WorkflowSubmissionView(TemplateView):
                 workflow_description = crate.root_dataset.get("description", None)
                 workflow_keywords = ",".join(crate.root_dataset.get("keywords", []))
                 if "license" in crate.root_dataset:
-                    workflow_license = crate.root_dataset["license"].id
+                    license = crate.root_dataset["license"]
+                    workflow_license = license if isinstance(license, str) else license.id
                 else:
                     workflow_license = None
 

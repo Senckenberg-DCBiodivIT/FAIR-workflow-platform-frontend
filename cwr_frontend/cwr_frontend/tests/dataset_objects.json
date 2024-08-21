@@ -1,0 +1,263 @@
+{
+  "cwr/2b408313359f2b6f18c2": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "author": {
+          "@id": "https://schema.org/author",
+          "@type": "@id"
+        }
+      },
+      {
+        "hasPart": {
+          "@id": "https://schema.org/hasPart",
+          "@type": "@id"
+        }
+      },
+      {
+        "mentions": {
+          "@id": "https://schema.org/mentions",
+          "@type": "@id"
+        }
+      },
+      {
+        "mainEntity": {
+          "@id": "https://schema.org/mainEntity",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/2b408313359f2b6f18c2",
+    "@type": [
+      "Dataset"
+    ],
+    "name": "Test Dataset",
+    "description": "A test dataset from an argo workflow submitted via the Frontend as RO-Crate",
+    "keywords": [
+      "test",
+      "test2"
+    ],
+    "dateCreated": "2024-08-13T08:58:38.161Z",
+    "dateModified": "2024-08-13T08:58:38.161Z",
+    "datePublished": "2024-08-13T08:58:38.161Z",
+    "license": "https://spdx.org/licenses/CC-BY-SA-4.0",
+    "author": [
+      "cwr/cfa5c956a2bd56ec6554"
+    ],
+    "hasPart": [
+      "cwr/0d6b270d30e33a451e64",
+      "cwr/00ff7fa98ac0694e0f20",
+      "cwr/695601f5a098bf326246"
+    ],
+    "mentions": [
+      "cwr/de5f500051a7541fbc2e"
+    ],
+    "mainEntity": "cwr/695601f5a098bf326246"
+  },
+  "cwr/cfa5c956a2bd56ec6554": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "affiliation": {
+          "@id": "https://schema.org/affiliation",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/cfa5c956a2bd56ec6554",
+    "@type": [
+      "Person"
+    ],
+    "name": "Daniel Bauer",
+    "identifier": "https://orcid.org/0000-0001-9447-460X"
+  },
+  "cwr/0d6b270d30e33a451e64": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@type": "@id",
+          "@id": "https://schema.org/isPartOf"
+        }
+      },
+      {
+        "partOf": {
+          "@id": "https://schema.org/partOf",
+          "@type": "@id"
+        }
+      },
+      {
+        "resultOf": {
+          "@id": "https://schema.org/resultOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/0d6b270d30e33a451e64",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "testfile.txt",
+    "contentSize": 129,
+    "encodingFormat": "application/gzip",
+    "isPartOf": [
+      "cwr/2b408313359f2b6f18c2"
+    ],
+    "contentUrl": "91c23560-7799-406d-bc3f-95d62e722154/testfile.txt"
+  },
+  "cwr/00ff7fa98ac0694e0f20": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@type": "@id",
+          "@id": "https://schema.org/isPartOf"
+        }
+      },
+      {
+        "partOf": {
+          "@id": "https://schema.org/partOf",
+          "@type": "@id"
+        }
+      },
+      {
+        "resultOf": {
+          "@id": "https://schema.org/resultOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/00ff7fa98ac0694e0f20",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "main.log",
+    "contentSize": 27,
+    "encodingFormat": "text/plain",
+    "isPartOf": [
+      "cwr/2b408313359f2b6f18c2"
+    ],
+    "contentUrl": "91c23560-7799-406d-bc3f-95d62e722154/main.log"
+  },
+  "cwr/695601f5a098bf326246": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "partOf": {
+          "@id": "https://schema.org/partOf",
+          "@type": "@id"
+        }
+      },
+      {
+        "resultOf": {
+          "@id": "https://schema.org/resultOf",
+          "@type": "@id"
+        }
+      },
+      {
+        "programmingLanguage": {
+          "@id": "https://schema.org/programmingLanguage",
+          "@type": "@id"
+        }
+      },
+      {
+        "ComputationalWorkflow": "https://bioschemas.org/ComputationalWorkflow"
+      },
+      {
+        "input": {
+          "@id": "https://bioschemas.org/ComputationalWorkflow#input",
+          "@type": "@id"
+        }
+      },
+      {
+        "output": {
+          "@id": "https://bioschemas.org/ComputationalWorkflow#output",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/695601f5a098bf326246",
+    "@type": [
+      "MediaObject",
+      "ComputationalWorkflow",
+      "SoftwareSourceCode"
+    ],
+    "name": "workflow.yaml",
+    "description": "Argo workflow definition",
+    "programmingLanguage": "https://argoproj.github.io/workflows",
+    "contentUrl": "workflow.yaml",
+    "contentSize": 2034,
+    "encodingFormat": "text/yaml",
+    "input": [
+      "cwr/398b64ebca54668f662d"
+    ]
+  },
+  "cwr/de5f500051a7541fbc2e": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "agent": {
+          "@id": "https://schema.org/agent",
+          "@type": "@id"
+        }
+      },
+      {
+        "result": {
+          "@id": "https://schema.org/result",
+          "@type": "@id"
+        }
+      },
+      {
+        "object": {
+          "@id": "https://schema.org/object",
+          "@type": "@id"
+        }
+      },
+      {
+        "instrument": {
+          "@id": "https://schema.org/instrument",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/de5f500051a7541fbc2e",
+    "@type": [
+      "CreateAction"
+    ],
+    "agent": "cwr/cfa5c956a2bd56ec6554",
+    "startTime": "2024-08-13T08:58:22Z",
+    "endTime": "2024-08-13T08:58:27Z",
+    "result": [
+      "cwr/0d6b270d30e33a451e64",
+      "cwr/00ff7fa98ac0694e0f20"
+    ],
+    "object": [
+      "cwr/5022e06049869532d773"
+    ],
+    "instrument": "cwr/695601f5a098bf326246"
+  },
+  "cwr/398b64ebca54668f662d": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "FormalParameter": "https://bioschemas.org/FormalParameter"
+      }
+    ],
+    "@id": "cwr/398b64ebca54668f662d",
+    "@type": [
+      "FormalParameter"
+    ],
+    "name": "text"
+  },
+  "cwr/5022e06049869532d773": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/5022e06049869532d773",
+    "@type": [
+      "PropertyValue"
+    ],
+    "name": "text",
+    "value": "test parameter"
+  }
+}

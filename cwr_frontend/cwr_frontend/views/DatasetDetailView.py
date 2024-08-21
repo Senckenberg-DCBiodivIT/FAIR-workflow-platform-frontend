@@ -11,11 +11,10 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
 from requests import HTTPError
-from rocrate.model import ContextEntity, Person
 from rocrate.rocrate import ROCrate
 
+from cwr_frontend.rocrate_utils import build_ROCrate
 from cwr_frontend.cordra.CordraConnector import CordraConnector
-
 
 class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
@@ -129,127 +128,19 @@ class DatasetDetailView(TemplateView):
 
         return response
 
-    def _build_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], with_preview: bool = False, remote_urls: bool = False) -> ROCrate:
-        crate = ROCrate(gen_preview=with_preview)
-        dataset = objects[id]
-
-        # TODO add sameAs identifier for digital objects that are not files?
-
-        files_to_add = dataset.get("hasPart", [])
-        if dataset.get("mainEntity") and dataset.get("mainEntity") not in files_to_add:
-            files_to_add.append(dataset.get("mainEntity"))
-        persons_to_add = dataset.get("author", [])
-        actions_to_add = dataset.get("mentions", [])
-        license_to_add = dataset.get("license")
-        instruments_to_add = [action.get("instrument") for action in [objects[action_id] for action_id in actions_to_add]]
-
-        id_to_crate_id = {}
-
-        # add license
-        if license_to_add is not None:
-            license = crate.add(ContextEntity(crate, license_to_add, {"@type": "CreativeWork"}))
-            id_to_crate_id[license_to_add] = license["@id"]
-
-        # add persons
-        for jsonld in map(lambda person_id: objects[person_id], persons_to_add):
-            if "@context" in jsonld:
-                del jsonld["@context"]
-            if "affiliation" in jsonld:
-                del jsonld["affiliation"]  # TODO add affiliation to crate
-            person_id = jsonld.pop("@id")
-            person_identifier = jsonld.pop("identifier", person_id)
-            person = crate.add(Person(crate, identifier=person_identifier, properties=jsonld))
-            id_to_crate_id[person_id] = person["@id"]
-
-        # add all files
-        for (part_id, file) in [(part_id, objects[part_id]) for part_id in files_to_add]:
-            url = request.build_absolute_uri(self._connector.get_object_abs_url(file["@id"], file["contentUrl"]))
-            if remote_urls:
-                dest_path = None  # use payload URL as path
-            else:
-                dest_path = file["contentUrl"]
-                file["sameAs"] = url
-            del file["@id"]
-            del file["@context"]
-            del file["contentUrl"]
-            if "isPartOf" in file:
-                del file["isPartOf"]
-            if "input" in file:
-                for input_id in file["input"]:
-                    input_jsonld = objects[input_id]
-                    input = crate.add(ContextEntity(crate, input_id, properties=input_jsonld))
-                    id_to_crate_id[input_id] = input["@id"]
-                file["input"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, file["input"]))
-            if "output" in file:
-                for output_id in file["output"]:
-                    output_jsonld = objects[output_id]
-                    output = crate.add(ContextEntity(crate, output_id, properties=output_jsonld))
-                    id_to_crate_id[output_id] = output["@id"]
-                file["output"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, file["output"]))
-            file["@type"] = list(map(lambda x: x.replace("MediaObject", "File"), file["@type"]))
-            crate_file = crate.add_file(url, dest_path=dest_path, fetch_remote=False, properties=file | {
-                "name": file["name"],
-                "encodingFormat": file["encodingFormat"],
-                "contentSize": file["contentSize"],
-            })
-            id_to_crate_id[part_id] = crate_file["@id"]
-
-        # add instrument if not added yet (for softwareapplication)
-        for instrument_id in filter(lambda id: "SoftwareApplication" in objects[id]["@type"], instruments_to_add):
-            jsonld = objects[instrument_id]
-            del jsonld["@context"]
-            del jsonld["@id"]
-            instrument = crate.add(ContextEntity(crate, instrument_id, properties=jsonld))
-            id_to_crate_id[instrument_id] = instrument["@id"]
-
-        # add actions
-        for jsonld in map(lambda action_id: objects[action_id], actions_to_add):
-            del jsonld["@context"]
-            action_id = jsonld.pop("@id")
-            if "agent" in jsonld:
-                jsonld["agent"] = { "@id": id_to_crate_id[jsonld["agent"]] }
-
-            if "instrument" in jsonld:
-                jsonld["instrument"] = {"@id": id_to_crate_id[jsonld["instrument"]]}
-
-            if "result" in jsonld:
-                jsonld["result"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, jsonld["result"]))
-
-            if "object" in jsonld:
-                for object_id in jsonld["object"]:
-                    object_jsonld = objects[object_id]
-                    object = crate.add(ContextEntity(crate, object_id, properties=object_jsonld))
-                    id_to_crate_id[object_id] = object["@id"]
-                jsonld["object"] = list(map(lambda id: {"@id": id_to_crate_id[id]}, jsonld["object"]))
-            # TODO backlink to workflow
-            action = crate.add(ContextEntity(crate, action_id, properties=jsonld))
-            id_to_crate_id[action_id] = action["@id"]
-
-        # update dataset entity
-        for (key, value) in dataset.items():
-            if key.startswith("@"):
-                continue
-            elif key in ["author", "hasPart", "mentions"]:
-                value = list(map(lambda id: {"@id": id_to_crate_id[id]}, value))
-            elif key in ["mainEntity", "license"]:
-                value = {"@id": id_to_crate_id[value]}
-            crate.root_dataset[key] = value
-
-        # make this a valid workflow run RO-Crate
-        crate.metadata.extra_contexts.append("https://w3id.org/ro/terms/workflow-run/context")
-        crate.root_dataset["conformsTo"] = [
-            {"@id": "https://w3id.org/ro/wfrun/process/0.1"},
-            {"@id": "https://w3id.org/ro/wfrun/workflow/0.1"},
-            {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
-        ]
-        crate.metadata["conformsTo"] = [
-            {"@id": "https://w3id.org/ro/crate/1.1"},
-            {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
-        ]
-
+    def _build_ROCrate(self, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, download: bool) -> ROCrate:
+        remote_urls = {}
+        for cordra_id in objects:
+            if "contentUrl" in objects[cordra_id]:
+                url = request.build_absolute_uri(self._connector.get_object_abs_url(cordra_id, objects[cordra_id]["contentUrl"]))
+                remote_urls[cordra_id] = url
+            elif "identifier" in objects[cordra_id]:
+                url = request.build_absolute_uri(self._connector.get_object_abs_url(cordra_id))
+                remote_urls[cordra_id] = url
+        crate = build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, download=download)
         return crate
 
-    def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download=False) -> HttpResponseBase:
+    def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download: bool) -> HttpResponseBase:
         """ return a downloadable zip in RO-Crate format from the given dataset entity
         the zip file is build on the fly by streaming payload objects directly from the api
 
@@ -260,7 +151,7 @@ class DatasetDetailView(TemplateView):
         """
         # Get crate metadata file (library does only support output to file)
         with tempfile.TemporaryDirectory() as temp_dir:
-            crate = self._build_ROCrate(request, id, objects, with_preview = download, remote_urls=not download)
+            crate = self._build_ROCrate(request, id, objects, with_preview=download, download=download)
             crate.write(temp_dir)
             metadata = json.load(open(temp_dir + "/ro-crate-metadata.json", "r"))
 
