@@ -12,6 +12,7 @@ from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
 from requests import HTTPError
 from rocrate.rocrate import ROCrate
+from django.templatetags.static import static
 
 from cwr_frontend.rocrate_utils import build_ROCrate
 from cwr_frontend.cordra.CordraConnector import CordraConnector
@@ -84,7 +85,6 @@ class DatasetDetailView(TemplateView):
             "provenance": prov_context,
             "date_modified": datetime.strptime(dataset["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
             "date_created": datetime.strptime(dataset["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-
         }
 
         # get list of items and their content type: tuple of absolute_url, content_type
@@ -93,35 +93,40 @@ class DatasetDetailView(TemplateView):
             item = next((elem for (key, elem) in objects.items() if key == part_id), None)
             if item is None:
                 continue
-            payload_contentUrl = item["contentUrl"]
-            item_type = item["encodingFormat"]
-            item_abs_url = self._connector.get_object_abs_url(part_id, payload_contentUrl)
-            items.append((item_abs_url, item_type))
+            if "Dataset" in item["@type"]:
+                item_abs_url = request.build_absolute_uri(reverse("dataset_detail", args=[part_id]))
+                items.append({
+                    "name": item.get("name", "/".join(item_abs_url.split("/")[-2:])),
+                    "url": item_abs_url,
+                    "type": "text/html",
+                    "image": static("folder-tree.png"),
+                })
+            else:
+                payload_contentUrl = item["contentUrl"]
+                item_type = item["encodingFormat"]
+                item_abs_url = self._connector.get_object_abs_url(part_id, payload_contentUrl)
+                items.append({
+                    "name": "/".join(item_abs_url.split("/")[-2:]),
+                    "url": item_abs_url,
+                    "type": item_type,
+                    "image": item_abs_url if item_type.startswith("image") else static("placeholder.png"),
+                })
 
         # add images to page context:
-        context["items"] = []
-        for item in items:
-            item_path = item[0].split("=")[-1]
-            context["items"].append({
-                "name": "/".join(item_path.split("/")[-2:]),
-                "path": item_path,
-                "url": item[0],
-                "is_image": item[1].startswith("image"),
-            })
+        context["items"] = items
 
         # render response and attach signposting links
         signposts = {
             "type": ["https://schema.org/ItemPage", "https://schema.org/Dataset"],
             "author": [author_url for (_, author_url) in authors],
-            "license": license_id,
+            "license": [license_id],
             "cite-as": [request.build_absolute_uri(reverse("dataset_detail", args=[id]))],
             "describedBy": [
                 (link_rocrate, "application/ld+json"),
                 (link_rocrate + "&download=true", "application/zip"),
                 # (link_digital_object, "application/ld+json"),
             ],
-            "item": items,
-
+            "item": [(item["url"], item["type"]) for item in items]
         }
         response = render(request, self.template_name, context)
         add_signposts(response, **signposts)

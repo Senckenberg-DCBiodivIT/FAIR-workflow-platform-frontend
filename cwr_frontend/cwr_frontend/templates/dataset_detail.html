@@ -151,12 +151,12 @@
     {% for item in items %}
         <div class="w-25 w-20-ns ph2">
             <a href="{{ item.url }}">
-                <img src="{% if item.is_image %}{{ item.url }}{% else %}{% static 'placeholder.png' %}{% endif %}" title="{{ item.url }}" class="w-100 db outline black-10"/>
+                <div class="m-100 flex justify-center items-center">
+                    <img src="{{ item.image }}" title="{{ item.url }}" style="max-height: 100px" class="db mw-100"/>
+                </div>
                 <dl class="mt2 f6 lh-copy">
                     <dt class="clip">Title</dt>
                     <dd class="ml0 black tc truncate">{{ item.name }}</dd>
-                    <dt class="clip">Path</dt>
-                    <dd class="ml0 black tc truncate clip">{{ item.path }}</dd>
                 </dl>
             </a>
         </div>
