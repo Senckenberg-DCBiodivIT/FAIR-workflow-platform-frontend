@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Any
 
-from rocrate.model import Person, ContextEntity
+from rocrate.model import Person, ContextEntity, Dataset
 
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader
 from pyld import jsonld
@@ -29,7 +29,8 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
     flattened = jsonld.flatten(list(objects.values()), ["https://w3id.org/ro/crate/1.1/context",
                                                         "https://www.researchobject.org/ro-terms/workflow-run/context.jsonld"])
 
-    id_map = {}  # map of Cordra internal ids to created RO-Crate ids
+    id_map = {}  # map of CorA
+    # dra internal ids to created RO-Crate ids
 
     crate = ROCrate(gen_preview=with_preview)
 
@@ -70,6 +71,20 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
                     del object[key]
 
             crate_obj = crate.add_file(remote_url, dest_path=dest_path, fetch_remote=False, properties=object)
+            id_map[cordra_id] = crate_obj.id
+        elif object["@type"] == "Dataset":
+            # TODO integration of nested datasets still has some issues when downloading the dataset:
+            # Files are placed relative to the root dataset, so if two datasets contain a file under the same path, they are overwritten
+            # Instead, we could place datasets in subfolders (foldername = cordra id?) and rewrite the file path
+            # However, this would require
+            # - Some refactoring to rewrite file paths based on what dataset they belong to
+            # - What if two files are referenced from the two datasets? Then, they would be added twice under different paths (could add a sameAs then)
+            # A more simple approach would be to not include files from other datasets in a download, but make them web resources similar to the detached RO-Crate.
+            # https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html#directories-on-the-web-dataset-distributions
+            for key, value in object.items():
+                if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
+                    object[key] = value["@value"]
+            crate_obj = crate.add(ContextEntity(crate, cordra_id, properties=object))
             id_map[cordra_id] = crate_obj.id
         else:
             # Everything else is added as a ContextEntity, where we use the identifier if present,

@@ -142,6 +142,9 @@ class DatasetDetailView(TemplateView):
             elif "identifier" in objects[cordra_id]:
                 url = request.build_absolute_uri(self._connector.get_object_abs_url(cordra_id))
                 remote_urls[cordra_id] = url
+            elif "Dataset" in objects[cordra_id]["@type"]:
+                url = request.build_absolute_uri(reverse("dataset_detail", args=[cordra_id])) + "?format=ROCrate"
+                remote_urls[cordra_id] = url
         crate = build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, download=download)
         return crate
 
