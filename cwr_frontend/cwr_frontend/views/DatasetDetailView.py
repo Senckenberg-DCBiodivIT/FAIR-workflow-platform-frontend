@@ -98,7 +98,7 @@ class DatasetDetailView(TemplateView):
                 items.append({
                     "name": item.get("name", "/".join(item_abs_url.split("/")[-2:])),
                     "url": item_abs_url,
-                    "type": "text/html",
+                    "type": "dataset",
                     "image": static("folder-tree.png"),
                 })
             else:
@@ -116,6 +116,12 @@ class DatasetDetailView(TemplateView):
         context["items"] = items
 
         # render response and attach signposting links
+        signpost_items = []
+        for item in items:
+            if item["type"] == "dataset":
+                signpost_items.append((item["url"] + "&format=ROCrate", "application/ld+json"))
+            else:
+                signpost_items.append((item["url"], item["type"]))
         signposts = {
             "type": ["https://schema.org/ItemPage", "https://schema.org/Dataset"],
             "author": [author_url for (_, author_url) in authors],
@@ -126,7 +132,7 @@ class DatasetDetailView(TemplateView):
                 (link_rocrate + "&download=true", "application/zip"),
                 # (link_digital_object, "application/ld+json"),
             ],
-            "item": [(item["url"], item["type"]) for item in items]
+            "item": signpost_items
         }
         response = render(request, self.template_name, context)
         add_signposts(response, **signposts)
