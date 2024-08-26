@@ -2,6 +2,7 @@
 {% block title %}Workflows{% endblock %}
 {% block headline %}Workflows{% endblock %}
 
+{% load settings_value %}
 {% block content %}
 <div class="mt2 bg-white shadow-1 pa2">
 <table class="workflow-list w-100 center">
@@ -18,7 +19,7 @@
     <tbody>
     {% for wfl in workflows %}
     <tr class="mt5 stripe-dark pa2">
-        <td>{{ wfl.name }}<br /><span class="f7">{{ wfl.workflow_name }}</span></td>
+        <td>{{ wfl.name }}<br /><span class="f7"><a href="{% argo_url %}/{{ wfl.workflow_name }}">{{ wfl.workflow_name }}</a></span></td>
         {% if wfl.submitterName %}
         <td>{{ wfl.submitterName }}<br /><span class="f7"><a href="https://orcid.org/{{ wfl.submitterOrcid }}">{{ wfl.submitterOrcid }}</a></span></td>
         {% else %}

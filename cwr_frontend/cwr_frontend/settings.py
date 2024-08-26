@@ -55,6 +55,7 @@ WORKFLOW_SERVICE = {
     "USER": env("WORKFLOW_SERVICE_USER", default="test"),
     "PASSWORD": env("WORKFLOW_SERVICE_PASSWORD", default="test"),
 }
+ARGO_URL = env("ARGO_URL", default="http://example.com")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
