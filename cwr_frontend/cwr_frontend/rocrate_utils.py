@@ -73,13 +73,11 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate_obj = crate.add_file(remote_url, dest_path=dest_path, fetch_remote=False, properties=object)
             id_map[cordra_id] = crate_obj.id
         elif object["@type"] == "Dataset":
-            # TODO integration of nested datasets still has some issues when downloading the dataset:
-            # Files are placed relative to the root dataset, so if two datasets contain a file under the same path, they are overwritten
+            # TODO integration of nested datasets has some issues with the download option set:
+            # - files are placed relative to the root dataset. Therefore, if two datasets contain a file under the same path, only one file will be present
             # Instead, we could place datasets in subfolders (foldername = cordra id?) and rewrite the file path
-            # However, this would require
-            # - Some refactoring to rewrite file paths based on what dataset they belong to
-            # - What if two files are referenced from the two datasets? Then, they would be added twice under different paths (could add a sameAs then)
-            # A more simple approach would be to not include files from other datasets in a download, but make them web resources similar to the detached RO-Crate.
+            # However, this would require some refactoring to rewrite file paths based on what dataset reference them
+            # Alternatively, we could opt to not include the files from nested datasets in the final crate, but only reference their URL:
             # https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html#directories-on-the-web-dataset-distributions
             for key, value in object.items():
                 if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
