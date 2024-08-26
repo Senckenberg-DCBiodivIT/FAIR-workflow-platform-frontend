@@ -95,6 +95,8 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
     dataset = next(filter(lambda o: "@id" in o and o["@id"] == dataset_id, flattened["@graph"]))
     for key, value in dataset.items():
         if key == "@context" or key == "@id" or key == "@type": continue
+        if key == "isPartOf":
+            value = {"@id": remote_urls[value["@id"]]}
         if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
             value = value["@value"]
         crate.root_dataset[key] = replace_values(value, id_map)
