@@ -198,20 +198,16 @@ class DatasetDetailView(TemplateView):
 
         # get digital object from cordra
         try:
-            objects = self._connector.resolve_objects(id)
+            object = self._connector.get_object_by_id(id)
         except HTTPError as e:
             # Cordra responds with 401 if not a public object is not found.
-            if e.response.status_code == 401:
+            if e.response.status_code == 401 or e.response.status_code == 404:
                 raise Http404
             raise
 
-
-        if not id in objects or not "Dataset" in objects[id]["@type"]:
-            raise Http404
-
         # return response:
         # - if requested in ROCrate format or as a zip , return the zipped RO-Crate
-        # - if requested in json, redirect to the original digital object
+        # - if requested in json, return the digital object
         # - return the rendered http page otherwise
         response_format = None
         if "format" in request.GET:
@@ -222,12 +218,13 @@ class DatasetDetailView(TemplateView):
         accept = request.META.get("HTTP_ACCEPT", None).lower()
 
         if response_format == "rocrate":
+            objects = self._connector.resolve_objects(id, nested=True)
             if download or accept == "application/zip":
-                # return HttpResponse("not implemented yet", status=501)
                 return self.as_ROCrate(request, id, objects, download=True)
             else:
                 return self.as_ROCrate(request, id, objects, download=False)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
-            return redirect(self._connector.get_object_abs_url(id))
+            return JsonResponse(object)
         else:
+            objects = self._connector.resolve_objects(id, nested=False)
             return self.render(request, id, objects)

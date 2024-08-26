@@ -44,10 +44,7 @@ class CordraConnector:
         """ retrieve object from cordra. Raises if the object was not found. """
         url = self.get_object_abs_url(id)
         response = requests.get(url, verify=False)
-        if response.status_code != 200:
-            raise Exception(
-                f"Could not receive object with PID {id} (Backend responded with {response.status_code})"
-            )
+        response.raise_for_status()
 
         return response.json()
 
@@ -55,10 +52,7 @@ class CordraConnector:
         url = urljoin(self._base_url, "search")
         url = f"{url}?{urlencode({'query': ' OR '.join(['id:' + id for id in ids])})}"
         response = requests.get(url, verify=False)
-        if response.status_code != 200:
-            raise Exception(
-                f"Could not resolve list of ids (Backend responded with {response.status_code})"
-            )
+        response.raise_for_status()
 
         return response.json()["results"]
 
@@ -103,21 +97,25 @@ class CordraConnector:
         else:
             return self._resolve(discovered_ids, resolved_objects, max_recursion - 1)
 
-    def _resolve_object_graph(self, id: str) -> list[dict[str, Any]]:
+    def _resolve_object_graph(self, id: str, nested) -> list[dict[str, Any]]:
         url = urljoin(self._base_url, "cordra/call")
-        url = f"{url}?{urlencode({'objectId': id, "method": "asGraph"})}"
+        params = {
+            "objectId": id,
+            "method": "asNestedGraph" if nested else "asGraph"
+        }
+        url = f"{url}?{urlencode(params)}"
         response = requests.get(url, verify=False)
         response.raise_for_status()
 
         return response.json()["@graph"]
 
-    def resolve_objects(self, object_id: str, resolved_objects=None, max_recursion=3) -> dict[str, [dict[str, Any]]]:
+    def resolve_objects(self, object_id: str, nested: bool = False) -> dict[str, [dict[str, Any]]]:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """
-        cache_key = f"dataset-objects-{object_id}"
+        cache_key = f"dataset-objects-{object_id}-nested={nested}"
         objects = cache.get(cache_key)
         if objects is None:
-            objects = dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id)))
+            objects = dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id, nested)))
             cache.set(cache_key, objects, 15*60)
         return objects
