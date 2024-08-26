@@ -35,8 +35,15 @@ class DatasetDetailView(TemplateView):
         link_digital_object = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=json"
 
         prov_action = next(iter(elem for (key, elem) in objects.items() if "CreateAction" in elem["@type"]), None)
-        if prov_action is not None:
-
+        if prov_action is None:
+            # if there is no provenance, check if there is a parent dataset to link to
+            if "isPartOf" in dataset:
+                prov_context = {
+                    "parent_datasets": [(parent_id, request.build_absolute_uri(reverse("dataset_detail", args=[parent_id]))) for parent_id in dataset["isPartOf"]]
+                }
+            else:
+                prov_context = None
+        else:
             prov_agent_internal_id = prov_action.get("agent")
             prov_start_time = prov_action.get("startTime", None)
             prov_end_time = prov_action.get("endTime", None)
@@ -67,16 +74,14 @@ class DatasetDetailView(TemplateView):
                 "end_time": datetime.strptime(prov_end_time, "%Y-%m-%dT%H:%M:%SZ") if prov_end_time is not None else None,
                 "parameters": parameters
             }
-        else:
-            prov_context = None
 
         # render content
         context = {
             "id": id,
-            "name": dataset["name"],
-            "description": dataset["description"],
-            "keywords": dataset["keywords"] if "keywords" in dataset else [],
-            "datePublished": dataset["datePublished"],
+            "name": dataset.get("name"),
+            "description": dataset.get("description"),
+            "keywords": dataset.get("keywords", []),
+            "datePublished": dataset.get("datePublished"),
             "authors": authors,
             "license_id": license_id,
             "images": [],
@@ -103,7 +108,7 @@ class DatasetDetailView(TemplateView):
                 })
             else:
                 payload_contentUrl = item["contentUrl"]
-                item_type = item["encodingFormat"]
+                item_type = item.get("encodingFormat", "")
                 item_abs_url = self._connector.get_object_abs_url(part_id, payload_contentUrl)
                 items.append({
                     "name": "/".join(item_abs_url.split("/")[-2:]),

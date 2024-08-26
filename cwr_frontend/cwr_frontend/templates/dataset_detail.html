@@ -74,6 +74,16 @@
     {% if provenance %}
     <table class="f6 w-100 mw8">
         <tbody>
+        {% if provenance.parent_datasets %}
+        <tr class="stripe-dark">
+            <td class="pa1">Parent Dataset(s):</td>
+            <td class="pa1">
+                {% for parent_id, parent_url in provenance.parent_datasets %}
+                <a href="{{ parent_url }}">{{ parent_id }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        {% else %}
         <tr class="stripe-dark">
             <td class="pa1">Agent:</td>
             <td class="pa1">{{ provenance.agent_name }} (<a href="{{ provenance.agent_id }}">{{ provenance.agent_id }})</a></td>
@@ -110,6 +120,7 @@
                 {% endfor %}
             </td>
         </tr>
+        {% endif %}
         {% endif %}
         </tbody>
     </table>

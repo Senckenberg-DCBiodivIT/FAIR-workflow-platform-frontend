@@ -38,9 +38,9 @@ class DatasetListView(TemplateView):
             items_reduced.append(dict(
                 id=id,
                 name=name,
-                description=content["description"],
-                license=content["license"] if "license" in content else None,
-                file_count=len(content["hasPart"]),
+                description=content.get("description", ""),
+                license=content.get("license", None),
+                file_count=len(content.get("hasPart", [])),
                 has_workflow="mainEntity" in content,
                 has_provenance="mentions" in content and len(content["mentions"]) > 0,
                 date_modified=datetime.strptime(content["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
