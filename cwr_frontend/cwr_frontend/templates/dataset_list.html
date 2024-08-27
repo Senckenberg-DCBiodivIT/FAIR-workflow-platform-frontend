@@ -3,7 +3,10 @@
 {% block headline %}Datasets{% endblock %}
 
 {% block content %}
-<p class="mv2"><i>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} datasets</i></p>
+<div class="mv2">
+    <i>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} datasets</i>
+    <a href="{% url 'dataset_list'%}?nested={{ nested|yesno:'false,true'}}" class="fr f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1">{% if nested %}Hide nested{% else %}Show nested{% endif %}</a>
+</div>
 <div class="dataset-list pt3">
     {% if page is not None %}
     {% for item in page %}
@@ -24,11 +27,11 @@
         <div class="cf pa3 pa4-ns2">
             <nav class="cf">
                 {% if page.has_previous %}
-                <a class="dib link dim black f6 f5-ns b pa2" href="?page={{ page.previous_page_number }}&page_size={{ page.paginator.per_page }}" title="Previous Page">&larr; Prev. Page</a>
+                <a class="dib link dim black f6 f5-ns b pa2" href="?page={{ page.previous_page_number }}&page_size={{ page.paginator.per_page }}&nested={{ nested }}" title="Previous Page">&larr; Prev. Page</a>
                 {% endif %}
-                <a class="dib link dim black f6 f5-ns b pa2" href="#" title="{{ page.number }}&page_size={{ page.paginator.per_page }}">{{ page.number }}</a>
+                <a class="dib link dim black f6 f5-ns b pa2" href="#" title="{{ page.number }}&page_size={{ page.paginator.per_page }}&nested={{ nested }}">{{ page.number }}</a>
                 {% if page.has_next %}
-                <a class="dib link dim black f6 f5-ns b pa2" href="?page={{ page.next_page_number }}&page_size={{ page.paginator.per_page }}" title="Next Page">Next Page &rarr;</a>
+                <a class="dib link dim black f6 f5-ns b pa2" href="?page={{ page.next_page_number }}&page_size={{ page.paginator.per_page }}&nested={{ nested }}" title="Next Page">Next Page &rarr;</a>
                 {% endif %}
             </nav>
         </div>

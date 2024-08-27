@@ -25,12 +25,15 @@ class CordraConnector:
             url += f"?payload={payload_name}"
         return url
 
-    def list_datasets(self, page_num=0, page_size=25) -> list[dict[str, str]]:
+    def list_datasets(self, page_num=0, page_size=25, include_nested: bool = False) -> list[dict[str, str]]:
         """ retrieve list of objects from cordra """
+        query = "type:Dataset"
+        if not include_nested:
+            query += " AND NOT /isPartOf/_:[* TO *]"  # exclude datasets with the isPartOf property
         params = {
             "pageNum": page_num,
             "pageSize": page_size,
-            "query": "type:Dataset",
+            "query": query,
             "sortFields": 'metadata/modifiedOn DESC '
         }
         url = f'{urljoin(self._base_url, "search")}?{urlencode(params)}'

@@ -20,9 +20,10 @@ class DatasetListView(TemplateView):
     _logger = logging.getLogger(__name__)
 
     class DatasetPaginator(Paginator):
-        def __init__(self, connector, page_size):
+        def __init__(self, connector, page_size, list_all):
             self.connector = connector
             self.page_size = page_size
+            self.list_all = list_all
             self._count = None
             self._cached_page = None
             super().__init__([], page_size)
@@ -30,7 +31,7 @@ class DatasetListView(TemplateView):
         @property
         def count(self):
             if self._count == None:
-                response = self.connector.list_datasets(1, self.page_size)
+                response = self.connector.list_datasets(1, self.page_size, self.list_all)
                 self._count = response["size"]
                 self._cached_page = self._results_to_page(response["results"], 0)
             return self._count
@@ -40,7 +41,7 @@ class DatasetListView(TemplateView):
             if self._cached_page is not None and self._cached_page.number == number:
                 return self._cached_page
 
-            response = self.connector.list_datasets(page_num=number-1, page_size=self.page_size)
+            response = self.connector.list_datasets(number-1, self.page_size, self.list_all)
             return self._results_to_page(response["results"], number)
 
         def _results_to_page(self, results: dict[str, Any], page_num: int) -> Page:
@@ -73,7 +74,8 @@ class DatasetListView(TemplateView):
     def get(self, request, **kwargs):
         page_num = int(request.GET.get("page", 1))
         page_size = int(request.GET.get("page_size", 20))
-        paginator = self.DatasetPaginator(self._connector, page_size)
+        show_nested = request.GET.get("nested", "true").lower() == "true"
+        paginator = self.DatasetPaginator(self._connector, page_size, show_nested)
         try:
             page = paginator.page(page_num)
         except EmptyPage as e:
@@ -85,6 +87,7 @@ class DatasetListView(TemplateView):
         # render response
         context = {
             "page": page,
+            "nested": show_nested
         }
         response = render(request, self.template_name, context)
         if page is not None:
