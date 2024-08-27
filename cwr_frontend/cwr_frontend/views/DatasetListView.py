@@ -42,7 +42,7 @@ class DatasetListView(TemplateView):
                 license=content.get("license", None),
                 file_count=len(content.get("hasPart", [])),
                 has_workflow="mainEntity" in content,
-                has_provenance="mentions" in content and len(content["mentions"]) > 0,
+                has_provenance=len(content.get("mentions", [])) > 0 or "isPartOf" in content,
                 date_modified=datetime.strptime(content["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
                 date_created=datetime.strptime(content["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
             ))
