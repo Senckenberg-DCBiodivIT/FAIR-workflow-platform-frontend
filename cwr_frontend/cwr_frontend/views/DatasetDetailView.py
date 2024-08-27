@@ -111,7 +111,7 @@ class DatasetDetailView(TemplateView):
                 item_type = item.get("encodingFormat", "")
                 item_abs_url = self._connector.get_object_abs_url(part_id, payload_contentUrl)
                 items.append({
-                    "name": "/".join(item_abs_url.split("/")[-2:]),
+                    "name": "/".join(item_abs_url.split("payload=")[-1].split("/")[-1:]),
                     "url": item_abs_url,
                     "type": item_type,
                     "image": item_abs_url if item_type.startswith("image") else static("placeholder.png"),
