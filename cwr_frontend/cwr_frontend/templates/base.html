@@ -4,6 +4,9 @@
     {% load static %}
     <title>CWR: {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'tachyons.min.css' %}"/>
+    {% load settings_value %}
+    <link rel="shortcut icon" type="image/png" href="{% favicon %}" >
+
 </head>
 <body class="sans-serif bg-light-gray">
 <div class="page-container" style="position: relative; min-height: 100vh">
