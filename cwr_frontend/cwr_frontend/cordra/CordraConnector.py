@@ -25,7 +25,7 @@ class CordraConnector:
             url += f"?payload={payload_name}"
         return url
 
-    def list_datasets(self, page_size=100, page_num=0) -> list[dict[str, str]]:
+    def list_datasets(self, page_num=0, page_size=25) -> list[dict[str, str]]:
         """ retrieve list of objects from cordra """
         params = {
             "pageNum": page_num,

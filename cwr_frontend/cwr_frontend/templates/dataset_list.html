@@ -3,13 +3,13 @@
 {% block headline %}Datasets{% endblock %}
 
 {% block content %}
-<p class="mv2"><i>Datasets found: {{ total_size }}</i></p>
+<p class="mv2"><i>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} datasets</i></p>
 <div class="dataset-list pt3">
-    {% for item in items %}
+    {% if page is not None %}
+    {% for item in page %}
     <section class="mt2 bg-white shadow-1 pa2">
         <h1 class="f4 pv0 mb1"><a class="link dark-green no-underline dim" href="{% url 'dataset_detail' id=item.id %}">{{ item.name }}</a></h1>
         <p class="f6 lh-copy gray mv0">{{ item.id }}</p>
-<!--        <p class="mv2 f6"><span class="fw6">Name:</span> {{ item.name }}</p>-->
         <p class="mv2 f6"><span class="fw6">Description:</span> {{ item.description }}</p>
         <p class="mv2 f6"><span class="fw6">Files:</span> {{ item.file_count }}</p>
         <p class="mv2 f6"><span class="fw6">License:</span> <a class="link dim black" href="{{ item.license }}">{{ item.license }}</a></p>
@@ -18,5 +18,21 @@
         <p class="f6 lh-copy gray mb0">Created: {{ item.date_created|date:"d M. Y H:m" }} UTC, Last modified: {{ item.date_modified|date:"d M. Y H:m" }} UTC </p>
     </section>
     {% endfor %}
+    {% endif %}
+
+    <div class="tc mw8 center mt2">
+        <div class="cf pa3 pa4-ns2">
+            <nav class="cf">
+                {% if page.has_previous %}
+                <a class="dib link dim black f6 f5-ns b pa2" href="?page={{ page.previous_page_number }}&page_size={{ page.paginator.per_page }}" title="Previous Page">&larr; Prev. Page</a>
+                {% endif %}
+                <a class="dib link dim black f6 f5-ns b pa2" href="#" title="{{ page.number }}&page_size={{ page.paginator.per_page }}">{{ page.number }}</a>
+                {% if page.has_next %}
+                <a class="dib link dim black f6 f5-ns b pa2" href="?page={{ page.next_page_number }}&page_size={{ page.paginator.per_page }}" title="Next Page">Next Page &rarr;</a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

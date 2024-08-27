@@ -1,5 +1,8 @@
 from datetime import datetime
+from typing import Any
 
+from django.core.paginator import Paginator, Page, EmptyPage
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django.shortcuts import render
@@ -16,42 +19,74 @@ class DatasetListView(TemplateView):
 
     _logger = logging.getLogger(__name__)
 
+    class DatasetPaginator(Paginator):
+        def __init__(self, connector, page_size):
+            self.connector = connector
+            self.page_size = page_size
+            self._count = None
+            self._cached_page = None
+            super().__init__([], page_size)
+
+        @property
+        def count(self):
+            if self._count == None:
+                response = self.connector.list_datasets(1, self.page_size)
+                self._count = response["size"]
+                self._cached_page = self._results_to_page(response["results"], 0)
+            return self._count
+
+        def page(self, number):
+            number = self.validate_number(number)
+            if self._cached_page is not None and self._cached_page.number == number:
+                return self._cached_page
+
+            response = self.connector.list_datasets(page_num=number-1, page_size=self.page_size)
+            return self._results_to_page(response["results"], number)
+
+        def _results_to_page(self, results: dict[str, Any], page_num: int) -> Page:
+            items_reduced = []
+            for item in results:
+                id = item["id"]
+                if id is None:
+                    raise Exception(f"Dataset has no valid id for {item}")
+
+                content = item["content"]
+                if "name" in content:
+                    name = content["name"]
+                else:
+                    self._logger.warning(f"Dataset has no valid name for {item}")
+                    name = id
+
+                items_reduced.append(dict(
+                    id=id,
+                    name=name,
+                    description=content.get("description", ""),
+                    license=content.get("license", None),
+                    file_count=len(content.get("hasPart", [])),
+                    has_workflow="mainEntity" in content,
+                    has_provenance=len(content.get("mentions", [])) > 0 or "isPartOf" in content,
+                    date_modified=datetime.strptime(content["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                    date_created=datetime.strptime(content["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                ))
+            return Page(items_reduced, page_num, self)
+
     def get(self, request, **kwargs):
-        items_response = self._connector.list_datasets()
-        items = items_response["results"]
-        items_total_count = items_response["size"]
-
-        # extract base metadata for all items
-        items_reduced = []
-        for item in items:
-            id = item["id"]
-            if id is None:
-                raise Exception(f"Dataset has no valid id for {item}")
-
-            content = item["content"]
-            if "name" in content:
-                name = content["name"]
+        page_num = int(request.GET.get("page", 1))
+        page_size = int(request.GET.get("page_size", 20))
+        paginator = self.DatasetPaginator(self._connector, page_size)
+        try:
+            page = paginator.page(page_num)
+        except EmptyPage as e:
+            if page_num > 1:
+                return HttpResponseRedirect(reverse("dataset_list"))
             else:
-                self._logger.warning(f"Dataset has no valid name for {item}")
-                name = id
-
-            items_reduced.append(dict(
-                id=id,
-                name=name,
-                description=content.get("description", ""),
-                license=content.get("license", None),
-                file_count=len(content.get("hasPart", [])),
-                has_workflow="mainEntity" in content,
-                has_provenance=len(content.get("mentions", [])) > 0 or "isPartOf" in content,
-                date_modified=datetime.strptime(content["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                date_created=datetime.strptime(content["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            ))
+                page = Page([], 1, paginator)
 
         # render response
         context = {
-            "items": items_reduced,
-            "total_size": items_total_count
+            "page": page,
         }
         response = render(request, self.template_name, context)
-        add_signposts(response, type="https://schema.org/CollectionPage", item=[request.build_absolute_uri(reverse("dataset_detail", args=[item["id"]])) for item in items])
+        if page is not None:
+            add_signposts(response, type="https://schema.org/CollectionPage", item=[request.build_absolute_uri(reverse("dataset_detail", args=[item["id"]])) for item in page.object_list])
         return response
