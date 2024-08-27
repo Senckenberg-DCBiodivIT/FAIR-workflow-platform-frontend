@@ -104,7 +104,7 @@ class DatasetDetailView(TemplateView):
                     "name": item.get("name", "/".join(item_abs_url.split("/")[-2:])),
                     "url": item_abs_url,
                     "type": "dataset",
-                    "image": static("folder-tree.png"),
+                    "image": None,
                 })
             else:
                 payload_contentUrl = item["contentUrl"]
@@ -114,7 +114,7 @@ class DatasetDetailView(TemplateView):
                     "name": "/".join(item_abs_url.split("payload=")[-1].split("/")[-1:]),
                     "url": item_abs_url,
                     "type": item_type,
-                    "image": item_abs_url if item_type.startswith("image") else static("placeholder.png"),
+                    "image": item_abs_url if item_type.startswith("image") else None,
                 })
 
         # add images to page context:

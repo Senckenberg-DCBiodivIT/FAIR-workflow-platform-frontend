@@ -161,13 +161,25 @@
     <div class="flex flex-wrap">
     {% for item in items %}
         <div class="w-25 w-20-ns ph2">
-            <a href="{{ item.url }}">
+            <a class="no-underline link dim" href="{{ item.url }}">
                 <div class="m-100 flex justify-center items-center">
+                    {% if item.image %}
                     <img src="{{ item.image }}" title="{{ item.url }}" style="max-height: 100px" class="db mw-100"/>
+                    {% elif item.type == "dataset" %}
+                    <i class="fas fa-folder-open black db mw-100 f1"></i>
+                    {% elif item.type == "text/plain" or item.name == "main.log" %}
+                    <i class="far fa-file-lines black db mw-100 f1"></i>
+                    {% elif item.type == "text/yaml" or item.type == "text/json" %}
+                    <i class="far fa-file-code black db mw-100 f1"></i>
+                    {% elif item.type == "application/x-netcdf" %}
+                    <i class="fas fa-file-invoice black db mw-100 f1"></i>
+                    {% else %}
+                    <i class="far fa-file black db mw-100 f1"></i>
+                    {% endif %}
                 </div>
                 <dl class="mt2 f6 lh-copy">
                     <dt class="clip">Title</dt>
-                    <dd class="ml0 black tc truncate">{{ item.name }}</dd>
+                    <dd class="ml0 black tc truncate underline">{{ item.name }}</dd>
                 </dl>
             </a>
         </div>
