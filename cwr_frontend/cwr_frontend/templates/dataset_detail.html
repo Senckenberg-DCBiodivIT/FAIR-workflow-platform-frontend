@@ -180,6 +180,10 @@
                 <dl class="mt2 f6 lh-copy">
                     <dt class="clip">Title</dt>
                     <dd class="ml0 black tc truncate underline">{{ item.name }}</dd>
+                    {% if item.size_str %}
+                    <dt class="clip">Size</dt>
+                    <dd class="ml0 black tc truncate underline">({{ item.size_str }})</dd>
+                    {% endif %}
                 </dl>
             </a>
         </div>

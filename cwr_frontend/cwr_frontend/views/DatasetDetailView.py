@@ -115,6 +115,7 @@ class DatasetDetailView(TemplateView):
                     "url": item_abs_url,
                     "type": item_type,
                     "image": item_abs_url if item_type.startswith("image") else None,
+                    "size_str": "{:.2f} MB".format(item["contentSize"] / 1024 / 1024)
                 })
 
         # add images to page context:
