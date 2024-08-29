@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Datasets{% endblock %}
 {% block headline %}Datasets{% endblock %}
-
+{% block head %}
+{% load render_json_ld from json_ld %}
+{% render_json_ld sd %}
+{% endblock %}
 {% block content %}
 <div class="mv2">
     <i>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} datasets</i>

@@ -77,7 +77,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_browser_reload',  # auto reload website in development
-    'django_static_fontawesome'
+    'django_static_fontawesome',
+    'django_json_ld',
 ]
 
 MIDDLEWARE = [

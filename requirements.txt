@@ -18,6 +18,7 @@ django-allauth==64.0.0
 django-browser-reload==1.13.0
 django-compat==1.0.15
 django-environ==0.11.2
+django-json-ld==0.0.5
 django-static-fontawesome==6.5.2.0
 django4-background-tasks==1.2.10
 django_signposting==0.9.0

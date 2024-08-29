@@ -6,6 +6,10 @@
 {% include 'banner.html' %}
 {% endwith %}
 {% endblock %}
+{% block head %}
+{% load render_json_ld from json_ld %}
+{% render_json_ld sd %}
+{% endblock %}
 {% block content %}
 {% load static %}
 <section id="Details" class="mt2 bg-white shadow-1 pa2">

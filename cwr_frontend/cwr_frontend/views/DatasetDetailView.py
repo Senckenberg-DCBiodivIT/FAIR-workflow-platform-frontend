@@ -5,6 +5,7 @@ from typing import Any
 
 import requests
 import zipstream
+from pyld import jsonld
 from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -12,8 +13,8 @@ from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
 from requests import HTTPError
 from rocrate.rocrate import ROCrate
-from django.templatetags.static import static
 
+from cwr_frontend.jsonld_utils import pyld_caching_document_loader
 from cwr_frontend.rocrate_utils import build_ROCrate
 from cwr_frontend.cordra.CordraConnector import CordraConnector
 
@@ -90,6 +91,7 @@ class DatasetDetailView(TemplateView):
             "provenance": prov_context,
             "date_modified": datetime.strptime(dataset["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
             "date_created": datetime.strptime(dataset["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+            "sd": self._jsonld(id, objects),
         }
 
         # get list of items and their content type: tuple of absolute_url, content_type
@@ -138,7 +140,7 @@ class DatasetDetailView(TemplateView):
                 (link_rocrate + "&download=true", "application/zip"),
                 # (link_digital_object, "application/ld+json"),
             ],
-            "item": signpost_items
+            "item": signpost_items,
         }
         response = render(request, self.template_name, context)
         add_signposts(response, **signposts)
@@ -243,3 +245,9 @@ class DatasetDetailView(TemplateView):
         else:
             objects = self._connector.resolve_objects(id, nested=False)
             return self.render(request, id, objects)
+
+    def _jsonld(self, object_id, objects):
+        jsonld.set_document_loader(pyld_caching_document_loader)
+        framed = jsonld.frame({"@graph": list(objects.values())}, {"@context": "https://schema.org", "@graph": [{"name": objects[object_id]["name"]}]})
+        framed["@type"] = ["Dataset", "ItemPage"]
+        return framed

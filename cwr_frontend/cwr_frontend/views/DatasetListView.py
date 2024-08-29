@@ -87,9 +87,30 @@ class DatasetListView(TemplateView):
         # render response
         context = {
             "page": page,
-            "nested": show_nested
+            "nested": show_nested,
+            "sd": self._jsonld(page, request),
         }
         response = render(request, self.template_name, context)
         if page is not None:
             add_signposts(response, type="https://schema.org/CollectionPage", item=[request.build_absolute_uri(reverse("dataset_detail", args=[item["id"]])) for item in page.object_list])
         return response
+
+    def _jsonld(self, page, request):
+        return {
+            "@context": "https://schema.org/",
+            "@type": "DataCatalog",
+            "@id": request.build_absolute_uri(reverse("dataset_list")),
+            "name": "Agriculture and climate change datasets",
+            "description": "A collection of datasets from the agriculture and climate change use case at Destination Earth. Datasets for crop wild relatives",
+            "keywords": ["Destination Earth", "BioDT", "Crop wild relatives", "CWR", "RO-Crate", "FAIR Digital Objects"],
+            "author": {
+                "@id": "https://orcid.org/0000-0001-9447-460X",
+                "@type": "Person",
+                "name": "Daniel Bauer",
+                "affiliation": "Senckenberg Society for Nature Research"
+            },
+            "publication": {
+                "@id": "https://doi.org/10.3897/biss.8.134479",
+            }
+
+        }
