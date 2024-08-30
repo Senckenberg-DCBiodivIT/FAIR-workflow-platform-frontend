@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Pattern
+from typing import Any
 
 from pyld import jsonld
 import requests
@@ -8,6 +8,17 @@ from pyld.jsonld import JsonLdError, parse_link_header, LINK_HEADER_REL
 import string
 import urllib.parse as urllib_parse
 from django.core.cache import cache
+import hashlib
+
+def cached_frame(input: dict|list, frame: dict, cache_time=60 * 60 * 24, skip_cache=False):
+    cache_key = hashlib.sha1(json.dumps([input, frame]).encode('utf-8')).hexdigest()
+    if not skip_cache:
+        response = cache.get(cache_key)
+        if response is not None:
+            return json.loads(response)
+    framed = jsonld.frame(input, frame)
+    cache.set(cache_key, json.dumps(framed), cache_time)
+    return framed
 
 
 def pyld_caching_document_loader(url, options={}, cache_time=60 * 60 * 24, skip_cache=False):

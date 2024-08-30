@@ -156,8 +156,8 @@ else:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "/var/tmp/django_cache/cwr_frontend",
-            "TIMEOUT": 0,
+            "LOCATION": "unique-snowflake",
+            "TIMEOUT": 300,
         }
     }
     # Do not send cache-control headers for pages

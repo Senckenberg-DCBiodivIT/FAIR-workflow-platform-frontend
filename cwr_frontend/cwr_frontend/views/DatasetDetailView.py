@@ -14,7 +14,7 @@ from django_signposting.utils import add_signposts
 from requests import HTTPError
 from rocrate.rocrate import ROCrate
 
-from cwr_frontend.jsonld_utils import pyld_caching_document_loader
+from cwr_frontend.jsonld_utils import pyld_caching_document_loader, cached_frame
 from cwr_frontend.rocrate_utils import build_ROCrate
 from cwr_frontend.cordra.CordraConnector import CordraConnector
 
@@ -144,7 +144,6 @@ class DatasetDetailView(TemplateView):
         }
         response = render(request, self.template_name, context)
         add_signposts(response, **signposts)
-
         return response
 
     def _build_ROCrate(self, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, download: bool) -> ROCrate:
@@ -212,7 +211,6 @@ class DatasetDetailView(TemplateView):
 
     def get(self, request, **kwargs):
         id = kwargs.get("id")
-
         # get digital object from cordra
         try:
             object = self._connector.get_object_by_id(id)
@@ -248,6 +246,6 @@ class DatasetDetailView(TemplateView):
 
     def _jsonld(self, object_id, objects):
         jsonld.set_document_loader(pyld_caching_document_loader)
-        framed = jsonld.frame({"@graph": list(objects.values())}, {"@context": "https://schema.org", "@graph": [{"name": objects[object_id]["name"]}]})
+        framed = cached_frame({"@graph": list(objects.values())}, {"@context": "https://schema.org", "@graph": [{"name": objects[object_id]["name"]}]})
         framed["@type"] = ["Dataset", "ItemPage"]
         return framed
