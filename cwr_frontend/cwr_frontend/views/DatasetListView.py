@@ -9,6 +9,7 @@ from django.shortcuts import render
 import logging
 
 from django_signposting.utils import add_signposts
+from signposting import Signpost, LinkRel
 
 from cwr_frontend.cordra.CordraConnector import CordraConnector
 
@@ -92,7 +93,10 @@ class DatasetListView(TemplateView):
         }
         response = render(request, self.template_name, context)
         if page is not None:
-            add_signposts(response, type="https://schema.org/CollectionPage", item=[request.build_absolute_uri(reverse("dataset_detail", args=[item["id"]])) for item in page.object_list])
+            add_signposts(
+                response,
+                Signpost(LinkRel.type, "https://schema.org/CollectionPage"),
+                *[Signpost(LinkRel.item, request.build_absolute_uri(reverse("dataset_detail", args=[item["id"]]))) for item in page.object_list])
         return response
 
     def _jsonld(self, page, request):

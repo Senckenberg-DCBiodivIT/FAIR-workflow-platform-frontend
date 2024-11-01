@@ -13,6 +13,8 @@ from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
 from requests import HTTPError
 from rocrate.rocrate import ROCrate
+from signposting import LinkRel, Signpost
+import requests
 
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader, cached_frame
 from cwr_frontend.rocrate_utils import build_ROCrate
@@ -124,26 +126,25 @@ class DatasetDetailView(TemplateView):
         context["items"] = items
 
         # render response and attach signposting links
-        signpost_items = []
+        signposts = [
+            Signpost(LinkRel.type, "https://schema.org/ItemPage"),
+            Signpost(LinkRel.type, "https://schema.org/Dataset"),
+            Signpost(LinkRel.license, license_id),
+            Signpost(LinkRel.cite_as, request.build_absolute_uri(reverse("dataset_detail", args=[id]))),
+            Signpost(LinkRel.describedby, link_rocrate, "application/ld+json"),
+            Signpost(LinkRel.describedby, link_rocrate + "&download=true", "application/zip"),
+            # Signpost(LinkRel.described_by, link_digital_object, "application/ld+json"),
+        ]
+        for (_, author_url) in authors:
+            signposts.append(Signpost(LinkRel.author, author_url))
         for item in items:
+            item_url = requests.utils.requote_uri(item["url"])
             if item["type"] == "dataset":
-                signpost_items.append((item["url"] + "&format=ROCrate", "application/ld+json"))
+                signposts.append(Signpost(LinkRel.item, item_url + "&format=ROCrate", "application/ld+json"))
             else:
-                signpost_items.append((item["url"], item["type"]))
-        signposts = {
-            "type": ["https://schema.org/ItemPage", "https://schema.org/Dataset"],
-            "author": [author_url for (_, author_url) in authors],
-            "license": [license_id],
-            "cite-as": [request.build_absolute_uri(reverse("dataset_detail", args=[id]))],
-            "describedBy": [
-                (link_rocrate, "application/ld+json"),
-                (link_rocrate + "&download=true", "application/zip"),
-                # (link_digital_object, "application/ld+json"),
-            ],
-            "item": signpost_items,
-        }
+                signposts.append(Signpost(LinkRel.item, item_url, item["type"]))
         response = render(request, self.template_name, context)
-        add_signposts(response, **signposts)
+        add_signposts(response, *signposts)
         return response
 
     def _build_ROCrate(self, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, download: bool) -> ROCrate:
