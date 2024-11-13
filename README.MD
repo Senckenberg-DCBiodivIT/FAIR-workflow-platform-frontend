@@ -1,6 +1,7 @@
 # FAIR workflow platform frontend for Crop wild relatives use case
 
-Frontend for the crop wild relatives usecase.
+Frontend for the FAIR workflow platform for the crop wild relatives usecase.
+This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-workflow-platform).
 
 ## Build
 
