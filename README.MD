@@ -7,7 +7,9 @@ Frontend for the crop wild relatives usecase.
 `docker build -t cwr-frontend .`
 
 ## Deployment
-Configuration happens in `cwr_frontend/settings.py`.
+
+
+`docker run -d -p 8000:8000 --env-file .env cwr-frontend`
 
 ### Environment variables
 
