@@ -1,7 +1,10 @@
 import json
 import os
+import re
 
 import pytest
+from rocrate_validator import services, models
+import tempfile
 
 from cwr_frontend import rocrate_utils
 
@@ -24,6 +27,24 @@ def test_remote_ro_crate():
             remote_urls[id] = "https://example.com/" + id
 
     ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=False)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ro_crate.write(tmp_dir)
+        settings = services.ValidationSettings(
+            data_path=tmp_dir,
+            profile_identifier="workflow-run-crate-0.5",
+            requirement_severity=models.Severity.REQUIRED,
+            abort_on_first=False
+        )
+        result = services.validate(settings)
+        if result.has_issues():
+            for issue in result.get_issues():
+                # Ignore missing workflow. It can't be found because it is an empty example crate.
+                if re.search("Main Workflow .*? not found in crate", issue.message):
+                    continue
+                else:
+                    raise AssertionError("Crate validation failed: " + str(issue))
+
     assert ro_crate.root_dataset["@id"] == "./"
 
     assert ro_crate.dereference("https://orcid.org/0000-0001-9447-460X") is not None
@@ -88,6 +109,24 @@ def test_file_based_ro_crate():
             remote_urls[id] = "https://example.com/" + id
 
     ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=True)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ro_crate.write(tmp_dir)
+        settings = services.ValidationSettings(
+            data_path=tmp_dir,
+            profile_identifier="workflow-run-crate-0.5",
+            requirement_severity=models.Severity.REQUIRED,
+            abort_on_first=False
+        )
+        result = services.validate(settings)
+        if result.has_issues():
+            for issue in result.get_issues():
+                # Ignore missing workflow. It can't be found because it is an empty example crate.
+                if re.search("Main Workflow .*? not found in crate", issue.message):
+                    continue
+                else:
+                    raise AssertionError("Crate validation failed: " + str(issue))
+
     assert len(ro_crate.get_entities()) == 13  # root_dataset, metadata, 3 files, 8 contextual
 
     # check dataset
