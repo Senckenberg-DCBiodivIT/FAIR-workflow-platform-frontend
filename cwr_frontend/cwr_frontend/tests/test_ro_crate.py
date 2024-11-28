@@ -19,7 +19,7 @@ def test_remote_ro_crate():
     """"
     Test RO crate with remote objects
     """
-    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects.json"), "r"))
+    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects_workflow.json"), "r"))
     dataset_id = "cwr/2b408313359f2b6f18c2"
     remote_urls = {}
     for id, object in dataset_objects.items():
@@ -73,7 +73,7 @@ def test_remote_ro_crate_missing_urls():
     """
     Should raise an error if a remote url to a file is missing, but not if a person url is missing
     """
-    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects.json"), "r"))
+    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects_workflow.json"), "r"))
     dataset_id = "cwr/2b408313359f2b6f18c2"
     remote_urls = {}
 
@@ -101,7 +101,7 @@ def test_file_based_ro_crate():
     """
     Test RO crate with file based objects
     """
-    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects.json"), "r"))
+    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects_workflow.json"), "r"))
     dataset_id = "cwr/2b408313359f2b6f18c2"
     remote_urls = {}
     for id, object in dataset_objects.items():
@@ -219,3 +219,45 @@ def test_file_based_ro_crate():
         "name": "text",
         "value": "test parameter"
     }, action_property.as_jsonld())
+
+def test_ro_crate_without_workflow():
+
+    """
+    Test RO crate with file based objects that does not contain a workflow.
+    It should conform to Ro-Crate but not include the WRROC profile
+    """
+    dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), "dataset_objects.json"), "r"))
+    dataset_id = "cwr/c4e56be8890a3fda2fac"
+    remote_urls = {"cwr/d1d35fd05b740bb3c393": "https://example.com/cwr/d1d35fd05b740bb3c393?format=ROCrate"}
+    for id, object in dataset_objects.items():
+        if "MediaObject" in object["@type"] or "Person" in object["@type"]:
+            remote_urls[id] = "https://example.com/" + id
+
+    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=True)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ro_crate.write(tmp_dir)
+        settings = services.ValidationSettings(
+            data_path=tmp_dir,
+            profile_identifier="ro-crate-1.1",
+            requirement_severity=models.Severity.REQUIRED,
+            abort_on_first=False
+        )
+        result = services.validate(settings)
+        if result.has_issues():
+            for issue in result.get_issues():
+                # Ignore missing workflow. It can't be found because it is an empty example crate.
+                if re.search("Main Workflow .*? not found in crate", issue.message):
+                    continue
+                else:
+                    raise AssertionError("Crate validation failed: " + str(issue))
+
+    assert len(ro_crate.get_entities()) == 17  # root_dataset, metadata, 14 files, 1 Person
+
+    # Make sure this crate does not use the WRROC profile
+    assert ro_crate.metadata["conformsTo"] == "https://w3id.org/ro/crate/1.1"
+    assert len(ro_crate.metadata.extra_contexts) == 0
+
+    # Make sure this crate references its parents crate for provenance
+    assert "isPartOf" in ro_crate.root_dataset
+    assert ro_crate.root_dataset["isPartOf"] == "https://example.com/cwr/d1d35fd05b740bb3c393?format=ROCrate"

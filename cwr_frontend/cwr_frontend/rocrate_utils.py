@@ -101,6 +101,10 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             value = value["@value"]
         crate.root_dataset[key] = replace_values(value, id_map)
 
+    # nested crates don't always have a description (ModGP), so we use their name to make a valid crate
+    if not "description" in crate.root_dataset:
+        crate.root_dataset["description"] = crate.root_dataset["name"]
+
     # Replace corda IDs with RO-Crate IDs
     for entity in crate.get_entities():
         for key in entity:
