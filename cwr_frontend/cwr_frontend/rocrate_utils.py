@@ -115,18 +115,18 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
                     replaced = [{"@id": entity_id} for entity_id in replaced]
             entity[key] = replaced
 
-
     if "mainEntity" in crate.root_dataset:
         # make this a valid workflow run RO-Crate
         crate.metadata.extra_contexts.append("https://w3id.org/ro/terms/workflow-run/context")
-        crate.root_dataset["conformsTo"] = [
-            {"@id": "https://w3id.org/ro/wfrun/process/0.1"},
-            {"@id": "https://w3id.org/ro/wfrun/workflow/0.1"},
-            {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
-        ]
         crate.metadata["conformsTo"] = [
             {"@id": "https://w3id.org/ro/crate/1.1"},
             {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
         ]
+        for profile in ["https://w3id.org/ro/wfrun/process/0.5", "https://w3id.org/ro/wfrun/workflow/0.5", "https://w3id.org/workflowhub/workflow-ro-crate/1.0"]:
+            profile_entity = crate.add(ContextEntity(crate, profile, properties={
+                "@type": "CreativeWork",
+                "version": profile.split("/")[-1],
+            }))
+            crate.root_dataset.append_to("conformsTo", profile_entity)
 
     return crate
