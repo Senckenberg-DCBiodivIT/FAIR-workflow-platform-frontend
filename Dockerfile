@@ -1,5 +1,8 @@
 FROM python:3.12.3-alpine
 
+# git is required to get packages in requirements.txt that are pulled from git
+RUN apk upgrade && apk add git
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
