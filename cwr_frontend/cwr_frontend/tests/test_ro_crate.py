@@ -88,7 +88,7 @@ def test_file_based_ro_crate():
             remote_urls[id] = "https://example.com/" + id
 
     ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=True)
-    assert len(ro_crate.get_entities()) == 9  # root_dataset, metadata, 3 files, 4 contextual
+    assert len(ro_crate.get_entities()) == 13  # root_dataset, metadata, 3 files, 8 contextual
 
     # check dataset
     dataset = ro_crate.root_dataset
@@ -111,8 +111,8 @@ def test_file_based_ro_crate():
         "mentions": {"@id": "#cwr/de5f500051a7541fbc2e"},
         "name": "Test Dataset",
         "conformsTo": [
-            {"@id": "https://w3id.org/ro/wfrun/process/0.1"},
-            {"@id": "https://w3id.org/ro/wfrun/workflow/0.1"},
+            {"@id": "https://w3id.org/ro/wfrun/process/0.5"},
+            {"@id": "https://w3id.org/ro/wfrun/workflow/0.5"},
             {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
         ]
     }, dataset.as_jsonld())
@@ -154,7 +154,8 @@ def test_file_based_ro_crate():
     compare_dicts({
         "@id": "#cwr/398b64ebca54668f662d",
         "@type": "FormalParameter",
-        "name": "text"
+        "name": "text",
+        "additionalType": "Text"
     }, formal_param.as_jsonld())
 
     action = dataset["mentions"]

@@ -184,13 +184,26 @@
     ],
     "name": "workflow.yaml",
     "description": "Argo workflow definition",
-    "programmingLanguage": "https://argoproj.github.io/workflows",
+    "programmingLanguage": "cwr/123498rsatiernw",
     "contentUrl": "workflow.yaml",
     "contentSize": 2034,
     "encodingFormat": "text/yaml",
     "input": [
       "cwr/398b64ebca54668f662d"
     ]
+  },
+  "cwr/123498rsatiernw": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/123498rsatiernw",
+    "@type": [
+      "ComputerLanguage"
+    ],
+    "name": "Argo",
+    "description": "Argo workflow language",
+    "identifier": "https://argoproj.github.io/workflows",
+    "url": "https://argoproj.github.io"
   },
   "cwr/de5f500051a7541fbc2e": {
     "@context": [
@@ -247,7 +260,8 @@
     "@type": [
       "FormalParameter"
     ],
-    "name": "text"
+    "name": "text",
+    "additionalType": "Text"
   },
   "cwr/5022e06049869532d773": {
     "@context": [
