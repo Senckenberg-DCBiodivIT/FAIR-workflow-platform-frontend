@@ -10,7 +10,7 @@ from cwr_frontend.jsonld_utils import replace_values
 
 
 def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_urls: dict[str, str],
-                  with_preview: bool = False, download: bool = False) -> ROCrate:
+                  with_preview: bool = False, detached: bool = False) -> ROCrate:
     objects = deepcopy(objects)  # make sure to not leak edits out of this method
 
     # For all objects, we first want to flatten the JSONLD to the RO Crate context
@@ -59,7 +59,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             # For files, it depends on whether this will be a remote RO-Crate or the user requested a download
             # For remote, we want to use the remote URL to the payload as ID
             # For download, we want to use the file path in the crate
-            if not download:
+            if not detached:
                 dest_path = None  # no file download url => remote file
                 if "sameAs" in object:
                     del object["sameAs"]

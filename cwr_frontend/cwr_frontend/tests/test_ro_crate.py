@@ -26,7 +26,7 @@ def test_remote_ro_crate():
         if "MediaObject" in object["@type"] or "Person" in object["@type"]:
             remote_urls[id] = "https://example.com/" + id
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=False)
+    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=False)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         ro_crate.write(tmp_dir)
@@ -79,14 +79,14 @@ def test_remote_ro_crate_missing_urls():
 
     # should throw without remote urls for a file
     with pytest.raises(ValueError):
-        rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=False)
+        rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=False)
 
     # should not throw for missing remote url for a person
     for id, object in dataset_objects.items():
         if "MediaObject" in object["@type"]:  # not for person!
             remote_urls[id] = "https://example.com/" + id
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=False)
+    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=False)
     assert ro_crate is not None
 
     author = ro_crate.root_dataset["author"]
@@ -108,7 +108,7 @@ def test_file_based_ro_crate():
         if "MediaObject" in object["@type"] or "Person" in object["@type"]:
             remote_urls[id] = "https://example.com/" + id
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=True)
+    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         ro_crate.write(tmp_dir)
@@ -233,7 +233,7 @@ def test_ro_crate_without_workflow():
         if "MediaObject" in object["@type"] or "Person" in object["@type"]:
             remote_urls[id] = "https://example.com/" + id
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, download=True)
+    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         ro_crate.write(tmp_dir)
