@@ -3,7 +3,6 @@ import tempfile
 from datetime import datetime
 from typing import Any
 
-import requests
 import zipstream
 from pyld import jsonld
 from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, Http404
