@@ -6,6 +6,7 @@ from rocrate.model import Person, ContextEntity, Dataset
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader
 from pyld import jsonld
 from rocrate.rocrate import ROCrate
+from rocrate.model import RootDataset
 from cwr_frontend.jsonld_utils import replace_values
 
 
@@ -34,6 +35,16 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
 
     crate = ROCrate(gen_preview=with_preview)
 
+    if detached:
+        # replace id of root dataset in detached crate (see https://github.com/ResearchObject/ro-crate-py/issues/206)
+        _original_root = crate.root_dataset
+        crate.add(RootDataset(crate, remote_urls[dataset_id]))
+        crate.metadata["about"] = crate.root_dataset
+        crate.delete(_original_root)
+    elif dataset_id in remote_urls:
+        # set sameAs on root dataset
+        crate.root_dataset["sameAs"] = remote_urls[dataset_id]
+
     for object in flattened["@graph"]:
         # skip root entity
         if object["@id"] == dataset_id:
@@ -59,7 +70,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             # For files, it depends on whether this will be a remote RO-Crate or the user requested a download
             # For remote, we want to use the remote URL to the payload as ID
             # For download, we want to use the file path in the crate
-            if not detached:
+            if detached:
                 dest_path = None  # no file download url => remote file
                 if "sameAs" in object:
                     del object["sameAs"]
@@ -91,7 +102,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate_obj = crate.add(ContextEntity(crate, identifier, object))
             id_map[cordra_id] = crate_obj.id
 
-    # Add attributes to dataset entity
+    # Add attributes to root dataset entity
     dataset = next(filter(lambda o: "@id" in o and o["@id"] == dataset_id, flattened["@graph"]))
     for key, value in dataset.items():
         if key == "@context" or key == "@id" or key == "@type": continue
