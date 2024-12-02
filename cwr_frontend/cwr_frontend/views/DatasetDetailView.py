@@ -157,11 +157,11 @@ class DatasetDetailView(TemplateView):
                 url = request.build_absolute_uri(self._connector.get_object_abs_url(cordra_id))
                 remote_urls[cordra_id] = url
             elif "Dataset" in objects[cordra_id]["@type"]:
-                url = request.build_absolute_uri(reverse("dataset_detail", args=[cordra_id])) + "?format=ROCrate"
+                url = request.build_absolute_uri(reverse("dataset_detail", args=[cordra_id]))
                 remote_urls[cordra_id] = url
                 if "isPartOf" in objects[cordra_id]:
                     for parent_id in objects[cordra_id]["isPartOf"]:
-                        remote_urls[parent_id] = request.build_absolute_uri(reverse("dataset_detail", args=[parent_id])) + "?format=ROCrate"
+                        remote_urls[parent_id] = request.build_absolute_uri(reverse("dataset_detail", args=[parent_id]))
         crate = build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached)
         return crate
 
@@ -174,7 +174,7 @@ class DatasetDetailView(TemplateView):
           objects - list of digital objects of the dataset
           download - return a downloadable zip in RO-Crate format
         """
-        crate = self._build_ROCrate(request, id, objects, with_preview=download, detached=download)
+        crate = self._build_ROCrate(request, id, objects, with_preview=download, detached=not download)
 
         if not download:
             # return just the metadata

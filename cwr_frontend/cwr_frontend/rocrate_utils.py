@@ -6,6 +6,7 @@ from rocrate.model import Person, ContextEntity, Dataset
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader
 from pyld import jsonld
 from rocrate.rocrate import ROCrate
+from rocrate.model import RootDataset
 from cwr_frontend.jsonld_utils import replace_values
 
 
@@ -34,6 +35,18 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
 
     crate = ROCrate(gen_preview=with_preview)
 
+    if detached:
+        if not dataset_id in remote_urls:
+            raise ValueError("Missing remote url for root dataset entity")
+        # replace id of root dataset in detached crate (see https://github.com/ResearchObject/ro-crate-py/issues/206)
+        _original_root = crate.root_dataset
+        crate.add(RootDataset(crate, remote_urls[dataset_id]))
+        crate.metadata["about"] = crate.root_dataset
+        crate.delete(_original_root)
+    elif dataset_id in remote_urls:
+        # set sameAs on root dataset
+        crate.root_dataset["sameAs"] = remote_urls[dataset_id]
+
     for object in flattened["@graph"]:
         # skip root entity
         if object["@id"] == dataset_id:
@@ -59,7 +72,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             # For files, it depends on whether this will be a remote RO-Crate or the user requested a download
             # For remote, we want to use the remote URL to the payload as ID
             # For download, we want to use the file path in the crate
-            if not detached:
+            if detached:
                 dest_path = None  # no file download url => remote file
                 if "sameAs" in object:
                     del object["sameAs"]
@@ -73,16 +86,25 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate_obj = crate.add_file(remote_url, dest_path=dest_path, fetch_remote=False, properties=object)
             id_map[cordra_id] = crate_obj.id
         elif object["@type"] == "Dataset":
-            # TODO integration of nested datasets has some issues with the download option set:
-            # - files are placed relative to the root dataset. Therefore, if two datasets contain a file under the same path, only one file will be present
-            # Instead, we could place datasets in subfolders (foldername = cordra id?) and rewrite the file path
-            # However, this would require some refactoring to rewrite file paths based on what dataset reference them
-            # Alternatively, we could opt to not include the files from nested datasets in the final crate, but only reference their URL:
-            # https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html#directories-on-the-web-dataset-distributions
+            # Referencing remote RO-Crates: https://www.researchobject.org/ro-crate/specification/1.2-DRAFT/data-entities.html#referencing-other-ro-crates
+
             for key, value in object.items():
                 if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
                     object[key] = value["@value"]
-            crate_obj = crate.add(ContextEntity(crate, cordra_id, properties=object))
+
+            if detached and "sameAs" in object:
+                del object["sameAs"]
+
+            # remove internally used keys
+            for key in ["contentUrl", "isPartOf", "partOf", "resultOf"]:
+                if key in object:
+                    del object[key]
+
+            if not remote_url.endswith("/"):
+                remote_url += "/"
+
+            crate_obj = crate.add_file(remote_url, fetch_remote=False, properties=object)
+            crate_obj.append_to("conformsTo", {"@id": "https://w3id.org/ro/crate"})
             id_map[cordra_id] = crate_obj.id
         else:
             # Everything else is added as a ContextEntity, where we use the identifier if present,
@@ -91,7 +113,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate_obj = crate.add(ContextEntity(crate, identifier, object))
             id_map[cordra_id] = crate_obj.id
 
-    # Add attributes to dataset entity
+    # Add attributes to root dataset entity
     dataset = next(filter(lambda o: "@id" in o and o["@id"] == dataset_id, flattened["@graph"]))
     for key, value in dataset.items():
         if key == "@context" or key == "@id" or key == "@type": continue
