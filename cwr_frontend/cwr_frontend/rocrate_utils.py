@@ -86,16 +86,25 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate_obj = crate.add_file(remote_url, dest_path=dest_path, fetch_remote=False, properties=object)
             id_map[cordra_id] = crate_obj.id
         elif object["@type"] == "Dataset":
-            # TODO integration of nested datasets has some issues with the download option set:
-            # - files are placed relative to the root dataset. Therefore, if two datasets contain a file under the same path, only one file will be present
-            # Instead, we could place datasets in subfolders (foldername = cordra id?) and rewrite the file path
-            # However, this would require some refactoring to rewrite file paths based on what dataset reference them
-            # Alternatively, we could opt to not include the files from nested datasets in the final crate, but only reference their URL:
-            # https://www.researchobject.org/ro-crate/specification/1.1/data-entities.html#directories-on-the-web-dataset-distributions
+            # Referencing remote RO-Crates: https://www.researchobject.org/ro-crate/specification/1.2-DRAFT/data-entities.html#referencing-other-ro-crates
+
             for key, value in object.items():
                 if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
                     object[key] = value["@value"]
-            crate_obj = crate.add(ContextEntity(crate, cordra_id, properties=object))
+
+            if detached and "sameAs" in object:
+                del object["sameAs"]
+
+            # remove internally used keys
+            for key in ["contentUrl", "isPartOf", "partOf", "resultOf"]:
+                if key in object:
+                    del object[key]
+
+            if not remote_url.endswith("/"):
+                remote_url += "/"
+
+            crate_obj = crate.add_file(remote_url, fetch_remote=False, properties=object)
+            crate_obj.append_to("conformsTo", {"@id": "https://w3id.org/ro/crate"})
             id_map[cordra_id] = crate_obj.id
         else:
             # Everything else is added as a ContextEntity, where we use the identifier if present,

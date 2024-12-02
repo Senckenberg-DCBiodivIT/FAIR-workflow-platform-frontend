@@ -5,6 +5,7 @@ import re
 import pytest
 from rocrate_validator import services, models
 from rocrate.rocrate import ROCrate
+from rocrate.model import RootDataset
 import tempfile
 
 from cwr_frontend import rocrate_utils
@@ -288,7 +289,22 @@ def test_detached_workflow_ro_crate_missing_urls():
 
 
 def test_workflow_ro_crate_with_child():
-    raise NotImplementedError()
+    ro_crate = build_test_crate("dataset_objects_nested_crate_parent.json", detached=False)
+
+    validate_ro_crate_profile(ro_crate, "workflow-run-crate-0.5")
+    assert len(ro_crate.get_entities()) == 52
+
+    # root dataset should list child dataset in hasPart
+    child_datasets = list(filter(lambda e: "Dataset" in e["@type"] and not isinstance(e, RootDataset), ro_crate.get_entities()))
+    assert len(child_datasets) == 2
+
+    for child_dataset in child_datasets:
+        assert child_dataset in filter(lambda e: e.id, ro_crate.root_dataset["hasPart"])
+
+    # child dataset should point to remote url and conform to the ro-crate profile
+    for child_dataset in child_datasets:
+        assert child_dataset.id.startswith("https://example.com")
+        assert "https://w3id.org/ro/crate" in child_dataset["conformsTo"]
 
 
 def test_ro_crate_with_parent():
@@ -299,8 +315,24 @@ def test_ro_crate_with_parent():
 
 
 def test_detached_workflow_ro_crate_with_child():
-    """ Should correcly reference the child urls """
-    raise NotImplementedError()
+    """ Should correctly reference the child urls """
+    ro_crate = build_test_crate("dataset_objects_nested_crate_parent.json", detached=True)
+
+    validate_ro_crate_profile(ro_crate, "workflow-run-crate-0.5")
+    assert len(ro_crate.get_entities()) == 52
+
+    # root dataset should list child dataset in hasPart
+    child_datasets = list(filter(lambda e: "Dataset" in e["@type"] and not isinstance(e, RootDataset), ro_crate.get_entities()))
+    assert len(child_datasets) == 2
+
+    for child_dataset in child_datasets:
+        assert child_dataset in filter(lambda e: e.id, ro_crate.root_dataset["hasPart"])
+
+    # child dataset should point to remote url and conform to the ro-crate profile
+    for child_dataset in child_datasets:
+        assert child_dataset.id.startswith("https://example.com")
+        assert "https://w3id.org/ro/crate" in child_dataset["conformsTo"]
+
 
 
 def test_detached_ro_crate_with_parent():
