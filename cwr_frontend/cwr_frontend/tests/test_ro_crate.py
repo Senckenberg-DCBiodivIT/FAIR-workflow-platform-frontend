@@ -23,15 +23,21 @@ def build_test_crate(json_file_name: str, detached: bool) -> ROCrate:
     remote_urls = {}
 
     # find root dataset id
-    for id, object in dataset_objects.items():
-        if "Dataset" not in object.get("@type", []) or "isPartOf" in object:
-            continue
-        else:
-            dataset_id = id
+    if len(list(filter(lambda o: "Dataset" in o["@type"], dataset_objects.values()))) == 1:
+        dataset_id = next(filter(lambda o: "Dataset" in o["@type"], dataset_objects.values()))["@id"]
+    else:
+        for id, object in dataset_objects.items():
+            if "Dataset" not in object.get("@type", []) or "isPartOf" in object:
+                continue
+            else:
+                dataset_id = id
 
     for id, object in dataset_objects.items():
         if "MediaObject" in object["@type"] or "Person" in object["@type"] or "Dataset" in object["@type"]:
             remote_urls[id] = "https://example.com/" + id
+        if "Dataset" in object["@type"] and "isPartOf" in object:
+            for parent in object["isPartOf"]:
+                remote_urls[parent] = "https://example.com/" + parent
 
     ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=detached)
     return ro_crate
@@ -308,10 +314,12 @@ def test_workflow_ro_crate_with_child():
 
 
 def test_ro_crate_with_parent():
-    # Make sure this crate references its parents crate for provenance
-    # assert "isPartOf" in ro_crate.root_dataset
-    # assert ro_crate.root_dataset["isPartOf"] == "https://example.com/cwr/d1d35fd05b740bb3c393?format=ROCrate"
-    raise NotImplementedError()
+    ro_crate = build_test_crate("dataset_objects_nested_crate_child.json", detached=False)
+
+    validate_ro_crate_profile(ro_crate, "ro-crate-1.1")
+    assert len(ro_crate.get_entities()) == 18
+
+    assert "https://example.com/cwr/391c48d5cc201aa5e445" in ro_crate.root_dataset["isPartOf"]
 
 
 def test_detached_workflow_ro_crate_with_child():
@@ -336,4 +344,9 @@ def test_detached_workflow_ro_crate_with_child():
 
 
 def test_detached_ro_crate_with_parent():
-    raise NotImplementedError()
+    ro_crate = build_test_crate("dataset_objects_nested_crate_child.json", detached=True)
+
+    validate_ro_crate_profile(ro_crate, "ro-crate-1.1")
+    assert len(ro_crate.get_entities()) == 18
+
+    assert "https://example.com/cwr/391c48d5cc201aa5e445" in ro_crate.root_dataset["isPartOf"]
