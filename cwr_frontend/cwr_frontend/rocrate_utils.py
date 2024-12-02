@@ -36,6 +36,8 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
     crate = ROCrate(gen_preview=with_preview)
 
     if detached:
+        if not dataset_id in remote_urls:
+            raise ValueError("Missing remote url for root dataset entity")
         # replace id of root dataset in detached crate (see https://github.com/ResearchObject/ro-crate-py/issues/206)
         _original_root = crate.root_dataset
         crate.add(RootDataset(crate, remote_urls[dataset_id]))
