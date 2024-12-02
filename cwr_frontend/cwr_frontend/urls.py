@@ -36,7 +36,7 @@ urlpatterns = [
     # list of datasets
     re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
-    re_path(r'dataset/(?P<id>[a-z0-9\/]+)', DatasetDetailView.as_view(), name="dataset_detail"),
+    re_path(r'dataset/(?P<id>([a-z0-9]+)/([a-z0-9]+))/?', DatasetDetailView.as_view(), name="dataset_detail"),
     re_path('workflows/submit', login_required(WorkflowSubmissionView.as_view()), name="submit_workflow"),
     re_path('workflows', login_required(WorkflowListView.as_view()), name="list_workflows"),
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
