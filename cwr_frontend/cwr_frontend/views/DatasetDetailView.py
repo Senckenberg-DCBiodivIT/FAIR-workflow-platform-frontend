@@ -1,9 +1,6 @@
-import json
-import tempfile
 from datetime import datetime
 from typing import Any
 
-import zipstream
 from pyld import jsonld
 from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, Http404
 from django.shortcuts import render, redirect
@@ -14,10 +11,12 @@ from requests import HTTPError
 from rocrate.rocrate import ROCrate
 from signposting import LinkRel, Signpost
 import requests
+from cwr_frontend import rocrate_utils
 
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader, cached_frame
-from cwr_frontend.rocrate_utils import build_ROCrate
 from cwr_frontend.cordra.CordraConnector import CordraConnector
+
+
 
 class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
@@ -161,7 +160,7 @@ class DatasetDetailView(TemplateView):
                 if "isPartOf" in objects[cordra_id]:
                     for parent_id in objects[cordra_id]["isPartOf"]:
                         remote_urls[parent_id] = request.build_absolute_uri(reverse("dataset_detail", args=[parent_id]))
-        crate = build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached)
+        crate = rocrate_utils.build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached)
         return crate
 
     def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download: bool) -> HttpResponseBase:
@@ -178,35 +177,9 @@ class DatasetDetailView(TemplateView):
         if not download:
             # return just the metadata
             return JsonResponse(crate.metadata.generate())
-
-        # Get crate metadata file (library does only support output to file)
-        with tempfile.TemporaryDirectory() as temp_dir:
-            crate.write(temp_dir)
-            metadata = json.load(open(temp_dir + "/ro-crate-metadata.json", "r"))
-
-            # create a zip stream of ro crate files
-            zs = zipstream.ZipFile(mode="w", compression=zipstream.ZIP_DEFLATED)
-            zs.writestr("ro-crate-metadata.json", str.encode(json.dumps(metadata, indent=2)))
-            html = open(temp_dir + "/ro-crate-preview.html", "r").read()
-            zs.writestr("ro-crate-preview.html", str.encode(html))
-
-            try:
-                for data_entity in crate.data_entities:
-                    url = data_entity["sameAs"]
-                    name = data_entity["@id"]
-                    # url = request.build_absolute_uri(self._connector.get_object_abs_url(object["@id"], object["contentUrl"]))
-                    # name = object["contentUrl"]
-                    object_response = requests.get(url, verify=False, stream=True)
-                    if object_response.status_code == 200:
-                        zs.write_iter(name, object_response.iter_content(chunk_size=1024))
-                    else:
-                        raise Exception(f"Failed to add object file {url} to ro-crate zip stream: {object_response.text}")
-            except Exception as e:
-                zs.close()
-                raise e
-
+        else:
             archive_name = f'{id.replace("/", "_")}.zip'
-            response = StreamingHttpResponse(zs, content_type="application/zip")
+            response = StreamingHttpResponse(rocrate_utils.stream_ROCrate(crate), content_type="application/zip")
             response["Content-Disposition"] = f"attachment; filename={archive_name}"
             return response
 

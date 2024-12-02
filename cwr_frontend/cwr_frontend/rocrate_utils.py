@@ -1,5 +1,11 @@
+import io
+import json
 from copy import deepcopy
-from typing import Any
+from typing import Any, Generator
+from io import BytesIO
+from zipfile import ZipFile, ZIP_DEFLATED
+import requests
+import rocrate.model
 
 from rocrate.model import Person, ContextEntity, Dataset
 
@@ -156,3 +162,58 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate.root_dataset.append_to("conformsTo", profile_entity)
 
     return crate
+
+def stream_ROCrate(crate: ROCrate) -> Generator[bytes, None, None]:
+    """ Streams the content of an ROCrate into a ZIP archive.
+
+    This function creates the zip archive in memory and streams its content in chunks.
+    It handles metadata, preview HTML files, and associated file entities, fetching remote file content as needed.
+    For remote content, the data is streamed directly to the output to reduce memory usage.
+    No temporary files are allocated. Makes sure only a single file is streamed at once
+    """
+    class MemoryBuffer(io.RawIOBase):
+        def __init__(self):
+            self._buffer = b""
+
+        def writable(self):
+            return True
+
+        def write(self, b):
+            if self.closed:
+                raise RuntimeError("Stream war closed before writing!")
+            self._buffer += b
+            return len(b)
+
+        def read(self):
+            chunk = self._buffer
+            self._buffer = b""
+            return chunk
+
+    buffer = MemoryBuffer()
+    with requests.session() as session:
+        with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as archive:
+            # Write ro-crate-metadata.json to zip stream
+            archive.writestr(crate.metadata.id, json.dumps(crate.metadata.generate()))
+            yield buffer.read()
+
+            # Write preview html
+            for preview in filter(lambda e: isinstance(e, rocrate.model.Preview), crate.get_entities()):
+                archive.writestr(preview.id, preview.generate_html())
+                yield buffer.read()
+
+            # Iterate files, fetch their content from remote and write them to the stream
+            for file_entity in crate.get_by_type("File"):
+                file_path = file_entity.id
+                url = file_entity["sameAs"]
+
+                with archive.open(file_path, "w", force_zip64=True) as file:
+                    response = session.get(url, verify=False, stream=True)
+                    response.raise_for_status()
+
+                    for chunk in response.iter_content(chunk_size=1024):
+                        file.write(chunk)
+                        yield buffer.read()
+
+    # ensure stream is read completely
+    yield buffer.read()
+    buffer.close()
