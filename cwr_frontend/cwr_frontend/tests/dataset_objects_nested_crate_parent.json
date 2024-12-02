@@ -1,0 +1,1091 @@
+{
+  "cwr/391c48d5cc201aa5e445": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "author": {
+          "@id": "https://schema.org/author",
+          "@type": "@id"
+        }
+      },
+      {
+        "hasPart": {
+          "@id": "https://schema.org/hasPart",
+          "@type": "@id"
+        }
+      },
+      {
+        "mentions": {
+          "@id": "https://schema.org/mentions",
+          "@type": "@id"
+        }
+      },
+      {
+        "mainEntity": {
+          "@id": "https://schema.org/mainEntity",
+          "@type": "@id"
+        }
+      },
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/391c48d5cc201aa5e445",
+    "@type": [
+      "Dataset"
+    ],
+    "name": "Species distribution models for Lycopodium",
+    "description": "Crop Wild Relatives distribution modeling workflow using ModGP for Lycopodium. Lycopodium is not not actually a crop species, but serves as a good test genus due to the limited amount of species in this genus (and thus the short workflow execution runtime). Lycopodium is a genus of clubmosses within the family Lycopodiaceae. These perennial, evergreen plants are characterized by their small, needle-like or scale-like leaves arranged in spirals or whorls along the stems. Lycopodium species reproduce via spores rather than seeds and often form dense mats in forests, particularly in moist, shaded environments.",
+    "keywords": [
+      "Lycopodium",
+      "ModGP",
+      "SDM",
+      "test",
+      "CWR"
+    ],
+    "dateCreated": "2024-10-12T16:02:27.337Z",
+    "dateModified": "2024-10-12T16:02:25.893Z",
+    "datePublished": "2024-10-12T16:02:25.893Z",
+    "license": "https://spdx.org/licenses/CC-BY-SA-4.0",
+    "author": [
+      "cwr/fdeffd1c979f1598b151"
+    ],
+    "hasPart": [
+      "cwr/19254fd414a120ba3c5f",
+      "cwr/a50598cbc458449aca26",
+      "cwr/e7a35b12ec049da70089",
+      "cwr/50640e5ae9c1b3025160",
+      "cwr/4e0d0b58b34bc18cfe8b",
+      "cwr/4ef08dd980e0068fa83f"
+    ],
+    "mentions": [
+      "cwr/2fb7b6525bc02bf7ec76"
+    ],
+    "mainEntity": "cwr/4ef08dd980e0068fa83f"
+  },
+  "cwr/fdeffd1c979f1598b151": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "affiliation": {
+          "@id": "https://schema.org/affiliation",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/fdeffd1c979f1598b151",
+    "@type": [
+      "Person"
+    ],
+    "name": "Claus Weiland",
+    "identifier": "https://orcid.org/0000-0003-0351-6523"
+  },
+  "cwr/19254fd414a120ba3c5f": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/19254fd414a120ba3c5f",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "Lycopodium_SDMData.RData",
+    "contentSize": 236124,
+    "encodingFormat": "application/octet-stream",
+    "isPartOf": [
+      "cwr/391c48d5cc201aa5e445"
+    ],
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium_SDMData.RData"
+  },
+  "cwr/a50598cbc458449aca26": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/a50598cbc458449aca26",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "main.log",
+    "contentSize": 40016,
+    "encodingFormat": "application/vnd.hp-HPGL",
+    "isPartOf": [
+      "cwr/391c48d5cc201aa5e445"
+    ],
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/main.log"
+  },
+  "cwr/e7a35b12ec049da70089": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/e7a35b12ec049da70089",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "main.log",
+    "contentSize": 0,
+    "encodingFormat": "inode/x-empty",
+    "isPartOf": [
+      "cwr/391c48d5cc201aa5e445"
+    ],
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3135513580/main.log"
+  },
+  "cwr/50640e5ae9c1b3025160": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "author": {
+          "@id": "https://schema.org/author",
+          "@type": "@id"
+        }
+      },
+      {
+        "hasPart": {
+          "@id": "https://schema.org/hasPart",
+          "@type": "@id"
+        }
+      },
+      {
+        "mentions": {
+          "@id": "https://schema.org/mentions",
+          "@type": "@id"
+        }
+      },
+      {
+        "mainEntity": {
+          "@id": "https://schema.org/mainEntity",
+          "@type": "@id"
+        }
+      },
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/50640e5ae9c1b3025160",
+    "@type": [
+      "Dataset"
+    ],
+    "name": "Lycopodium densum",
+    "keywords": [
+      "Lycopodium",
+      "ModGP",
+      "SDM",
+      "test",
+      "CWR"
+    ],
+    "dateCreated": "2024-10-12T16:02:26.747Z",
+    "dateModified": "2024-10-12T16:02:24.019Z",
+    "datePublished": "2024-10-12T16:02:24.019Z",
+    "license": "https://spdx.org/licenses/CC-BY-SA-4.0",
+    "author": [
+      "cwr/fdeffd1c979f1598b151"
+    ],
+    "hasPart": [
+      "cwr/f7247c79010a65467656",
+      "cwr/e8810c9087d32c566528",
+      "cwr/2351ddebdd5139c4375b",
+      "cwr/f7c86995852720541016",
+      "cwr/4b3691ab67ca1a8c5a5d",
+      "cwr/1c0c796259da467f9abb",
+      "cwr/c70d87f8663bd02f9123",
+      "cwr/d1988942ac429fcf3aa4",
+      "cwr/727390c0b539ef23340d",
+      "cwr/16597d2f10090e10b2f9",
+      "cwr/b4e016f4d9ce18cd398e",
+      "cwr/a5f96eb596a421ac3a3c",
+      "cwr/5d73222854b9982b739c",
+      "cwr/f0504ebd888fff7aa334",
+      "cwr/922d5da948269b0db384"
+    ],
+    "isPartOf": [
+      "cwr/391c48d5cc201aa5e445"
+    ]
+  },
+  "cwr/4e0d0b58b34bc18cfe8b": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "author": {
+          "@id": "https://schema.org/author",
+          "@type": "@id"
+        }
+      },
+      {
+        "hasPart": {
+          "@id": "https://schema.org/hasPart",
+          "@type": "@id"
+        }
+      },
+      {
+        "mentions": {
+          "@id": "https://schema.org/mentions",
+          "@type": "@id"
+        }
+      },
+      {
+        "mainEntity": {
+          "@id": "https://schema.org/mainEntity",
+          "@type": "@id"
+        }
+      },
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/4e0d0b58b34bc18cfe8b",
+    "@type": [
+      "Dataset"
+    ],
+    "name": "Lycopodium deuterodensum",
+    "keywords": [
+      "Lycopodium",
+      "ModGP",
+      "SDM",
+      "test",
+      "CWR"
+    ],
+    "dateCreated": "2024-10-12T16:02:27.142Z",
+    "dateModified": "2024-10-12T16:02:24.518Z",
+    "datePublished": "2024-10-12T16:02:24.518Z",
+    "license": "https://spdx.org/licenses/CC-BY-SA-4.0",
+    "author": [
+      "cwr/fdeffd1c979f1598b151"
+    ],
+    "hasPart": [
+      "cwr/5b3becebd8ba11382834",
+      "cwr/c1c88b366cf9588258f1",
+      "cwr/9c513341c7bd59145c5d",
+      "cwr/9d60905465a7913ad36e",
+      "cwr/088ddd0a66e7f789251f",
+      "cwr/6f067c51e937fc93240a",
+      "cwr/71a75d2fb5ceb93aa4ec",
+      "cwr/15aebac05d4f874baa53",
+      "cwr/f70a5115a2249ed0e6ec",
+      "cwr/d75bdc3102f1965f8dc4",
+      "cwr/be610ee498ffcd423781",
+      "cwr/8600a12001e5df7a6355",
+      "cwr/a5d70770fc9ce364ba7d",
+      "cwr/bf1f0f4172d546666016",
+      "cwr/2dcc0e5dda7bfc4f067e"
+    ],
+    "isPartOf": [
+      "cwr/391c48d5cc201aa5e445"
+    ]
+  },
+  "cwr/4ef08dd980e0068fa83f": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      },
+      {
+        "programmingLanguage": {
+          "@id": "https://schema.org/programmingLanguage",
+          "@type": "@id"
+        }
+      },
+      {
+        "ComputationalWorkflow": "https://bioschemas.org/ComputationalWorkflow"
+      },
+      {
+        "input": {
+          "@id": "https://bioschemas.org/ComputationalWorkflow#input",
+          "@type": "@id"
+        }
+      },
+      {
+        "output": {
+          "@id": "https://bioschemas.org/ComputationalWorkflow#output",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/4ef08dd980e0068fa83f",
+    "@type": [
+      "MediaObject",
+      "ComputationalWorkflow",
+      "SoftwareSourceCode"
+    ],
+    "name": "workflow.yaml",
+    "description": "Argo workflow definition",
+    "programmingLanguage": "cwr/123498rsatiernw",
+    "contentUrl": "workflow.yaml",
+    "contentSize": 5957,
+    "encodingFormat": "text/yaml",
+    "input": [
+      "cwr/bf15eafb0fa60de5da16",
+      "cwr/fcefb36c2b3125aec15a",
+      "cwr/c36aeb400bd0d7d40bed",
+      "cwr/4936392b675769d2826d"
+    ]
+  },
+  "cwr/123498rsatiernw": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/123498rsatiernw",
+    "@type": [
+      "ComputerLanguage"
+    ],
+    "name": "Argo",
+    "description": "Argo workflow language",
+    "identifier": "https://argoproj.github.io/workflows",
+    "url": "https://argoproj.github.io"
+  },
+  "cwr/2fb7b6525bc02bf7ec76": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "agent": {
+          "@id": "https://schema.org/agent",
+          "@type": "@id"
+        }
+      },
+      {
+        "result": {
+          "@id": "https://schema.org/result",
+          "@type": "@id"
+        }
+      },
+      {
+        "object": {
+          "@id": "https://schema.org/object",
+          "@type": "@id"
+        }
+      },
+      {
+        "instrument": {
+          "@id": "https://schema.org/instrument",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/2fb7b6525bc02bf7ec76",
+    "@type": [
+      "CreateAction"
+    ],
+    "agent": "cwr/fdeffd1c979f1598b151",
+    "startTime": "2024-10-12T15:03:17Z",
+    "endTime": "2024-10-12T15:54:55Z",
+    "result": [
+      "cwr/19254fd414a120ba3c5f",
+      "cwr/a50598cbc458449aca26",
+      "cwr/e7a35b12ec049da70089",
+      "cwr/50640e5ae9c1b3025160",
+      "cwr/4e0d0b58b34bc18cfe8b"
+    ],
+    "object": [
+      "cwr/a1aa65184a4d49c98622",
+      "cwr/ac9524bd48ad2683a631",
+      "cwr/d80758949983f7a9d80a",
+      "cwr/e3ac74ada9a640c17905"
+    ],
+    "instrument": "cwr/4ef08dd980e0068fa83f"
+  },
+  "cwr/f7247c79010a65467656": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/f7247c79010a65467656",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "Continuous.nc",
+    "contentSize": 25027404,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/Continuous.nc"
+  },
+  "cwr/e8810c9087d32c566528": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/e8810c9087d32c566528",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "INPUTS.png",
+    "contentSize": 3768311,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/INPUTS.png"
+  },
+  "cwr/2351ddebdd5139c4375b": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/2351ddebdd5139c4375b",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "MODELS-Binarised.nc",
+    "contentSize": 299851736,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/MODELS-Binarised.nc"
+  },
+  "cwr/f7c86995852720541016": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/f7c86995852720541016",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "MODELS-Continuous.nc",
+    "contentSize": 299851736,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/MODELS-Continuous.nc"
+  },
+  "cwr/4b3691ab67ca1a8c5a5d": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/4b3691ab67ca1a8c5a5d",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "ModGP-Pseudolycopodium densum.json",
+    "contentSize": 1946,
+    "encodingFormat": "application/json",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/ModGP-Pseudolycopodium densum.json"
+  },
+  "cwr/1c0c796259da467f9abb": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/1c0c796259da467f9abb",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "OUT_Binarised.png",
+    "contentSize": 174312,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/OUT_Binarised.png"
+  },
+  "cwr/c70d87f8663bd02f9123": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/c70d87f8663bd02f9123",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "OUT_Proportion.png",
+    "contentSize": 462071,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/OUT_Proportion.png"
+  },
+  "cwr/d1988942ac429fcf3aa4": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/d1988942ac429fcf3aa4",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "OUT_Suitability.png",
+    "contentSize": 1357940,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/OUT_Suitability.png"
+  },
+  "cwr/727390c0b539ef23340d": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/727390c0b539ef23340d",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "Proportion.nc",
+    "contentSize": 25027404,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/Proportion.nc"
+  },
+  "cwr/16597d2f10090e10b2f9": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/16597d2f10090e10b2f9",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Nutrient.png",
+    "contentSize": 344550,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/RESPCURV_Nutrient.png"
+  },
+  "cwr/b4e016f4d9ce18cd398e": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/b4e016f4d9ce18cd398e",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Soil.Moisture.png",
+    "contentSize": 347351,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/RESPCURV_Soil.Moisture.png"
+  },
+  "cwr/a5f96eb596a421ac3a3c": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/a5f96eb596a421ac3a3c",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Temperature.png",
+    "contentSize": 303126,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/RESPCURV_Temperature.png"
+  },
+  "cwr/5d73222854b9982b739c": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/5d73222854b9982b739c",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Toxicity.png",
+    "contentSize": 323258,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/RESPCURV_Toxicity.png"
+  },
+  "cwr/f0504ebd888fff7aa334": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/f0504ebd888fff7aa334",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "SDM.RData",
+    "contentSize": 4300368473,
+    "encodingFormat": "application/octet-stream",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/SDM.RData"
+  },
+  "cwr/922d5da948269b0db384": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/922d5da948269b0db384",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "ShinyData.RData",
+    "contentSize": 28650,
+    "encodingFormat": "application/gzip",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/densum/ShinyData.RData"
+  },
+  "cwr/5b3becebd8ba11382834": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/5b3becebd8ba11382834",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "Continuous.nc",
+    "contentSize": 25027404,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/Continuous.nc"
+  },
+  "cwr/c1c88b366cf9588258f1": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/c1c88b366cf9588258f1",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "INPUTS.png",
+    "contentSize": 3540765,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/INPUTS.png"
+  },
+  "cwr/9c513341c7bd59145c5d": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/9c513341c7bd59145c5d",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "MODELS-Binarised.nc",
+    "contentSize": 299851736,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/MODELS-Binarised.nc"
+  },
+  "cwr/9d60905465a7913ad36e": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/9d60905465a7913ad36e",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "MODELS-Continuous.nc",
+    "contentSize": 299851736,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/MODELS-Continuous.nc"
+  },
+  "cwr/088ddd0a66e7f789251f": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/088ddd0a66e7f789251f",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "ModGP-Lycopodium deuterodensum.json",
+    "contentSize": 1948,
+    "encodingFormat": "application/json",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/ModGP-Lycopodium deuterodensum.json"
+  },
+  "cwr/6f067c51e937fc93240a": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/6f067c51e937fc93240a",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "OUT_Binarised.png",
+    "contentSize": 47285,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/OUT_Binarised.png"
+  },
+  "cwr/71a75d2fb5ceb93aa4ec": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/71a75d2fb5ceb93aa4ec",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "OUT_Proportion.png",
+    "contentSize": 44402,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/OUT_Proportion.png"
+  },
+  "cwr/15aebac05d4f874baa53": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/15aebac05d4f874baa53",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "OUT_Suitability.png",
+    "contentSize": 1201120,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/OUT_Suitability.png"
+  },
+  "cwr/f70a5115a2249ed0e6ec": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/f70a5115a2249ed0e6ec",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "Proportion.nc",
+    "contentSize": 25027404,
+    "encodingFormat": "application/x-netcdf",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/Proportion.nc"
+  },
+  "cwr/d75bdc3102f1965f8dc4": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/d75bdc3102f1965f8dc4",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Nutrient.png",
+    "contentSize": 197345,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/RESPCURV_Nutrient.png"
+  },
+  "cwr/be610ee498ffcd423781": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/be610ee498ffcd423781",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Soil.Moisture.png",
+    "contentSize": 347953,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/RESPCURV_Soil.Moisture.png"
+  },
+  "cwr/8600a12001e5df7a6355": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/8600a12001e5df7a6355",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Temperature.png",
+    "contentSize": 341487,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/RESPCURV_Temperature.png"
+  },
+  "cwr/a5d70770fc9ce364ba7d": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/a5d70770fc9ce364ba7d",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "RESPCURV_Toxicity.png",
+    "contentSize": 184158,
+    "encodingFormat": "image/png",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/RESPCURV_Toxicity.png"
+  },
+  "cwr/bf1f0f4172d546666016": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/bf1f0f4172d546666016",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "SDM.RData",
+    "contentSize": 4298535485,
+    "encodingFormat": "application/octet-stream",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/SDM.RData"
+  },
+  "cwr/2dcc0e5dda7bfc4f067e": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "isPartOf": {
+          "@id": "https://schema.org/isPartOf",
+          "@type": "@id"
+        }
+      }
+    ],
+    "@id": "cwr/2dcc0e5dda7bfc4f067e",
+    "@type": [
+      "MediaObject"
+    ],
+    "name": "ShinyData.RData",
+    "contentSize": 24462,
+    "encodingFormat": "application/gzip",
+    "contentUrl": "35b640f4-a993-4337-8e44-d874a760555b-3110815927/src/Exports/ModGP/Lycopodium/deuterodensum/ShinyData.RData"
+  },
+  "cwr/bf15eafb0fa60de5da16": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "FormalParameter": "https://bioschemas.org/FormalParameter"
+      }
+    ],
+    "@id": "cwr/bf15eafb0fa60de5da16",
+    "@type": [
+      "FormalParameter"
+    ],
+    "name": "species",
+    "description": "Genus of species for distribution modeling",
+    "additionalType": "Text"
+  },
+  "cwr/fcefb36c2b3125aec15a": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "FormalParameter": "https://bioschemas.org/FormalParameter"
+      }
+    ],
+    "@id": "cwr/fcefb36c2b3125aec15a",
+    "@type": [
+      "FormalParameter"
+    ],
+    "name": "numberOfCores",
+    "description": "Number of cores for SDM calculation",
+    "additionalType": "Text"
+},
+  "cwr/c36aeb400bd0d7d40bed": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "FormalParameter": "https://bioschemas.org/FormalParameter"
+      }
+    ],
+    "@id": "cwr/c36aeb400bd0d7d40bed",
+    "@type": [
+      "FormalParameter"
+    ],
+    "name": "modgpSource",
+    "description": "URL of CWR source repository",
+    "additionalType": "Text"
+  },
+  "cwr/4936392b675769d2826d": {
+    "@context": [
+      "https://schema.org/",
+      {
+        "FormalParameter": "https://bioschemas.org/FormalParameter"
+      }
+    ],
+    "@id": "cwr/4936392b675769d2826d",
+    "@type": [
+      "FormalParameter"
+    ],
+    "name": "modgpRevision",
+    "description": "Revision of CWR source",
+    "additionalType": "Text"
+  },
+  "cwr/a1aa65184a4d49c98622": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/a1aa65184a4d49c98622",
+    "@type": [
+      "PropertyValue"
+    ],
+    "name": "species",
+    "description": "Genus of species for distribution modeling",
+    "value": "Lycopodium"
+  },
+  "cwr/ac9524bd48ad2683a631": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/ac9524bd48ad2683a631",
+    "@type": [
+      "PropertyValue"
+    ],
+    "name": "numberOfCores",
+    "description": "Number of cores for SDM calculation",
+    "value": "9"
+  },
+  "cwr/d80758949983f7a9d80a": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/d80758949983f7a9d80a",
+    "@type": [
+      "PropertyValue"
+    ],
+    "name": "modgpSource",
+    "description": "URL of CWR source repository",
+    "value": "https://github.com/BioDT/uc-CWR.git"
+  },
+  "cwr/e3ac74ada9a640c17905": {
+    "@context": [
+      "https://schema.org/"
+    ],
+    "@id": "cwr/e3ac74ada9a640c17905",
+    "@type": [
+      "PropertyValue"
+    ],
+    "name": "modgpRevision",
+    "description": "Revision of CWR source",
+    "value": "main"
+  }
+}
