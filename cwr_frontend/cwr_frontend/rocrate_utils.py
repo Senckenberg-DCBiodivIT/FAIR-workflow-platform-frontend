@@ -1,5 +1,11 @@
+import io
+import json
+import os.path
 from copy import deepcopy
-from typing import Any
+from typing import Any, Generator
+from zipfile import ZipFile, ZIP_DEFLATED
+import requests
+import rocrate.model
 
 from rocrate.model import Person, ContextEntity, Dataset
 
@@ -55,35 +61,29 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
         # pop id from object, otherwise it will overwrite identifiers (i.e. for Person and File)
         cordra_id = object.pop("@id")
 
-        # Is there a remote URL for this object?
+        # add remote url to crate files if not detached
         remote_url = remote_urls.get(cordra_id, None) if remote_urls else None
-        if remote_url:
+        if remote_url and not detached:
             object["sameAs"] = {"@id": remote_url}
 
         if object["@type"] == "Person":
             # For person, we want to use their identifier (ORCID) as id if present, and set their sameAs to the remote URL
             identifier = object.pop("identifier") if "identifier" in object else cordra_id
-            if remote_url:
-                object["sameAs"] = {"@id": remote_url}
 
             crate_obj = crate.add(Person(crate, identifier, object))
             id_map[cordra_id] = crate_obj.id
         elif object["@type"] == "File" or (isinstance(object["@type"], list) and "File" in object["@type"]):
-            # For files, it depends on whether this will be a remote RO-Crate or the user requested a download
-            # For remote, we want to use the remote URL to the payload as ID
-            # For download, we want to use the file path in the crate
             if detached:
-                dest_path = None  # no file download url => remote file
-                if "sameAs" in object:
-                    del object["sameAs"]
+                dest_path = None
             else:
                 dest_path = object["contentUrl"]["@id"]
+
             # remove internally used keys
             for key in ["contentUrl", "isPartOf", "partOf", "resultOf"]:
                 if key in object:
                     del object[key]
 
-            crate_obj = crate.add_file(remote_url, dest_path=dest_path, fetch_remote=False, properties=object)
+            crate_obj = crate.add_file(remote_url, dest_path=dest_path, fetch_remote=not detached, properties=object)
             id_map[cordra_id] = crate_obj.id
         elif object["@type"] == "Dataset":
             # Referencing remote RO-Crates: https://www.researchobject.org/ro-crate/specification/1.2-DRAFT/data-entities.html#referencing-other-ro-crates
@@ -92,14 +92,12 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
                 if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
                     object[key] = value["@value"]
 
-            if detached and "sameAs" in object:
-                del object["sameAs"]
-
             # remove internally used keys
             for key in ["contentUrl", "isPartOf", "partOf", "resultOf"]:
                 if key in object:
                     del object[key]
 
+            # make ro-crate-py / validator happy.
             if not remote_url.endswith("/"):
                 remote_url += "/"
 
@@ -156,3 +154,78 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate.root_dataset.append_to("conformsTo", profile_entity)
 
     return crate
+
+def stream_ROCrate(crate: ROCrate) -> Generator[bytes, None, None]:
+    """ Streams the content of an ROCrate into a ZIP archive.
+
+    This function creates the zip archive in memory and streams its content in chunks.
+    It handles metadata, preview HTML files, and associated file entities, fetching remote file content as needed.
+    For remote content, the data is streamed directly to the output to reduce memory usage.
+    No temporary files are allocated. Makes sure only a single file is streamed at once
+    """
+    class MemoryBuffer(io.RawIOBase):
+        def __init__(self):
+            self._buffer = b""
+
+        def writable(self):
+            return True
+
+        def write(self, b):
+            if self.closed:
+                raise RuntimeError("Stream war closed before writing!")
+            self._buffer += b
+            return len(b)
+
+        def read(self):
+            chunk = self._buffer
+            self._buffer = b""
+            return chunk
+
+    buffer = MemoryBuffer()
+    with requests.session() as session:
+        with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as archive:
+            # Write ro-crate-metadata.json to zip stream
+            archive.writestr(crate.metadata.id, json.dumps(crate.metadata.generate()))
+            yield buffer.read()
+
+            # Write preview html
+            for preview in filter(lambda e: isinstance(e, rocrate.model.Preview), crate.get_entities()):
+                archive.writestr(preview.id, preview.generate_html())
+                yield buffer.read()
+
+            # Iterate files, fetch their content from remote and write them to the stream
+            for file_entity in crate.get_by_type("File"):
+                file_path = file_entity.id
+                if isinstance(file_entity.source, str):
+                    if file_entity.source.startswith("http"):
+                        if not file_entity.fetch_remote:
+                            continue
+                        response = session.get(file_entity.source, verify=False, stream=True)
+                        response.raise_for_status()
+                        with archive.open(file_path, mode="w") as file:
+                            for chunk in response.iter_content(chunk_size=1024):
+                                file.write(chunk)
+                                yield buffer.read()
+                    else:
+                        if not os.path.exists(file_entity.source):
+                            raise FileNotFoundError(file_entity.source)
+                        with open(file_entity.source, "rb") as in_file, archive.open(file_path, mode="w") as file:
+                            for chunk in in_file:
+                                file.write(chunk)
+                                yield buffer.read()
+                elif isinstance(file_entity.source, io.IOBase):
+                    with archive.open(file_path, mode="w") as file:
+                        read = file_entity.source.read()
+                        while len(read) > 0:
+                            if isinstance(read, str):
+                                file.write(str.encode(read))
+                            else:
+                                file.write(read)
+                            read = file_entity.source.read()
+                            yield buffer.read()
+                else:
+                    raise ValueError(f"Unsupported file source type: {type(file_entity.source)}")
+
+    # ensure stream is read completely
+    yield buffer.read()
+    buffer.close()
