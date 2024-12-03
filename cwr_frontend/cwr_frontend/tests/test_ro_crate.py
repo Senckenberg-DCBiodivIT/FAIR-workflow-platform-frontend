@@ -3,9 +3,11 @@ import os
 import re
 
 import pytest
+import requests_mock
 from rocrate_validator import services, models
 from rocrate.rocrate import ROCrate
 from rocrate.model import RootDataset
+from cwr_frontend.rocrate_utils import stream_ROCrate
 import tempfile
 
 from cwr_frontend import rocrate_utils
@@ -44,8 +46,20 @@ def build_test_crate(json_file_name: str, detached: bool) -> ROCrate:
 
 
 def validate_ro_crate_profile(ro_crate: ROCrate, profile, ignore_regex=[]):
+    # ro_crate.write(tmp_dir)
+
     with tempfile.TemporaryDirectory() as tmp_dir:
-        ro_crate.write(tmp_dir)
+
+        with requests_mock.Mocker(kw="mock", real_http=True) as mocker:
+            mocker.register_uri("GET", re.compile(".*example\.com.*"), text="test")
+            stream = stream_ROCrate(ro_crate)
+            with tempfile.NamedTemporaryFile(suffix=".zip", mode="wb") as f:
+                for chunk in stream:
+                    f.write(chunk)
+                f.flush()
+                f.seek(0)
+                import shutil
+                shutil.unpack_archive(f.name, tmp_dir)
         settings = services.ValidationSettings(
             data_path=tmp_dir,
             profile_identifier=profile,
