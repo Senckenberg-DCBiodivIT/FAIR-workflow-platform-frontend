@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% load static %}
-    <title>CWR: {% block title %}{% endblock %}</title>
+    <title>Agroclim: {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'tachyons.min.css' %}"/>
     {% load settings_value %}
     <link rel="shortcut icon" type="image/png" href="{% favicon %}" >
@@ -14,7 +14,7 @@
     <header class="w-100 pa3 ph5-ns bg-dark-green">
         <div class="db dt-ns center w-100">
             <div class="db dtc-ns v-mid tl w-50">
-                <a class="white link dim f4-ns f5 fw6 mt0" href="{% url 'dataset_list' %}" title="Home">Crop wild relatives</a>
+                <a class="white link dim f4-ns f5 fw6 mt0" href="{% url 'dataset_list' %}" title="Home">Agroclim</a>
             </div>
             <div class="db dtc-ns v-mid w-100 tl tr-ns mt2 mt0-ns">
                 <a href="{% url 'dataset_list' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Datasets</a>
