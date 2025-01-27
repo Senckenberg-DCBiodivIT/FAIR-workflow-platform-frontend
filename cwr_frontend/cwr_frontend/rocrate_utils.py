@@ -17,7 +17,7 @@ from cwr_frontend.jsonld_utils import replace_values
 
 
 def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_urls: dict[str, str],
-                  with_preview: bool = False, detached: bool = False) -> ROCrate:
+                  with_preview: bool = False, detached: bool = False, workflow_only: bool = False) -> ROCrate:
     objects = deepcopy(objects)  # make sure to not leak edits out of this method
 
     # For all objects, we first want to flatten the JSONLD to the RO Crate context
