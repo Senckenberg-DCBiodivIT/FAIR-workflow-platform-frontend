@@ -71,6 +71,11 @@
     <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1" href="{% url 'dataset_detail' id=id %}?format=ROCrate">View RO-Crate</a>
     or
     <a class="f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1" href="{% url 'dataset_detail' id=id %}?format=ROCrate&download=true">Download RO-Crate (zip)</a>
+    {% if provenance.instrument %}
+    <a class="f6 link dim ph3 pv2 mb2 dib black bg-white shadow-1" href="{% url 'dataset_detail' id=id %}?format=WorkflowROCrate&download=true">
+        Download <span style="font-weight: 700; color: #f9b233">Workflow</span> <span style="font-weight: 600; color: #1f8787">RO-Crate</span> (zip)
+    </a>
+    {% endif %}
 </div>
 
 <section id="Provenance" class="mt2 bg-white shadow-1 pa2">
