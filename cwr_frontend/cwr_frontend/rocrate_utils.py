@@ -16,8 +16,30 @@ from rocrate.model import RootDataset
 from cwr_frontend.jsonld_utils import replace_values
 
 
+def _remove_children_from_objects(objects, child_id):
+    if objects[child_id]["@type"] == "Dataset" or (isinstance(objects[child_id]["@type"], list) and "Dataset" in objects[child_id]["@type"]):
+        for grandchild_id in objects[child_id]["hasPart"]:
+            _remove_children_from_objects(objects, grandchild_id)
+    objects.pop(child_id, None)
+
+def _filter_objects_for_workflow_crate(objects: dict[str, dict[str, Any]], dataset_id: str) -> dict[str, dict[str, Any]]:
+    workflow_id = objects[dataset_id].get("mainEntity", None)
+    if not workflow_id:
+        raise ValueError("No mainEntity found in dataset")
+
+    for file_id in objects[dataset_id]["hasPart"]:
+        if file_id != workflow_id:
+            _remove_children_from_objects(objects, file_id)
+
+    objects[dataset_id]["hasPart"] = [workflow_id]
+    for mention in objects[dataset_id].get("mentions", []):
+        for action_related_object in objects[mention].get("object", []) + objects[mention].get("result", []):
+            objects.pop(action_related_object, None)
+        objects.pop(mention, None)
+    del objects[dataset_id]["mentions"]
+
 def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_urls: dict[str, str],
-                  with_preview: bool = False, detached: bool = False) -> ROCrate:
+                  with_preview: bool = False, detached: bool = False, workflow_only: bool = False) -> ROCrate:
     objects = deepcopy(objects)  # make sure to not leak edits out of this method
 
     # For all objects, we first want to flatten the JSONLD to the RO Crate context
@@ -32,12 +54,15 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
         if "@context" in object:
             object["@context"] = replace_values(object, {r"https://schema\.org(.*)": r"http://schema.org\1"})
 
+    if workflow_only:
+        _filter_objects_for_workflow_crate(objects, dataset_id)
+
     jsonld.set_document_loader(pyld_caching_document_loader)
     flattened = jsonld.flatten(list(objects.values()), ["https://w3id.org/ro/crate/1.1/context",
                                                         "https://www.researchobject.org/ro-terms/workflow-run/context.jsonld"])
 
     id_map = {}  # map of CorA
-    # dra internal ids to created RO-Crate ids
+    # map internal ids to created RO-Crate ids
 
     crate = ROCrate(gen_preview=with_preview)
 
@@ -140,18 +165,20 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             entity[key] = replaced
 
     if "mainEntity" in crate.root_dataset:
-        # make this a valid workflow run RO-Crate
+        # make this a valid Workflow RO-Crate
         crate.metadata.extra_contexts.append("https://w3id.org/ro/terms/workflow-run/context")
         crate.metadata["conformsTo"] = [
             {"@id": "https://w3id.org/ro/crate/1.1"},
             {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
         ]
-        for profile in ["https://w3id.org/ro/wfrun/process/0.5", "https://w3id.org/ro/wfrun/workflow/0.5", "https://w3id.org/workflowhub/workflow-ro-crate/1.0"]:
-            profile_entity = crate.add(ContextEntity(crate, profile, properties={
-                "@type": "CreativeWork",
-                "version": profile.split("/")[-1],
-            }))
-            crate.root_dataset.append_to("conformsTo", profile_entity)
+        if "mentions" in crate.root_dataset:
+            # make this a valid Workflow Run RO-Crate
+            for profile in ["https://w3id.org/ro/wfrun/process/0.5", "https://w3id.org/ro/wfrun/workflow/0.5", "https://w3id.org/workflowhub/workflow-ro-crate/1.0"]:
+                profile_entity = crate.add(ContextEntity(crate, profile, properties={
+                    "@type": "CreativeWork",
+                    "version": profile.split("/")[-1],
+                }))
+                crate.root_dataset.append_to("conformsTo", profile_entity)
 
     return crate
 

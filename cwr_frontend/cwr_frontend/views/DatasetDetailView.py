@@ -145,7 +145,7 @@ class DatasetDetailView(TemplateView):
         add_signposts(response, *signposts)
         return response
 
-    def _build_ROCrate(self, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, detached: bool) -> ROCrate:
+    def _build_ROCrate(self, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, detached: bool, workflow_only=False) -> ROCrate:
         remote_urls = {}
         for cordra_id in objects:
             if "contentUrl" in objects[cordra_id]:
@@ -160,10 +160,10 @@ class DatasetDetailView(TemplateView):
                 if "isPartOf" in objects[cordra_id]:
                     for parent_id in objects[cordra_id]["isPartOf"]:
                         remote_urls[parent_id] = request.build_absolute_uri(reverse("dataset_detail", args=[parent_id]))
-        crate = rocrate_utils.build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached)
+        crate = rocrate_utils.build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached, workflow_only=workflow_only)
         return crate
 
-    def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download: bool) -> HttpResponseBase:
+    def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download: bool, workflow_only=False) -> HttpResponseBase:
         """ return a downloadable zip in RO-Crate format from the given dataset entity
         the zip file is build on the fly by streaming payload objects directly from the api
 
@@ -172,7 +172,7 @@ class DatasetDetailView(TemplateView):
           objects - list of digital objects of the dataset
           download - return a downloadable zip in RO-Crate format
         """
-        crate = self._build_ROCrate(request, id, objects, with_preview=download, detached=not download)
+        crate = self._build_ROCrate(request, id, objects, with_preview=download, detached=not download, workflow_only=workflow_only)
 
         if not download:
             # return just the metadata
@@ -212,6 +212,9 @@ class DatasetDetailView(TemplateView):
                 return self.as_ROCrate(request, id, objects, download=True)
             else:
                 return self.as_ROCrate(request, id, objects, download=False)
+        elif response_format == "workflowrocrate":
+            objects = self._connector.resolve_objects(id, nested=True)
+            return self.as_ROCrate(request, id, objects, download=True, workflow_only=True)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
             return JsonResponse(object)
         else:

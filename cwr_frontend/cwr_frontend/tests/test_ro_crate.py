@@ -3,6 +3,7 @@ import os
 import re
 
 import pytest
+import rocrate
 import requests_mock
 from rocrate_validator import services, models
 from rocrate.rocrate import ROCrate
@@ -20,7 +21,7 @@ def compare_dicts(expected, actual):
         assert key in expected
 
 
-def build_test_crate(json_file_name: str, detached: bool) -> ROCrate:
+def build_test_crate(json_file_name: str, detached: bool, workflow_only: bool = False) -> ROCrate:
     dataset_objects = json.load(open(os.path.join(os.path.dirname(__file__), json_file_name), "r"))
     remote_urls = {}
 
@@ -41,7 +42,7 @@ def build_test_crate(json_file_name: str, detached: bool) -> ROCrate:
             for parent in object["isPartOf"]:
                 remote_urls[parent] = "https://example.com/" + parent
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=detached)
+    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=detached, workflow_only=workflow_only)
     return ro_crate
 
 
@@ -174,7 +175,7 @@ def test_detached_ro_crate():
     assert len(ro_crate.metadata.extra_contexts) == 0
 
 
-def test_workflow_ro_crate():
+def test_workflow_run_ro_crate():
     """
     Test RO crate with file based objects
     """
@@ -237,7 +238,7 @@ def test_workflow_ro_crate():
     }, action_property.as_jsonld())
 
 
-def test_detached_workflow_ro_crate():
+def test_detached_workflow_run_ro_crate():
     """"
     Test RO crate with remote objects
     """
@@ -270,7 +271,7 @@ def test_detached_workflow_ro_crate():
     ]
 
 
-def test_detached_workflow_ro_crate_missing_urls():
+def test_detached_workflow_run_ro_crate_missing_urls():
     """
     Should raise an error if a remote url to a file or dataset is missing, but not if a person url is missing
     """
@@ -308,7 +309,7 @@ def test_detached_workflow_ro_crate_missing_urls():
     }, author.as_jsonld())
 
 
-def test_workflow_ro_crate_with_child():
+def test_workflow_run_ro_crate_with_child():
     ro_crate = build_test_crate("dataset_objects_nested_crate_parent.json", detached=False)
 
     validate_ro_crate_profile(ro_crate, "workflow-run-crate-0.5")
@@ -336,7 +337,7 @@ def test_ro_crate_with_parent():
     assert "https://example.com/cwr/391c48d5cc201aa5e445" in ro_crate.root_dataset["isPartOf"]
 
 
-def test_detached_workflow_ro_crate_with_child():
+def test_detached_workflow_run_ro_crate_with_child():
     """ Should correctly reference the child urls """
     ro_crate = build_test_crate("dataset_objects_nested_crate_parent.json", detached=True)
 
@@ -364,3 +365,48 @@ def test_detached_ro_crate_with_parent():
     assert len(ro_crate.get_entities()) == 18
 
     assert "https://example.com/cwr/391c48d5cc201aa5e445" in ro_crate.root_dataset["isPartOf"]
+
+def test_workflow_ro_crate_without_workflow():
+    """
+    Should fail. A dataset without workflow cannot be built into a workflow ro-crate
+    """
+    with pytest.raises(ValueError):
+        build_test_crate("dataset_objects.json", detached=False, workflow_only=True)
+
+def test_workflow_ro_crate():
+    """
+    Should only return the workflow and filter other entity
+    """
+    ro_crate = build_test_crate("dataset_objects_workflow.json", detached=False, workflow_only=True)
+
+    validate_ro_crate_profile(ro_crate, "workflow-ro-crate-1.0")
+    assert len(ro_crate.get_entities()) == 6  # root_dataset, metadata, workflow file, computer language, parameter, author
+
+    # root dataset should point to workflow
+    assert isinstance(ro_crate.root_dataset["hasPart"], rocrate.model.File)
+    assert ro_crate.root_dataset["mainEntity"].id == "workflow.yaml"
+
+    # Create Action should have been filtered out
+    assert "mentions" not in ro_crate.root_dataset
+
+    # Check workflow entities have expected properties
+    workflow = ro_crate.dereference("workflow.yaml")
+    compare_dicts({
+        "@id": "workflow.yaml",
+        "@type": ["File", "ComputationalWorkflow", "SoftwareSourceCode"],
+        "name": "workflow.yaml",
+        "description": "Argo workflow definition",
+        "sameAs": {"@id": "https://example.com/cwr/695601f5a098bf326246"},
+        "programmingLanguage": {"@id": "https://argoproj.github.io/workflows"},
+        "contentSize": 2034,
+        "encodingFormat": "text/yaml",
+        "input": {"@id": "#cwr/398b64ebca54668f662d"}
+    }, workflow.as_jsonld())
+
+    formal_param = workflow["input"]
+    compare_dicts({
+        "@id": "#cwr/398b64ebca54668f662d",
+        "@type": "FormalParameter",
+        "name": "text",
+        "additionalType": "Text"
+    }, formal_param.as_jsonld())
