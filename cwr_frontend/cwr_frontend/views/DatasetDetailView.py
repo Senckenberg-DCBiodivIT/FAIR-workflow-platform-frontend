@@ -214,7 +214,7 @@ class DatasetDetailView(TemplateView):
                 return self.as_ROCrate(request, id, objects, download=False)
         elif response_format == "workflowrocrate":
             objects = self._connector.resolve_objects(id, nested=True)
-            return self.as_ROCrate(request, id, objects, download=True, workflow_only=True)
+            return self.as_ROCrate(request, id, objects, download=download or accept == "application/zip", workflow_only=True)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
             return JsonResponse(object)
         else:
