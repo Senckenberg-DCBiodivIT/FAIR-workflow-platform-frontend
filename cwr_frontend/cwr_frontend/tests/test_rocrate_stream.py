@@ -29,7 +29,7 @@ def test_ro_crate_stream():
 
             with myzip.open("ro-crate-metadata.json") as metadata:
                 lines = metadata.read().decode("utf-8")
-                assert lines == json.dumps(crate.metadata.generate())
+                assert lines == json.dumps(crate.metadata.generate(), indent=4)
 
 
 def test_ro_crate_stream_file_by_name():

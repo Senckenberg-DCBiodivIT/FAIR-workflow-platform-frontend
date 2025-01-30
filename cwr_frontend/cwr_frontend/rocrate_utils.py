@@ -212,7 +212,7 @@ def stream_ROCrate(crate: ROCrate) -> Generator[bytes, None, None]:
     with requests.session() as session:
         with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as archive:
             # Write ro-crate-metadata.json to zip stream
-            archive.writestr(crate.metadata.id, json.dumps(crate.metadata.generate()))
+            archive.writestr(crate.metadata.id, json.dumps(crate.metadata.generate(), indent=4))
             yield buffer.read()
 
             # Write preview html
