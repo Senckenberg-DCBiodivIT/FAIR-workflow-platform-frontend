@@ -207,18 +207,18 @@ class DatasetDetailView(TemplateView):
         accept = request.META.get("HTTP_ACCEPT", None).lower()
 
         if response_format == "rocrate":
-            objects = self._connector.resolve_objects(id, nested=True)
+            objects = self._connector.resolve_objects(id, nested=True, workflow_only=False)
             if download or accept == "application/zip":
                 return self.as_ROCrate(request, id, objects, download=True)
             else:
                 return self.as_ROCrate(request, id, objects, download=False)
         elif response_format == "workflowrocrate":
-            objects = self._connector.resolve_objects(id, nested=True)
+            objects = self._connector.resolve_objects(id, nested=True, workflow_only=True)
             return self.as_ROCrate(request, id, objects, download=download or accept == "application/zip", workflow_only=True)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
             return JsonResponse(object)
         else:
-            objects = self._connector.resolve_objects(id, nested=False)
+            objects = self._connector.resolve_objects(id, nested=False, workflow_only=False)
             return self.render(request, id, objects)
 
     def _jsonld(self, object_id, objects):

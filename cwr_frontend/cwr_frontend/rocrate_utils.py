@@ -17,7 +17,7 @@ from cwr_frontend.jsonld_utils import replace_values
 
 
 def _remove_children_from_objects(objects, child_id):
-    if objects[child_id]["@type"] == "Dataset" or (isinstance(objects[child_id]["@type"], list) and "Dataset" in objects[child_id]["@type"]):
+    if child_id in objects and (objects[child_id]["@type"] == "Dataset" or (isinstance(objects[child_id]["@type"], list) and "Dataset" in objects[child_id]["@type"])):
         for grandchild_id in objects[child_id]["hasPart"]:
             _remove_children_from_objects(objects, grandchild_id)
     objects.pop(child_id, None)
@@ -33,9 +33,10 @@ def _filter_objects_for_workflow_crate(objects: dict[str, dict[str, Any]], datas
 
     objects[dataset_id]["hasPart"] = [workflow_id]
     for mention in objects[dataset_id].get("mentions", []):
-        for action_related_object in objects[mention].get("object", []) + objects[mention].get("result", []):
-            objects.pop(action_related_object, None)
-        objects.pop(mention, None)
+        if mention in objects:
+            for action_related_object in objects[mention].get("object", []) + objects[mention].get("result", []):
+                objects.pop(action_related_object, None)
+            objects.pop(mention, None)
     del objects[dataset_id]["mentions"]
 
 def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_urls: dict[str, str],

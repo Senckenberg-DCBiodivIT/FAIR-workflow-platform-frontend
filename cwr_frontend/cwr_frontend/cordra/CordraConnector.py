@@ -100,25 +100,35 @@ class CordraConnector:
         else:
             return self._resolve(discovered_ids, resolved_objects, max_recursion - 1)
 
-    def _resolve_object_graph(self, id: str, nested) -> list[dict[str, Any]]:
+    def _resolve_object_graph(self, id: str, nested, workflow_only) -> list[dict[str, Any]]:
         url = urljoin(self._base_url, "cordra/call")
         params = {
             "objectId": id,
-            "method": "asNestedGraph" if nested else "asGraph"
         }
+        if workflow_only:
+            if nested:
+                params["method"] = "asNestedWorkflowGraph"
+            else:
+                params["method"] = "asWorkflowGraph"
+        else:
+            if nested:
+                params["method"] = "asNestedGraph"
+            else:
+                params["method"] = "asGraph"
         url = f"{url}?{urlencode(params)}"
+        print(url)
         response = requests.get(url, verify=False)
         response.raise_for_status()
 
         return response.json()["@graph"]
 
-    def resolve_objects(self, object_id: str, nested: bool = False) -> dict[str, [dict[str, Any]]]:
+    def resolve_objects(self, object_id: str, nested: bool = False, workflow_only: bool = False) -> dict[str, [dict[str, Any]]]:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """
-        cache_key = f"dataset-objects-{object_id}-nested={nested}"
+        cache_key = f"dataset-objects-{object_id}-nested={nested}-workflow_only={workflow_only}"
         objects = cache.get(cache_key)
         if objects is None:
-            objects = dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id, nested)))
+            objects = dict(map(lambda obj: (obj["@id"], obj), self._resolve_object_graph(object_id, nested, workflow_only)))
             cache.set(cache_key, objects, 15*60)
         return objects
