@@ -1,9 +1,10 @@
+import ssl
 from datetime import datetime
 from typing import Any
 
 from pyld import jsonld
 from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
@@ -178,10 +179,15 @@ class DatasetDetailView(TemplateView):
             # return just the metadata
             return JsonResponse(crate.metadata.generate())
         else:
-            archive_name = f'{id.replace("/", "_")}.zip'
-            response = StreamingHttpResponse(rocrate_utils.stream_ROCrate(crate), content_type="application/zip")
-            response["Content-Disposition"] = f"attachment; filename={archive_name}"
-            return response
+            try:
+                ssl._create_default_https_context = ssl._create_unverified_context
+                archive_name = f'{id.replace("/", "_")}.zip'
+                response = StreamingHttpResponse(crate.stream_zip(), content_type="application/zip")
+                response["Content-Disposition"] = f"attachment; filename={archive_name}"
+                return response
+            finally:
+                # restore default ssl context
+                ssl._create_default_https_context = ssl._create_default_https_context
 
     def get(self, request, **kwargs):
         id = kwargs.get("id")

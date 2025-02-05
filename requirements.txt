@@ -77,7 +77,7 @@ rfc3987==1.3.8
 rich==13.9.4
 rich-click==1.8.4
 roc-validator @ git+https://github.com/kikkomep/rocrate-validator.git@dc581d436776fc52cf3e458cb1fe2ffbd3c4c5ea
-rocrate==0.10.0
+rocrate @ git+https://github.com/ResearchObject/ro-crate-py.git@b3b2438804db2d3adc279f18c5e392a22fa6b516
 ruamel.yaml==0.18.6
 ruamel.yaml.clib==0.2.8
 schema-salad==8.5.20240503091721

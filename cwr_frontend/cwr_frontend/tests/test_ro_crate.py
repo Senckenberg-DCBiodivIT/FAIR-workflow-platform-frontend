@@ -1,14 +1,14 @@
+import itertools
 import json
 import os
 import re
+from unittest.mock import patch, MagicMock
 
 import pytest
 import rocrate
-import requests_mock
 from rocrate_validator import services, models
 from rocrate.rocrate import ROCrate
 from rocrate.model import RootDataset
-from cwr_frontend.rocrate_utils import stream_ROCrate
 import tempfile
 
 from cwr_frontend import rocrate_utils
@@ -51,11 +51,16 @@ def validate_ro_crate_profile(ro_crate: ROCrate, profile, ignore_regex=[]):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
 
-        with requests_mock.Mocker(kw="mock", real_http=True) as mocker:
-            mocker.register_uri("GET", re.compile(".*example\.com.*"), text="test")
-            stream = stream_ROCrate(ro_crate)
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            mock_response = MagicMock(name="response")
+            mock_context = MagicMock(name="context")
+            mock_context.read.side_effect = itertools.cycle([b"test", None])
+            mock_response.__enter__.return_value = mock_context
+            mock_response.__exit__.return_value = False
+            mock_urlopen.return_value = mock_response
+
             with tempfile.NamedTemporaryFile(suffix=".zip", mode="wb") as f:
-                for chunk in stream:
+                for chunk in ro_crate.stream_zip():
                     f.write(chunk)
                 f.flush()
                 f.seek(0)
@@ -145,6 +150,7 @@ def test_ro_crate():
         "name": "Continuous.nc",
         "contentSize": 25027404,
         "encodingFormat": "application/x-netcdf",
+        "contentUrl": "https://example.com/cwr/d5d6a0c4df374a22d2ab",
         "sameAs": {"@id": "https://example.com/cwr/d5d6a0c4df374a22d2ab"}
     }, file1.as_jsonld())
 
@@ -203,7 +209,8 @@ def test_workflow_run_ro_crate():
         "programmingLanguage": {"@id": "https://argoproj.github.io/workflows"},
         "contentSize": 2034,
         "encodingFormat": "text/yaml",
-        "input": {"@id": "#cwr/398b64ebca54668f662d"}
+        "input": {"@id": "#cwr/398b64ebca54668f662d"},
+        "contentUrl": "https://example.com/cwr/695601f5a098bf326246"
     }, workflow.as_jsonld())
 
     formal_param = workflow["input"]
@@ -400,7 +407,8 @@ def test_workflow_ro_crate():
         "programmingLanguage": {"@id": "https://argoproj.github.io/workflows"},
         "contentSize": 2034,
         "encodingFormat": "text/yaml",
-        "input": {"@id": "#cwr/398b64ebca54668f662d"}
+        "input": {"@id": "#cwr/398b64ebca54668f662d"},
+        "contentUrl": "https://example.com/cwr/695601f5a098bf326246"
     }, workflow.as_jsonld())
 
     formal_param = workflow["input"]
@@ -408,5 +416,5 @@ def test_workflow_ro_crate():
         "@id": "#cwr/398b64ebca54668f662d",
         "@type": "FormalParameter",
         "name": "text",
-        "additionalType": "Text"
+        "additionalType": "Text",
     }, formal_param.as_jsonld())

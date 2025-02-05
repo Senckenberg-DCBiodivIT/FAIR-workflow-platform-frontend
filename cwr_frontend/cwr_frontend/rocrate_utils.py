@@ -1,13 +1,7 @@
-import io
-import json
-import os.path
 from copy import deepcopy
-from typing import Any, Generator
-from zipfile import ZipFile, ZIP_DEFLATED
-import requests
-import rocrate.model
+from typing import Any
 
-from rocrate.model import Person, ContextEntity, Dataset
+from rocrate.model import Person, ContextEntity
 
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader
 from pyld import jsonld
@@ -133,7 +127,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
         else:
             # Everything else is added as a ContextEntity, where we use the identifier if present,
             # and the cordra_id if not
-            identifier = object.pop("identifier") if "identifier" in object else cordra_id
+            identifier = object.pop("identifier") if "identifier" in object else f"#{cordra_id}"
             crate_obj = crate.add(ContextEntity(crate, identifier, object))
             id_map[cordra_id] = crate_obj.id
 
@@ -182,78 +176,3 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
                 crate.root_dataset.append_to("conformsTo", profile_entity)
 
     return crate
-
-def stream_ROCrate(crate: ROCrate) -> Generator[bytes, None, None]:
-    """ Streams the content of an ROCrate into a ZIP archive.
-
-    This function creates the zip archive in memory and streams its content in chunks.
-    It handles metadata, preview HTML files, and associated file entities, fetching remote file content as needed.
-    For remote content, the data is streamed directly to the output to reduce memory usage.
-    No temporary files are allocated. Makes sure only a single file is streamed at once
-    """
-    class MemoryBuffer(io.RawIOBase):
-        def __init__(self):
-            self._buffer = b""
-
-        def writable(self):
-            return True
-
-        def write(self, b):
-            if self.closed:
-                raise RuntimeError("Stream war closed before writing!")
-            self._buffer += b
-            return len(b)
-
-        def read(self):
-            chunk = self._buffer
-            self._buffer = b""
-            return chunk
-
-    buffer = MemoryBuffer()
-    with requests.session() as session:
-        with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as archive:
-            # Write ro-crate-metadata.json to zip stream
-            archive.writestr(crate.metadata.id, json.dumps(crate.metadata.generate(), indent=4))
-            yield buffer.read()
-
-            # Write preview html
-            for preview in filter(lambda e: isinstance(e, rocrate.model.Preview), crate.get_entities()):
-                archive.writestr(preview.id, preview.generate_html())
-                yield buffer.read()
-
-            # Iterate files, fetch their content from remote and write them to the stream
-            for file_entity in crate.get_by_type("File"):
-                file_path = file_entity.id
-                if isinstance(file_entity.source, str):
-                    if file_entity.source.startswith("http"):
-                        if not file_entity.fetch_remote:
-                            continue
-                        response = session.get(file_entity.source, verify=False, stream=True)
-                        response.raise_for_status()
-                        with archive.open(file_path, mode="w") as file:
-                            for chunk in response.iter_content(chunk_size=1024):
-                                file.write(chunk)
-                                yield buffer.read()
-                    else:
-                        if not os.path.exists(file_entity.source):
-                            raise FileNotFoundError(file_entity.source)
-                        with open(file_entity.source, "rb") as in_file, archive.open(file_path, mode="w") as file:
-                            for chunk in in_file:
-                                file.write(chunk)
-                                yield buffer.read()
-                elif isinstance(file_entity.source, io.IOBase):
-                    with archive.open(file_path, mode="w") as file:
-                        read = file_entity.source.read()
-                        while len(read) > 0:
-                            if isinstance(read, str):
-                                file.write(str.encode(read))
-                            else:
-                                file.write(read)
-                            read = file_entity.source.read()
-                            yield buffer.read()
-                else:
-                    raise ValueError(f"Unsupported file source type: {type(file_entity.source)}")
-
-    # ensure stream is read completely
-    yield buffer.read()
-    buffer.close()
