@@ -78,6 +78,12 @@ def validate_ro_crate_profile(ro_crate: ROCrate, profile, ignore_regex=[]):
                 # Ignore missing workflow. It cannot be found in the crate because we stream it manually in the view
                 if re.search("Main Workflow .*? not found in crate", issue.message):
                     continue
+                # Ignore check for empty datasets (happens for parent/child crates)
+                if re.search("Less than 1 values on .*?", issue.message):
+                    continue
+                # Ignore wrong conformsTo (see 1.2 draft check below)
+                elif re.search("The RO-Crate metadata file descriptor MUST have a `conformsTo` property", issue.message):
+                    continue
                 else:
                     # ignore additional regexes.
                     for regex in ignore_regex:
@@ -85,6 +91,10 @@ def validate_ro_crate_profile(ro_crate: ROCrate, profile, ignore_regex=[]):
                             continue
                     raise AssertionError("Crate validation failed: " + str(issue))
 
+        # assert the crate follows the 1.2 draft
+        metadata = ro_crate.metadata.generate()
+        assert "https://w3id.org/ro/crate/1.2-DRAFT" in [elem["@id"] for elem in ro_crate.metadata.as_jsonld()["conformsTo"]]
+        assert "https://w3id.org/ro/crate/1.2-DRAFT/context" in metadata["@context"]
 
 def test_ro_crate():
     """
@@ -110,7 +120,7 @@ def test_ro_crate():
         assert "sameAs" in entity
 
     # Make sure this crate does not use the WRROC profile
-    assert ro_crate.metadata["conformsTo"] == "https://w3id.org/ro/crate/1.1"
+    assert len(ro_crate.metadata["conformsTo"]) == 1
     assert len(ro_crate.metadata.extra_contexts) == 0
 
     # check entities have expected properties
@@ -177,7 +187,7 @@ def test_detached_ro_crate():
         assert "sameAs" not in entity
 
     # Make sure this crate does not use the WRROC profile
-    assert ro_crate.metadata["conformsTo"] == "https://w3id.org/ro/crate/1.1"
+    assert len(ro_crate.metadata["conformsTo"]) == 1
     assert len(ro_crate.metadata.extra_contexts) == 0
 
 
@@ -339,9 +349,21 @@ def test_ro_crate_with_parent():
     ro_crate = build_test_crate("dataset_objects_nested_crate_child.json", detached=False)
 
     validate_ro_crate_profile(ro_crate, "ro-crate-1.1")
-    assert len(ro_crate.get_entities()) == 18
+    assert len(ro_crate.get_entities()) == 19
+    assert len(ro_crate.root_dataset["hasPart"]) == 15
 
-    assert "https://example.com/cwr/391c48d5cc201aa5e445" in ro_crate.root_dataset["isPartOf"]
+    parent_crate_id = "https://example.com/cwr/391c48d5cc201aa5e445/"
+    assert parent_crate_id == ro_crate.root_dataset["isPartOf"]["@id"]
+
+    # make sure there is a data entity for the parent crate
+    assert ro_crate.get(parent_crate_id) is not None
+    compare_dicts({
+        "@id": parent_crate_id,
+        "@type": "Dataset",
+        "conformsTo": {"@id": "https://w3id.org/ro/crate"},
+    }, ro_crate.get(parent_crate_id).as_jsonld())
+
+
 
 
 def test_detached_workflow_run_ro_crate_with_child():
@@ -369,9 +391,19 @@ def test_detached_ro_crate_with_parent():
     ro_crate = build_test_crate("dataset_objects_nested_crate_child.json", detached=True)
 
     validate_ro_crate_profile(ro_crate, "ro-crate-1.1")
-    assert len(ro_crate.get_entities()) == 18
+    assert len(ro_crate.get_entities()) == 19
+    assert len(ro_crate.root_dataset["hasPart"]) == 15
 
-    assert "https://example.com/cwr/391c48d5cc201aa5e445" in ro_crate.root_dataset["isPartOf"]
+    parent_crate_id = "https://example.com/cwr/391c48d5cc201aa5e445/"
+    assert parent_crate_id == ro_crate.root_dataset["isPartOf"]["@id"]
+
+    # make sure there is a data entity for the parent crate
+    assert ro_crate.get(parent_crate_id) is not None
+    compare_dicts({
+        "@id": parent_crate_id,
+        "@type": "Dataset",
+        "conformsTo": {"@id": "https://w3id.org/ro/crate"},
+    }, ro_crate.get(parent_crate_id).as_jsonld())
 
 def test_workflow_ro_crate_without_workflow():
     """

@@ -136,10 +136,15 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
     for key, value in dataset.items():
         if key == "@context" or key == "@id" or key == "@type": continue
         if key == "isPartOf":
-            value = {"@id": remote_urls[value["@id"]]}
-        if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
-            value = value["@value"]
-        crate.root_dataset[key] = replace_values(value, id_map)
+            # this is a child Crate. Add reference to parent crate
+            parent_dataset = crate.add_dataset(remote_urls[value["@id"]], fetch_remote=False)
+            parent_dataset["conformsTo"] = {"@id": "https://w3id.org/ro/crate"}
+            crate.root_dataset["isPartOf"] = {"@id": parent_dataset["@id"]}
+            crate.root_dataset["hasPart"] = [part for part in crate.root_dataset.get("hasPart", []) if part["@id"] != parent_dataset["@id"]]
+        else:
+            if isinstance(value, dict) and "@value" in value:  # fix for https://github.com/ResearchObject/ro-crate-py/issues/190
+                value = value["@value"]
+            crate.root_dataset[key] = replace_values(value, id_map)
 
     # nested crates don't always have a description (ModGP), so we use their name to make a valid crate
     if not "description" in crate.root_dataset:
@@ -159,11 +164,15 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
                     replaced = [{"@id": entity_id} for entity_id in replaced]
             entity[key] = replaced
 
+    # make this a valid 1.2-DRAFT RO-Crate
+    crate.metadata.PROFILE = "https://w3id.org/ro/crate/1.2-DRAFT"
+    crate.metadata["conformsTo"] = [{"@id": "https://w3id.org/ro/crate/1.2-DRAFT"}]
+
     if "mainEntity" in crate.root_dataset:
         # make this a valid Workflow RO-Crate
         crate.metadata.extra_contexts.append("https://w3id.org/ro/terms/workflow-run/context")
         crate.metadata["conformsTo"] = [
-            {"@id": "https://w3id.org/ro/crate/1.1"},
+            {"@id": "https://w3id.org/ro/crate/1.2-DRAFT"},
             {"@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"}
         ]
         if "mentions" in crate.root_dataset:
