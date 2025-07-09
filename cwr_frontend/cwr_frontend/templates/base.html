@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     {% load static %}
-    <title>Agroclim: {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'tachyons.min.css' %}"/>
     {% load settings_value %}
+    <title>{% project_name %}: {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'tachyons.min.css' %}"/>
     <link rel="shortcut icon" type="image/png" href="{% favicon %}" >
     <link rel="stylesheet" type="text/css" href="{% static 'fontawesome/css/all.min.css' %}" />
     {% block head %}{% endblock %}
@@ -14,7 +14,7 @@
     <header class="w-100 pa3 ph5-ns bg-dark-green">
         <div class="db dt-ns center w-100">
             <div class="db dtc-ns v-mid tl w-50">
-                <a class="white link dim f4-ns f5 fw6 mt0" href="{% url 'dataset_list' %}" title="Home">Agroclim</a>
+                <a class="white link dim f4-ns f5 fw6 mt0" href="{% url 'dataset_list' %}" title="Home">{% project_name %}</a>
             </div>
             <div class="db dtc-ns v-mid w-100 tl tr-ns mt2 mt0-ns">
                 <a href="{% url 'dataset_list' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Datasets</a>
@@ -38,7 +38,6 @@
         <h1 class="f4 mb0">{% block headline %}{% endblock %}</h1>
         {% block content %}{% endblock %}
     </main>
-    {% load settings_value %}
     <footer class="w-100 pa3 ph5-ns bg-dark-green tr" style="position: absolute; bottom: 0">
         <a href="{% cordra_url %}/" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Object Repository</a>
         <a href="https://github.com/dnlbauer/fair-workflow-platform" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Under the Hood</a>

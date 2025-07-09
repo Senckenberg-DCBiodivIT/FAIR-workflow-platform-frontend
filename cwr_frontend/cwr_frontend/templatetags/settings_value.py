@@ -16,3 +16,7 @@ def favicon():
     if settings.DEBUG:
         return settings.STATIC_URL + "favicon_debug.jpeg"
     return settings.STATIC_URL + "favicon.jpeg"
+
+@register.simple_tag
+def project_name():
+    return settings.PROJECT_NAME

@@ -23,7 +23,7 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 - WORKFLOW_SERVICE_USER: Workflow service user for Basic auth
 - WORFLOW_SERVICE_PASSWORD: Password of Workflow service user
 - ARGO_URL: Base URL of argo workflow engine. Used to render links from workflow status list
-- ORCID_BASE_DOMAIN: Which base domain to use for ORCID. I.e. https://sandbox.orcid.org or https://orcid.org
+- ORCID_BASE_DOMAIN: Which base domain to use for ORCID. I.e. sandbox.orcid.org or orcid.org (default: orcid.org)
 - ORCID_CLIENT_ID: ORCID client id
 - ORCID_SECRET: ORCID client secret
 - ORCID_ALLOW_LIST: List of ORCID user ids to allow to use the workflow service (comma-separated)
@@ -32,6 +32,7 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 - ALLOWED_HOSTS: django allowed host names (comma-separated)
 - FORCE_SCRIPT_NAME: must be set to make the frontend available under a subpath like /cwr
 - SECRET_KEY: Django secret key
+- PROJECT_NAME: Name of the project, used in the UI
 
 ## License
 
