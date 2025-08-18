@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Workflow API
+  description: Enpoint to submit or check the status of workflow RO-Crates and donwload completed workflows as RO-Crates.
+  contact:
+    email: lena.perzlmaier@senckenberg.de
+  license:
+    name: MIT
+    url: https://mit-license.org/
+  version: 1.0.0
+servers:
+  - url: xxx
+paths:
+  /v1/workflows:
+    post:
+      description: Submit a new workflow RO-Crate for execution.
+      summary: Submit a new workflow RO-Crate for execution.
+      requestBody:
+        description: xx
+        content:
+          application/zip:
+            schema:
+              type: string
+              format: binary
+      parameters:
+        - in: query
+          name: dry_run
+          required: False
+          description: If true, checks if valid RO-Crate was submitted, but does not execute workflow.
+          schema:
+            default: False
+            type: boolean
+
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Valid RO-Crate has been submitted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/workflow_status"
+
+  /v1/workflows/{id}:
+    get:
+      description: Check workflow execution status.
+      summary: Check workflow execution status.
+      parameters:
+        - in: path
+          description: workflow_id
+          name: id
+          required: True
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200": 
+          description: Workflow status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/workflow_status"
+  /v1/workflows/{id}/download:
+    get:
+      description: Download completed workflow as RO-Crate.
+      summary: Download completed workflow as RO-Crate.
+      parameters:
+        - in: path
+          name: id
+          description: workflow_id
+          required: True
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200": 
+          description: Completed workflow as RO-Crate.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: API-Key
+  schemas:
+    workflow_status:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+        status:
+          type: string
