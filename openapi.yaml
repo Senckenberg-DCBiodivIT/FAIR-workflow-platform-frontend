@@ -33,7 +33,7 @@ paths:
       parameters:
         - in: query
           name: dry_run
-          required: False
+          required: false
           description: If true, checks if valid RO-Crate was submitted, but does not execute workflow.
           schema:
             default: False
@@ -56,7 +56,7 @@ paths:
         - in: path
           description: workflow_id
           name: id
-          required: True
+          required: true
           schema:
             format: uuid
             type: string
@@ -75,7 +75,7 @@ paths:
         - in: path
           name: id
           description: workflow_id
-          required: True
+          required: true
           schema:
             format: uuid
             type: string
@@ -102,3 +102,4 @@ components:
           format: uuid
         status:
           type: string
+
