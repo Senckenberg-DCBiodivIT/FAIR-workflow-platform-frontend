@@ -8,18 +8,30 @@ info:
     name: MIT
     url: https://mit-license.org/
   version: 1.0.0
+servers:
+  - url: xxx
 paths:
   /v1/workflows:
     post:
       description: Submit a new workflow RO-Crate for execution.
       summary: Submit a new workflow RO-Crate for execution.
       requestBody:
-        description: xx
+        description: RO-Crate submission
         content:
-          application/zip:
+          multipart/form-data:
             schema:
-              type: string
-              format: binary
+              type: object
+              properties:
+                rocratefile:
+                  type: string
+                  format: binary
+              required:
+                - rocratefile
+              additionalProperties:
+                type: string
+                description: additional properties named param-key as key value pair overwriting workflow parameters
+                example:
+                  - param-species: Corvus corax
       parameters:
         - in: query
           name: dry_run
@@ -28,7 +40,6 @@ paths:
           schema:
             default: False
             type: boolean
-
       security:
         - ApiKeyAuth: []
       responses:
