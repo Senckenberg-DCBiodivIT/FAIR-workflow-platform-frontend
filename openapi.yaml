@@ -8,8 +8,6 @@ info:
     name: MIT
     url: https://mit-license.org/
   version: 1.0.0
-servers:
-  - url: xxx
 paths:
   /v1/workflows:
     post:
