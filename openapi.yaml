@@ -6,7 +6,7 @@ info:
     email: lena.perzlmaier@senckenberg.de
   license:
     name: MIT
-    url: https://mit-license.org/
+    url: https://spdx.org/licenses/MIT
   version: 1.0.0
 paths:
   /v1/workflows:
