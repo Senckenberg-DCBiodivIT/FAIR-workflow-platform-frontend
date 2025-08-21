@@ -25,6 +25,8 @@ from cwr_frontend.views.WorkflowSubmissionView import WorkflowSubmissionView
 from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 def redirect_orcid_login(request):
     next_url = request.GET.get("next", "/")
     orcid_login_url = reverse("orcid_login") + "?process=login&next=" + next_url
@@ -45,4 +47,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("accounts/login/", redirect_orcid_login, name="account_login"), # skip login selection page -> always orcid
     path("accounts/", include("allauth.urls")),
+    path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/v1/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]

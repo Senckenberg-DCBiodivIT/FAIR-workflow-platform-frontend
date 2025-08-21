@@ -99,6 +99,8 @@ INSTALLED_APPS = [
     "django_browser_reload",  # auto reload website in development
     "django_static_fontawesome",
     "django_json_ld",
+    "rest_framework",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -238,3 +240,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Workflow API',
+    'DESCRIPTION': 'Enpoint to submit or check the status of workflow RO-Crates and donwload completed workflows as RO-Crates.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
