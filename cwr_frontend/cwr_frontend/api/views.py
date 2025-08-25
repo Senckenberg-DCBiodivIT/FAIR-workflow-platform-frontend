@@ -8,6 +8,7 @@ from uuid import uuid4
 from cwr_frontend.rocrate_utils import get_crate_workflow_from_zip
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 from cwr_frontend.api.serializers import WorkflowStatusSerializer
+from rest_framework_api_key.permissions import HasAPIKey
 
 def workflow_status_response(workflow_id, status, status_code=200):
     data = {"workflow_id": workflow_id, "status": status}
@@ -18,6 +19,8 @@ def workflow_status_response(workflow_id, status, status_code=200):
 class SubmitWorkflowView(APIView):
 
     _connector = WorkflowServiceConnector()
+    permission_classes = [HasAPIKey]
+    
     @extend_schema(
         responses={200: WorkflowStatusSerializer}
     )

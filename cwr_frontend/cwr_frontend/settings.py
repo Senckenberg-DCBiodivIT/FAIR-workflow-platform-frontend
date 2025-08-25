@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     "cwr_frontend.api",
     "rest_framework",
     'drf_spectacular',
+    "rest_framework_api_key",
 ]
 
 MIDDLEWARE = [
