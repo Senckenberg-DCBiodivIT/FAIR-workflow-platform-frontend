@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     "django_browser_reload",  # auto reload website in development
     "django_static_fontawesome",
     "django_json_ld",
+    "cwr_frontend.api",
     "rest_framework",
     'drf_spectacular',
 ]

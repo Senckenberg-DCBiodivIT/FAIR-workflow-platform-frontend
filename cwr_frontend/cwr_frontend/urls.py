@@ -39,14 +39,15 @@ urlpatterns = [
     re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
     re_path(r'dataset/(?P<id>([a-z0-9]+)/([a-z0-9]+))/?', DatasetDetailView.as_view(), name="dataset_detail"),
-    re_path('workflows/submit', login_required(WorkflowSubmissionView.as_view()), name="submit_workflow"),
-    re_path('workflows', login_required(WorkflowListView.as_view()), name="list_workflows"),
+    re_path(r'^workflows/submit/?$', login_required(WorkflowSubmissionView.as_view()), name="submit_workflow"),
+    re_path(r'^workflows/?$', login_required(WorkflowListView.as_view()), name="list_workflows"),
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # an ugly hack to serve a placeholder image without using static files
     # replace with actual static file servement!
     path('admin/', admin.site.urls),
     path("accounts/login/", redirect_orcid_login, name="account_login"), # skip login selection page -> always orcid
     path("accounts/", include("allauth.urls")),
+    path('api/v1/', include('cwr_frontend.api.urls')),
     path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/v1/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
