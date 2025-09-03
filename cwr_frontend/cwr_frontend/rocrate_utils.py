@@ -3,9 +3,11 @@ from typing import Any
 import zipfile
 import yaml
 import io
+import ssl
 from typing import Any
 import django
 from django.core.exceptions import BadRequest
+from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse
 import tempfile
 import requests
 from django.urls import reverse
@@ -17,6 +19,7 @@ from pyld import jsonld
 from rocrate.rocrate import ROCrate
 from rocrate.model import RootDataset
 from cwr_frontend.jsonld_utils import replace_values
+from cwr_frontend.cordra.CordraConnector import CordraConnector
 
 
 def _remove_children_from_objects(objects, child_id):
@@ -252,3 +255,47 @@ def get_crate_workflow_from_id(self, request, crate_id):
         workflow_response.raise_for_status()
         workflow = yaml.load(workflow_response.content, Loader=yaml.CLoader)
         return crate, workflow
+
+def _build_ROCrate(connector, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, detached: bool, workflow_only=False) -> ROCrate:
+    remote_urls = {}
+    for cordra_id in objects:
+        if "contentUrl" in objects[cordra_id]:
+            url = request.build_absolute_uri(connector.get_object_abs_url(cordra_id, objects[cordra_id]["contentUrl"]))
+            remote_urls[cordra_id] = url
+        elif "identifier" in objects[cordra_id]:
+            url = request.build_absolute_uri(connector.get_object_abs_url(cordra_id))
+            remote_urls[cordra_id] = url
+        elif "Dataset" in objects[cordra_id]["@type"]:
+            url = request.build_absolute_uri(reverse("dataset_detail", args=[cordra_id]))
+            remote_urls[cordra_id] = url
+            if "isPartOf" in objects[cordra_id]:
+                for parent_id in objects[cordra_id]["isPartOf"]:
+                    remote_urls[parent_id] = request.build_absolute_uri(reverse("dataset_detail", args=[parent_id]))
+    crate = build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached, workflow_only=workflow_only)
+    return crate
+
+def as_ROCrate(request, id: str, objects: dict[str, dict[str, Any]], download: bool, connector: CordraConnector, workflow_only=False) -> HttpResponseBase:
+    """ return a downloadable zip in RO-Crate format from the given dataset entity
+    the zip file is build on the fly by streaming payload objects directly from the api
+
+    params:
+        id - the pid of the dataset
+        objects - list of digital objects of the dataset
+        download - return a downloadable zip in RO-Crate format
+        connector - CordraConnector
+    """
+    crate = _build_ROCrate(connector, request, id, objects, with_preview=download, detached=not download, workflow_only=workflow_only)
+
+    if not download:
+        # return just the metadata
+        return JsonResponse(crate.metadata.generate())
+    else:
+        try:
+            ssl._create_default_https_context = ssl._create_unverified_context
+            archive_name = f'{id.replace("/", "_")}.zip'
+            response = StreamingHttpResponse(crate.stream_zip(), content_type="application/zip")
+            response["Content-Disposition"] = f"attachment; filename={archive_name}"
+            return response
+        finally:
+            # restore default ssl context
+            ssl._create_default_https_context = ssl._create_default_https_context
