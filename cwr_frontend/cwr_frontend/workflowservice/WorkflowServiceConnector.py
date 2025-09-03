@@ -66,3 +66,16 @@ class WorkflowServiceConnector:
             if "finishedAt" in json[i] and json[i]["finishedAt"] is not None:
                 json[i]["finishedAt"] = datetime.strptime(json[i]["finishedAt"], "%Y-%m-%dT%H:%M:%SZ")
         return json
+    
+    def get_workflow_detail(self, workflow_id:str):
+        """
+        Get details of a specific workflow
+        """
+        url = f'{urljoin(self._base_url, f"workflow/detail/{workflow_id}")}'
+        print(url)
+        response = requests.get(url, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
+        if response.status_code != 200:
+            raise Exception(response.text)
+
+        json = response.json()
+        return json 
