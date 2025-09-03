@@ -23,6 +23,7 @@ paths:
                 rocratefile:
                   type: string
                   format: binary
+                  description: RO-Crate (as .zip file) containing a workflow.yaml file.
               required:
                 - rocratefile
               additionalProperties:

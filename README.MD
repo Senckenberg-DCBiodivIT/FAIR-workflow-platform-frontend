@@ -21,7 +21,7 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 - CORDRA_PASSWORD: Password for accessing corda
 - WORKFLOW_SERVICE_URL: URL of the workflow service to submit workflows to
 - WORKFLOW_SERVICE_USER: Workflow service user for Basic auth
-- WORFLOW_SERVICE_PASSWORD: Password of Workflow service user
+- WORKFLOW_SERVICE_PASSWORD: Password of Workflow service user
 - ARGO_URL: Base URL of argo workflow engine. Used to render links from workflow status list
 - ORCID_BASE_DOMAIN: Which base domain to use for ORCID. I.e. sandbox.orcid.org or orcid.org (default: orcid.org)
 - ORCID_CLIENT_ID: ORCID client id

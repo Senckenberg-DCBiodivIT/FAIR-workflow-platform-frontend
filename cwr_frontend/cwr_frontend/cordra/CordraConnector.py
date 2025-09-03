@@ -8,7 +8,8 @@ from django.core.cache import cache
 
 class CordraConnector:
 
-    def __init__(self, base_url=settings.CORDRA["URL"], prefix=settings.CORDRA["PREFIX"], user=None, password=None):
+    def __init__(self, base_url=settings.CORDRA["URL"], prefix=settings.CORDRA["PREFIX"], 
+                 user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
         self._base_url = base_url
         if not self._base_url.endswith("/"):
             self._base_url += "/"
@@ -116,8 +117,7 @@ class CordraConnector:
             else:
                 params["method"] = "asGraph"
         url = f"{url}?{urlencode(params)}"
-        print(url)
-        response = requests.get(url, verify=False)
+        response = requests.get(url, verify=False, auth=(self.user, self.password))
         response.raise_for_status()
 
         return response.json()["@graph"]
