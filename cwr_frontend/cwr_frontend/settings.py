@@ -101,7 +101,6 @@ INSTALLED_APPS = [
     "django_json_ld",
     "cwr_frontend.api",
     "rest_framework",
-    'drf_spectacular',
     "rest_framework_api_key",
 ]
 
@@ -245,11 +244,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Workflow API',
-    'DESCRIPTION': 'Enpoint to submit or check the status of workflow RO-Crates and donwload completed workflows as RO-Crates.',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
 }

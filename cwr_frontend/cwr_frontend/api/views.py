@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404, StreamingHttpResponse
 from django.conf import settings
-from drf_spectacular.utils import extend_schema
+from django.shortcuts import render
 from requests import HTTPError
 
 from cwr_frontend.rocrate_utils import get_crate_workflow_from_zip, as_ROCrate
@@ -20,16 +20,14 @@ def workflow_status_response(status, workflow_id = None, details = None, status_
     serializer = WorkflowStatusSerializer(data)
     return Response(serializer.data, status=status_code)
 
+def swagger_ui_view(request):
+    return render(request, 'swagger_ui.html')
 
 class SubmitWorkflowView(APIView):
 
     _connector = WorkflowServiceConnector()
     permission_classes = [HasAPIKey]
 
-    @extend_schema(
-        request=WorkflowSubmissionSerializer,
-        responses={200: WorkflowStatusSerializer},
-    )
     def post(self, request):
         serializer = WorkflowSubmissionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -79,9 +77,6 @@ class SubmitWorkflowView(APIView):
 
 class WorkflowStatusView(APIView):
     _connector = WorkflowServiceConnector()
-    @extend_schema(
-        responses={200: WorkflowStatusSerializer}
-    )
 
     def get(self, request, workflow_id):
 
@@ -111,5 +106,4 @@ class WorkflowDownloadView(APIView):
             raise
 
         objects = self._connector.resolve_objects(workflow_id, nested=False, workflow_only=False)
-        print(objects)
         return as_ROCrate(request, workflow_id, objects, download=True, connector=self._connector)

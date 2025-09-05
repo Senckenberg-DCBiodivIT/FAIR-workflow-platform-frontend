@@ -1,18 +1,22 @@
 openapi: 3.0.4
 info:
   title: Workflow API
-  description: Enpoint to submit or check the status of workflow RO-Crates and donwload completed workflows as RO-Crates.
+  description: Enpoint to submit or check the status of workflow RO-Crates and download completed workflows as RO-Crates.
   contact:
     email: lena.perzlmaier@senckenberg.de
   license:
     name: MIT
     url: https://spdx.org/licenses/MIT
   version: 1.0.0
+servers: 
+- url: http://127.0.0.1:8000/api
 paths:
   /v1/workflows:
     post:
       description: Submit a new workflow RO-Crate for execution.
       summary: Submit a new workflow RO-Crate for execution.
+      tags:
+      - Workflows
       requestBody:
         description: RO-Crate submission
         content:
@@ -24,6 +28,10 @@ paths:
                   type: string
                   format: binary
                   description: RO-Crate (as .zip file) containing a workflow.yaml file.
+                dry_run:
+                  type: boolean
+                  default: false
+                  description: If true, checks if valid RO-Crate was submitted, but does not execute workflow.
               required:
                 - rocratefile
               additionalProperties:
@@ -31,14 +39,6 @@ paths:
                 description: additional properties named param-key as key value pair overwriting workflow parameters
                 example:
                   - param-species: Corvus corax
-      parameters:
-        - in: query
-          name: dry_run
-          required: false
-          description: If true, checks if valid RO-Crate was submitted, but does not execute workflow.
-          schema:
-            default: False
-            type: boolean
       security:
         - ApiKeyAuth: []
       responses:
@@ -53,13 +53,14 @@ paths:
     get:
       description: Check workflow execution status.
       summary: Check workflow execution status.
+      tags:
+      - Workflows
       parameters:
         - in: path
           description: workflow_id
           name: id
           required: true
           schema:
-            format: uuid
             type: string
       responses:
         "200": 
@@ -72,6 +73,8 @@ paths:
     get:
       description: Download completed workflow as RO-Crate.
       summary: Download completed workflow as RO-Crate.
+      tags:
+      - Workflows
       parameters:
         - in: path
           name: id
@@ -100,7 +103,6 @@ components:
       properties:
         workflow_id:
           type: string
-          format: uuid
         status:
           type: string
 
