@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.http import Http404, StreamingHttpResponse
 from django.conf import settings
 from django.shortcuts import render
+from django.views import View
 from requests import HTTPError
 
 from cwr_frontend.rocrate_utils import get_crate_workflow_from_zip, as_ROCrate
@@ -86,7 +87,7 @@ class WorkflowStatusView(APIView):
         return workflow_status_response(status, workflow_id)
 
 
-class WorkflowDownloadView(APIView):
+class WorkflowDownloadView(View):
     def __init__(self, prefix=settings.CORDRA["PREFIX"], user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
         self.user = user
         self.password = password

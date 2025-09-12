@@ -87,7 +87,7 @@ paths:
         "200": 
           description: Completed workflow as RO-Crate.
           content:
-            application/octet-stream:
+            application/zip:
               schema:
                 type: string
                 format: binary
@@ -96,7 +96,7 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: API-Key
+      name: Api-Key
   schemas:
     workflow_status:
       type: object
