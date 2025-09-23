@@ -55,13 +55,16 @@ class SubmitWorkflowView(APIView):
             if key.startswith("param-"):
                 param_name = key[len("param-"):]
                 override_parameters[param_name] = value
+
+        license = crate.root_dataset["license"]
+        workflow_license = license if isinstance(license, str) else license.id
         
         submit_status, submit_result = self._connector.submit_workflow(
             workflow=workflow,
-            title='empty_title',
-            description="empty description",
-            # keywords=request.POST["keywords"].split(","),
-            license='https://spdx.org/licenses/MIT',
+            title=crate.root_dataset.get("name", "Workflow"),
+            description=crate.root_dataset.get("description", None),
+            keywords=crate.root_dataset.get("keywords", []),
+            license=workflow_license,
             override_parameters=override_parameters,
             submitter_name='Lena',
             submitter_orcid='0000-0002-0487-2151',
