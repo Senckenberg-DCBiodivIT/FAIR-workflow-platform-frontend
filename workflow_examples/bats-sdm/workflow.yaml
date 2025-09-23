@@ -1,0 +1,26 @@
+kind: Workflow
+metadata:
+  generateName: bats-sdm-
+spec:
+  artifactGC:
+    forceFinalizerRemoval: true
+  entrypoint: workflow
+  podGC:
+    strategy: OnWorkflowSuccess
+  templates:
+  - name: workflow
+    steps:
+    - - name: sdm
+        template: sdm
+  - name: sdm
+    container:
+      name: sdm-container
+      image: taimurhk/bats-sdm:2
+      workingDir: /scripts
+    outputs:
+      artifacts:
+      - archive:
+          none: {}
+        name: exports
+        path: /scripts/outputs
+
