@@ -6,7 +6,7 @@ import io
 import ssl
 from typing import Any
 import django
-from django.core.exceptions import BadRequest
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse
 import tempfile
 import requests
@@ -201,7 +201,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
 def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
         # check if this is a zip file
         if (file.content_type not in ['application/zip', 'application/octet-stream']):
-            raise BadRequest("File is not a zip file")
+            raise ValidationError("File is not a zip file")
 
         # assert zip file is valid
         try:
@@ -210,7 +210,7 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
             file.seek(0)
         except zipfile.BadZipFile as e:
             file.close()
-            raise BadRequest("File is not a zip file")
+            raise ValidationError("File is not a zip file")
 
         # Parse RO crate and extract workflow
         with file as f:
@@ -234,7 +234,11 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
                 if workflow_path.exists():
                     workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
                 else:
-                    raise Exception("Workflow file not found in RO-Crate")
+                    raise ValidationError("Workflow file not found in RO-Crate")
+                
+                # check if license is defined
+                if not "license" in crate.root_dataset:
+                    raise ValidationError("License not defined in RO-Crate")
 
                 return crate, workflow
             

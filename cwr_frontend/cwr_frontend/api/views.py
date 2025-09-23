@@ -4,6 +4,7 @@ from django.http import Http404, StreamingHttpResponse
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
+from django.core.exceptions import ValidationError
 from requests import HTTPError
 
 from cwr_frontend.rocrate_utils import get_crate_workflow_from_zip, as_ROCrate
@@ -12,7 +13,7 @@ from cwr_frontend.cordra.CordraConnector import CordraConnector
 from cwr_frontend.api.serializers import WorkflowStatusSerializer, WorkflowSubmissionSerializer
 from rest_framework_api_key.permissions import HasAPIKey
 
-def workflow_status_response(status, workflow_id = None, details = None, status_code=200):
+def workflow_status_response(status:str, workflow_id:str = None, details:dict = None, status_code:int=200):
     data = { "status": status}
     if workflow_id is not None:
         data['workflow_id'] = workflow_id  
@@ -36,14 +37,18 @@ class SubmitWorkflowView(APIView):
         file = serializer.validated_data['rocratefile']
         dry_run = serializer.validated_data['dry_run']
 
-        _, workflow = get_crate_workflow_from_zip(file = file)
+        try:
+            crate, workflow = get_crate_workflow_from_zip(file = file)
+        except ValidationError as e:
+            return workflow_status_response(status = "Invalid RO-Crate", details = {'message':e.message}, status_code=400)
+        
 
         # check if workflow is valid
         workflow_lint_status, workflow_lint_result = self._connector.check_workflow(workflow)
 
         if not workflow_lint_status:
             status = "Invalid workflow"
-            return workflow_status_response(status, workflow_id, workflow_lint_result)
+            return workflow_status_response(status, details=workflow_lint_result, status_code=400)
         
         override_parameters = {}
         for key, value in request.POST.items():
