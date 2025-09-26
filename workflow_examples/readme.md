@@ -6,7 +6,7 @@ The RO-Crate is a zip folder and must contain at least consist of two files: "ro
 
 ### Metadata Description
 
-You can use [this](hello-world/ro-crate-metadata.json) hello-world metadata file as a minimal example.
+The ro-crate-metadata.json needs to follow the [Workflow RO-Crate](https://about.workflowhub.eu/Workflow-RO-Crate/) profile. You can use [this](hello-world/ro-crate-metadata.json) hello-world metadata file as a minimal example.
 What you'll need to adapt to your use case:
 
 - In the root dataset (with id = "./"):
@@ -20,9 +20,15 @@ What you'll need to adapt to your use case:
 
 You can use [this](hello-world/workflow.yaml) hello-world workflow definition as a minimal example. And [here](https://argo-workflows.readthedocs.io/en/stable/walk-through/hello-world/) you can find more information on how to define the workflow.yaml.
 
-## Submit Workflow
+Also take a look at the other example workflows in this folder. 
 
-Once you have the RO-Crate ready, you can submit the workflow:
+## API Endpoint
+
+[Here](../cwr_frontend/cwr_frontend/static/openapi.yaml) is the openapi documentation of the Workflow API.
+
+### Submit Workflow
+
+Once you have the RO-Crate ready, you can submit the workflow.
 
 ```curl
 curl --location 'baseurl/api/v1/workflows' \
@@ -38,7 +44,7 @@ curl --location 'baseurl/api/v1/workflows' \
 --header 'Api-Key: ***' \
 --form 'rocratefile=@"/path_to_file/hello-world.zip"' \
 --form 'dry_run="false"' \
---form 'param-name="Schneewittchen"'
+--form 'param-name="Welt"'
 ```
 You can customize this for any paramters, by appending the parameter name to 'param-'. E.g. if the workflow had a parameter called "year", you would add param-year="2025" to the request.
 
@@ -50,7 +56,7 @@ This is how the response would look like. You can then use the workflow_id to ch
 }
 ```
 
-## Get Worfklow Status
+### Get Worfklow Status
 Now you can query the workflow status:
 
 ```curl
@@ -66,11 +72,11 @@ Once the reponse tells you the workflow has finished
 ```
 You can go ahead and download the results
 
-## Download Workflow Results
+### Download Workflow Results
 
 ```curl
 curl --location 'baseurl/api/v1/workflows/ba45ad7d-e887-4e5c-8a6c-4205452fc18d/download' \
 --header 'Api-Key: ••••••'
 ```
 
-This will return the workflow results packaged together with the workflow description and provenance in a Workflow-Run RO-Crate.
+This will return the workflow results packaged together with the workflow description and provenance as a [Workflow-Run RO-Crate](https://www.researchobject.org/workflow-run-crate/) .

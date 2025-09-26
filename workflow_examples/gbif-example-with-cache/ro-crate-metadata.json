@@ -1,0 +1,115 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    "https://w3id.org/ro/terms/workflow-run/context"
+  ],
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": [
+        {
+          "@id": "https://w3id.org/ro/crate/1.1"
+        },
+        {
+          "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+        }
+      ]
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Example Workflow: Loading Data From GBIF",
+      "author": {
+        "@id": "https://orcid.org/0000-0002-0487-2151"
+      },
+      "conformsTo": [
+        {
+          "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+        },
+        {
+          "@id": "https://w3id.org/ro/wfrun/process/0.5"
+        },
+        {
+          "@id": "https://w3id.org/ro/wfrun/workflow/0.5"
+        }
+      ],
+      "description": "An example workflow for the FAIR workflow platform, showcasing how to cache intermediate results and use outputs from previous steps as inputs to other steps.",
+      "hasPart": [
+        {
+          "@id": "workflow.yaml"
+        }
+      ],
+      "keywords": [
+        "Example",
+        "Test"
+      ],
+      "license": {
+        "@id": "https://spdx.org/licenses/CC-BY-SA-4.0"
+      },
+      "mainEntity": {
+        "@id": "workflow.yaml"
+      }
+    },
+    {
+        "@id": "https://w3id.org/ro/wfrun/process/0.5",
+        "@type": "CreativeWork",
+        "name": "Process Run Crate",
+        "version": "0.1"
+    },
+    {
+        "@id": "https://w3id.org/ro/wfrun/workflow/0.5",
+        "@type": "CreativeWork",
+        "name": "Workflow Run Crate",
+        "version": "0.1"
+    },
+    {
+        "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
+        "@type": "CreativeWork",
+        "name": "Workflow RO-Crate",
+        "version": "1.0"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-0487-2151",
+      "@type": "Person",
+      "name": "Lena Perzlmaier",
+      "url": "https://orcid.org/0000-0002-0487-2151"
+    },
+    {
+      "@id": "workflow.yaml",
+      "@type": [
+        "File",
+        "ComputationalWorkflow",
+        "SoftwareSourceCode"
+      ],
+      "name": "workflow.yaml",
+      "description": "Argo workflow that loads and processes GBIF data.",
+      "encodingFormat": "text/yaml",
+      "input": [
+        {
+          "@id": "#input_species"
+        }
+      ],
+      "programmingLanguage": {
+        "@id": "https://argoproj.github.io/workflows"
+      }
+    },
+    {
+      "@id": "#input_species",
+      "@type": "FormalParameter",
+      "additionalType": "Text",
+      "name": "species",
+      "description": "Scientific name of a species",
+      "valueRequired": "true"
+    },
+    {
+        "@id": "https://argoproj.github.io/workflows",
+        "@type": "ComputerLanguage",
+        "name": "Argo",
+        "url": "https://argoproj.github.io/workflows"
+    }
+  ]
+}
