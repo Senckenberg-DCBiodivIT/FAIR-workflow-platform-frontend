@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}About{% endblock %}
-{% block headline %}What is this?{% endblock %}
+{% block headline %}About This Platform{% endblock %}
 
 {% block content %}
 {% load static %}
@@ -8,56 +8,45 @@
 <br />
 
 <section class="mb4">
+    <h2 class="f5 fw6 mb2">What is this platform for?</h2>
     <p class="lh-copy">
-        This is a FAIR workflow platform which enables researchers to manage and execute scientific workflows on research datasets.
-        The platform leverages on Workflow RO-Crates to encapsulate workflows along with their metadata and provenance information.
-        These RO-Crates can be submitted, executed, and published all within one platform.
-        The platform ensures that datasets and workflows adhere to FAIR principles, making them Findable, Accessible, Interoperable, and Reusable.
+        This platform helps researchers <strong>run computational workflows and share their results</strong> in a way that makes them easy to find, understand, reuse, and reproduce by other scientists.
+    </p>
+    <p class="lh-copy mt3">
+        When researchers run computational analyses (like climate modeling or species distribution predictions),
+        it's often difficult to share not just the results, but also <em>how</em> those results were produced. This makes it hard for others to
+        verify findings, build upon them, or apply the same methods to new data.
+        This platform addresses that challenge by automating the capture and packaging of datasets created by running a FAIR (Findable, Accessible, Interoperable, Reusable) computational workflow.
+        Upon running a workflow, the platform automatically records and packages everything needed to understand and reproduce the analysis, including
+        input data, parameters, execution details and provenance information.
+        The resulting dataset is then made available for download in a standardized format called RO-Crate and discoverable via FAIR Signposting.
     </p>
 </section>
 
 <section class="mb4">
-    <h2 class="f5 fw6 mb2">How to Use</h2>
+    <h2 class="f5 fw6 mb2">Using the Platform</h2>
     <ol class="lh-copy">
         <li class="mb3">
             <strong>Browse Datasets:</strong> Visit the <a href="{% url 'dataset_list' %}" class="link dark-green underline-hover">Datasets</a> page to explore available research datasets.
             Click on any dataset to view detailed metadata, associated files, and workflow provenance information.
         </li>
         <li class="mb3">
-            <strong>Submit Workflows:</strong> To submit a computational workflow, you need to <a href="{% url 'account_login' %}" class="link dark-green underline-hover">login with ORCID</a>.
-            Once authenticated, navigate to <a href="{% url 'submit_workflow' %}" class="link dark-green underline-hover">Submit Workflow</a>
-            and upload a workflow in RO-Crate format. Alternatively, you can select an existing Dataset and execute the corresponding workflow.
-            You can monitor workflow status on the <a href="{% url 'list_workflows' %}" class="link dark-green underline-hover">Workflows</a> page.
+            <strong>Submit Workflows:</strong> <a href="{% url 'account_login' %}" class="link dark-green underline-hover">Login with ORCID</a>, then navigate to <a href="{% url 'submit_workflow' %}" class="link dark-green underline-hover">Submit Workflow</a>
+            to upload a workflow in RO-Crate format or execute an existing dataset's workflow.
+            Monitor workflow status on the <a href="{% url 'list_workflows' %}" class="link dark-green underline-hover">Workflows</a> page.
         </li>
         <li class="mb3">
-            <strong>Retrieve RO-Crates:</strong> Datasets with their corresponding workflow are downloadable as RO-Crates, which capture complete workflow provenance.
-            These packages contain workflow definitions, input parameters, output data, and execution metadata in a standardized format.
-        </li>
-        <li class="mb3">
-            <strong>FAIR Signposting:</strong> Dataset pages implement FAIR Signposting in their HTTP headers, enabling automated discovery of metadata and related resources
-            by machines and indexing services.
+            <strong>Download Results:</strong> Datasets with workflows are downloadable as RO-Crates containing workflow definitions, input parameters, output data, and execution metadata in a standardized format.
         </li>
     </ol>
 </section>
 
 <section class="mb4">
-    <h2 class="f5 fw6 mb2">Key Concepts & Documentation</h2>
-    <ul class="lh-copy">
-        <li><a href="https://www.go-fair.org/fair-principles/" target="_blank" class="link dark-green underline-hover">FAIR Principles</a> - Guidelines for scientific data management</li>
-        <li><a href="https://www.researchobject.org/ro-crate/" target="_blank" class="link dark-green underline-hover">RO-Crates</a> - Lightweight method to package research data with metadata</li>
-        <li><a href="https://www.researchobject.org/workflow-run-crate/" target="_blank" class="link dark-green underline-hover">Workflow RO-Crates</a> - Profile for representing workflows and their results in RO-Crates</li>
-        <li><a href="https://signposting.org/FAIR/" target="_blank" class="link dark-green underline-hover">FAIR Signposting</a> - Approach to make scholarly objects more accessible to machines</li>
-    </ul>
-</section>
-
-<section class="mb4">
-    <h2 class="f5 fw6 mb2">Source Code & Contact</h2>
-    <p class="lh-copy">
-        The source code for this platform is available under an open-source license on GitHub:
+    <h2 class="f5 fw6 mb2">Open Source</h2>
+    <p class="lh-copy mt3">
+        The source code is available under an open-source license on GitHub:
         <a href="https://github.com/Senckenberg-DCBiodivIT/fair-workflow-platform" target="_blank" class="link dark-green underline-hover">FAIR Workflow Platform</a>.
         For questions, bug reports, or feature requests, please open an issue on the GitHub repository.
-    </p>
-    <p class="lh-copy mt3">
     </p>
 </section>
 
