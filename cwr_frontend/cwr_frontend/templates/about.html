@@ -1,7 +1,74 @@
 {% extends "base.html" %}
 {% block title %}About{% endblock %}
-{% block headline %}About{% endblock %}
+{% block headline %}What is this?{% endblock %}
 
 {% block content %}
 {% load static %}
+{% load settings_value %}
+<br />
+
+<section class="mb4">
+    <p class="lh-copy">
+        This is a FAIR workflow platform which enables researchers to manage and execute scientific workflows on research datasets.
+        The platform leverages on Workflow RO-Crates to encapsulate workflows along with their metadata and provenance information.
+        These RO-Crates can be submitted, executed, and published all within one platform.
+        The platform ensures that datasets and workflows adhere to FAIR principles, making them Findable, Accessible, Interoperable, and Reusable.
+    </p>
+</section>
+
+<section class="mb4">
+    <h2 class="f5 fw6 mb2">How to Use</h2>
+    <ol class="lh-copy">
+        <li class="mb3">
+            <strong>Browse Datasets:</strong> Visit the <a href="{% url 'dataset_list' %}" class="link dark-green underline-hover">Datasets</a> page to explore available research datasets.
+            Click on any dataset to view detailed metadata, associated files, and workflow provenance information.
+        </li>
+        <li class="mb3">
+            <strong>Submit Workflows:</strong> To submit a computational workflow, you need to <a href="{% url 'account_login' %}" class="link dark-green underline-hover">login with ORCID</a>.
+            Once authenticated, navigate to <a href="{% url 'submit_workflow' %}" class="link dark-green underline-hover">Submit Workflow</a>
+            and upload a workflow in RO-Crate format. Alternatively, you can select an existing Dataset and execute the corresponding workflow.
+            You can monitor workflow status on the <a href="{% url 'list_workflows' %}" class="link dark-green underline-hover">Workflows</a> page.
+        </li>
+        <li class="mb3">
+            <strong>Retrieve RO-Crates:</strong> Datasets with their corresponding workflow are downloadable as RO-Crates, which capture complete workflow provenance.
+            These packages contain workflow definitions, input parameters, output data, and execution metadata in a standardized format.
+        </li>
+        <li class="mb3">
+            <strong>FAIR Signposting:</strong> Dataset pages implement FAIR Signposting in their HTTP headers, enabling automated discovery of metadata and related resources
+            by machines and indexing services.
+        </li>
+    </ol>
+</section>
+
+<section class="mb4">
+    <h2 class="f5 fw6 mb2">Key Concepts & Documentation</h2>
+    <ul class="lh-copy">
+        <li><a href="https://www.go-fair.org/fair-principles/" target="_blank" class="link dark-green underline-hover">FAIR Principles</a> - Guidelines for scientific data management</li>
+        <li><a href="https://www.researchobject.org/ro-crate/" target="_blank" class="link dark-green underline-hover">RO-Crates</a> - Lightweight method to package research data with metadata</li>
+        <li><a href="https://www.researchobject.org/workflow-run-crate/" target="_blank" class="link dark-green underline-hover">Workflow RO-Crates</a> - Profile for representing workflows and their results in RO-Crates</li>
+        <li><a href="https://signposting.org/FAIR/" target="_blank" class="link dark-green underline-hover">FAIR Signposting</a> - Approach to make scholarly objects more accessible to machines</li>
+    </ul>
+</section>
+
+<section class="mb4">
+    <h2 class="f5 fw6 mb2">Source Code & Contact</h2>
+    <p class="lh-copy">
+        The source code for this platform is available under an open-source license on GitHub:
+        <a href="https://github.com/Senckenberg-DCBiodivIT/fair-workflow-platform" target="_blank" class="link dark-green underline-hover">FAIR Workflow Platform</a>.
+        For questions, bug reports, or feature requests, please open an issue on the GitHub repository.
+    </p>
+    <p class="lh-copy mt3">
+    </p>
+</section>
+
+<section class="mb4">
+    <h2 class="f5 fw6 mb2">References</h2>
+    <ul class="lh-copy f6">
+        <li>FAIR Workflow Platform. <a href="https://github.com/Senckenberg-DCBiodivIT/fair-workflow-platform" target="_blank" class="link dark-green underline-hover">https://github.com/Senckenberg-DCBiodivIT/fair-workflow-platform</a></li>
+        <li>AgroClim: FAIR Workflows for the Crop Wild Relatives Digital Twin. Destination Earth. <a href="https://destination-earth.eu/use-cases/agroclim-fair-workflows-for-the-crop-wild-relatives-digital-twin/" target="_blank" class="link dark-green underline-hover">https://destination-earth.eu/use-cases/agroclim-fair-workflows-for-the-crop-wild-relatives-digital-twin/</a></li>
+        <li>Weiland, C., Grieb, J., Bauer, D., et al. (2024). Dataspace Integration for Agrobiodiversity Digital Twins with RO-Crate. Biodiversity Information Science and Standards, 8. <a href="https://doi.org/10.3897/biss.8.134479" target="_blank" class="link dark-green underline-hover">https://doi.org/10.3897/biss.8.134479</a></li>
+        <li>Bauer, D., Kusch, E., Weiland, C., et al. (2024). FAIR Dataspace Integration for Agrobiodiversity Digital Twins. Zenodo. <a href="https://doi.org/10.5281/zenodo.13928655" target="_blank" class="link dark-green underline-hover">https://doi.org/10.5281/zenodo.13928655</a></li>
+    </ul>
+</section>
+
 {% endblock %}
