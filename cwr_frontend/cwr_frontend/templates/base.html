@@ -39,9 +39,8 @@
         {% block content %}{% endblock %}
     </main>
     <footer class="w-100 pa3 ph5-ns bg-dark-green tr" style="position: absolute; bottom: 0">
-        <a href="{% url 'about' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">About</a>
         <a href="{% cordra_url %}/" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Object Repository</a>
-        <a href="https://github.com/dnlbauer/fair-workflow-platform" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Under the Hood</a>
+        <a href="{% url 'about' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">About</a>
         <a href="{% url 'imprint' %}" class="f6 fw6 dim link white mr2 mr3-m mr4-l dib">Imprint and Copyright</a>
     </footer>
 </div>
