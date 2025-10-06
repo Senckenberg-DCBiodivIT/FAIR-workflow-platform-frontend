@@ -24,6 +24,7 @@ from cwr_frontend.views.WorkflowListView import WorkflowListView
 from cwr_frontend.views.WorkflowSubmissionView import WorkflowSubmissionView
 from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
+from cwr_frontend.views.AboutView import AboutView
 
 def redirect_orcid_login(request):
     next_url = request.GET.get("next", "/")
@@ -39,6 +40,7 @@ urlpatterns = [
     re_path(r'dataset/(?P<id>([a-z0-9]+)/([a-z0-9]+))/?', DatasetDetailView.as_view(), name="dataset_detail"),
     re_path('workflows/submit', login_required(WorkflowSubmissionView.as_view()), name="submit_workflow"),
     re_path('workflows', login_required(WorkflowListView.as_view()), name="list_workflows"),
+    re_path('about', AboutView.as_view(), name="about"),
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # an ugly hack to serve a placeholder image without using static files
     # replace with actual static file servement!
