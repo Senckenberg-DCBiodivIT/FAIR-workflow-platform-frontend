@@ -75,7 +75,7 @@ class SubmitWorkflowView(APIView):
 
         if not submit_status:
             status = "Submission Failed"
-            return workflow_status_response(status, details = submit_result)
+            return workflow_status_response(status, details = submit_result, status_code=400)
         
         workflow_id = submit_result['workflow_id']
 
