@@ -242,7 +242,7 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
 
                 return crate, workflow
             
-def get_crate_workflow_from_id(self, request, crate_id):
+def get_crate_workflow_from_id(request, crate_id):
     crate_url = request.build_absolute_uri(reverse("dataset_detail", kwargs={"id": crate_id}))
     crate_url += "?format=ROCrate"
     response = requests.get(crate_url, stream=True, verify=False)
@@ -296,7 +296,7 @@ def as_ROCrate(request, id: str, objects: dict[str, dict[str, Any]], download: b
     else:
         try:
             ssl._create_default_https_context = ssl._create_unverified_context
-            archive_name = f'{id.replace("/", "_")}.zip'
+            archive_name = f'{"_".join(id.split('/')[1:])}.zip'
             response = StreamingHttpResponse(crate.stream_zip(), content_type="application/zip")
             response["Content-Disposition"] = f"attachment; filename={archive_name}"
             return response
