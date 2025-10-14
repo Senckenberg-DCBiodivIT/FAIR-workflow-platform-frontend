@@ -32,6 +32,9 @@ paths:
                   type: boolean
                   default: false
                   description: If true, checks if valid RO-Crate was submitted, but does not execute workflow.
+                webhook_url:
+                  type: string
+                  description: If provided, webhook will be triggered once workflow is complete.
               required:
                 - rocratefile
               additionalProperties:
