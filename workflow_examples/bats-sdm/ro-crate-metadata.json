@@ -64,7 +64,7 @@
         "SoftwareSourceCode"
       ],
       "name": "workflow.yaml",
-      "description": "Argo workflow definition for the sdm workflw",
+      "description": "Argo workflow definition for the sdm workflow",
       "encodingFormat": "text/yaml",
       "programmingLanguage": {
         "@id": "https://argoproj.github.io/workflows"

@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: Workflow API
-  description: Enpoint to submit or check the status of workflow RO-Crates and download completed workflows as RO-Crates.
+  description: Endpoint to submit or check the status of workflow RO-Crates and download completed workflows as RO-Crates.
   contact:
     email: lena.perzlmaier@senckenberg.de
   license:

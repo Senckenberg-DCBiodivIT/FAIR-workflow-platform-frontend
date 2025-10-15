@@ -2,7 +2,7 @@
 
 ## Prepare RO-Crate
 
-The RO-Crate is a zip folder and must contain at least consist of two files: "ro-crate-metadata.json" and "workflow.yaml".
+The RO-Crate is a zip folder and must contain at least two files: "ro-crate-metadata.json" and "workflow.yaml".
 
 ### Metadata Description
 
@@ -46,7 +46,7 @@ curl --location 'baseurl/api/v1/workflows' \
 --form 'dry_run="false"' \
 --form 'param-name="Welt"'
 ```
-You can customize this for any paramters, by appending the parameter name to 'param-'. E.g. if the workflow had a parameter called "year", you would add param-year="2025" to the request.
+You can customize this for any parameters, by appending the parameter name to 'param-'. E.g. if the workflow had a parameter called "year", you would add param-year="2025" to the request.
 
 This is how the response would look like. You can then use the workflow_id to check the status of the workflow in the next step.
 ```json
@@ -56,14 +56,14 @@ This is how the response would look like. You can then use the workflow_id to ch
 }
 ```
 
-### Get Worfklow Status
+### Get Workflow Status
 Now you can query the workflow status:
 
 ```curl
 curl --location 'baseurl/api/v1/workflows/ba45ad7d-e887-4e5c-8a6c-4205452fc18d' \
 --header 'Api-Key: ••••••'
 ```
-Once the reponse tells you the workflow has finished
+Once the response tells you the workflow has finished
 ```json
 {
     "status": "Succeeded",
