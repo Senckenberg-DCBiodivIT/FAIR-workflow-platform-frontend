@@ -7,7 +7,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from allauth.socialaccount.models import SocialAccount
-from cwr_frontend.rocrate_utils import get_crate_workflow_from_zip, get_crate_workflow_from_id
+from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, get_crate_workflow_from_id
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 
 

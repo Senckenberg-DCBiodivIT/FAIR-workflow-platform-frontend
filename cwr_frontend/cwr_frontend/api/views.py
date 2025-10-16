@@ -7,7 +7,7 @@ from django.views import View
 from django.core.exceptions import ValidationError
 from requests import HTTPError
 
-from cwr_frontend.rocrate_utils import get_crate_workflow_from_zip, as_ROCrate
+from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, as_ROCrate
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 from cwr_frontend.cordra.CordraConnector import CordraConnector
 from cwr_frontend.api.serializers import WorkflowStatusSerializer, WorkflowSubmissionSerializer

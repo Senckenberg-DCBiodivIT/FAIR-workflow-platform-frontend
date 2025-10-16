@@ -13,7 +13,7 @@ import requests
 
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader, cached_frame
 from cwr_frontend.cordra.CordraConnector import CordraConnector
-from cwr_frontend.rocrate_utils import as_ROCrate
+from cwr_frontend.rocrate_io import as_ROCrate
 
 
 
