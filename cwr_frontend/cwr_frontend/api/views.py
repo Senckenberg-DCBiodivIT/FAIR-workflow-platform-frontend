@@ -107,8 +107,7 @@ class WorkflowDownloadView(View):
     def get(self, request, workflow_id)->StreamingHttpResponse:
         workflow_id = f"{self.prefix}/{workflow_id}"
         try:
-            object = self._connector.get_object_by_id(workflow_id)
-            print(object)
+            self._connector.get_object_by_id(workflow_id)
 
         except HTTPError as e:
             # Cordra responds with 401 if not a public object is not found.

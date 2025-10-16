@@ -73,7 +73,6 @@ class WorkflowServiceConnector:
         Get details of a specific workflow
         """
         url = f'{urljoin(self._base_url, f"workflow/detail/{workflow_id}")}'
-        print(url)
         response = requests.get(url, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
             raise Exception(response.text)
