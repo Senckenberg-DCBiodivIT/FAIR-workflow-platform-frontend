@@ -4,7 +4,6 @@ import zipfile
 import yaml
 import io
 import ssl
-from typing import Any
 import django
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse

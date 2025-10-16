@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urljoin
 import requests
 from requests.auth import HTTPBasicAuth
 import yaml
