@@ -96,7 +96,7 @@ def _build_ROCrate(connector, request, dataset_id: str, objects: dict[str, dict[
     crate = build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached, workflow_only=workflow_only)
     return crate
 
-def as_ROCrate(request, id: str, objects: dict[str, dict[str, Any]], download: bool, connector: CordraConnector, workflow_only=False) -> HttpResponseBase:
+def as_ROCrate(request, id: str, download: bool, connector: CordraConnector, workflow_only=False, nested=False) -> HttpResponseBase:
     """ return a downloadable zip in RO-Crate format from the given dataset entity
     the zip file is build on the fly by streaming payload objects directly from the api
 
@@ -106,6 +106,7 @@ def as_ROCrate(request, id: str, objects: dict[str, dict[str, Any]], download: b
         download - return a downloadable zip in RO-Crate format
         connector - CordraConnector
     """
+    objects = connector.resolve_objects(id, nested=nested, workflow_only=workflow_only)
     crate = _build_ROCrate(connector, request, id, objects, with_preview=download, detached=not download, workflow_only=workflow_only)
 
     if not download:

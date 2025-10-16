@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from pyld import jsonld
 from django.http import JsonResponse, Http404
@@ -21,8 +20,10 @@ class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
     _connector = CordraConnector()
 
-    def render(self, request, id: str, objects: dict[str, dict[str, Any]]):
+    def render(self, request, id: str, nested=False, workflow_only=False):
         """ Return a html representation with signposts from the given digital object """
+
+        objects = self._connector.resolve_objects(id, nested=nested, workflow_only=workflow_only)
         dataset = objects[id]
 
         # tuples of author names and identifiers
@@ -170,19 +171,16 @@ class DatasetDetailView(TemplateView):
         accept = request.META.get("HTTP_ACCEPT", None).lower()
 
         if response_format == "rocrate":
-            objects = self._connector.resolve_objects(id, nested=True, workflow_only=False)
             if download or accept == "application/zip":
-                return as_ROCrate(request, id, objects, download=True, connector=self._connector)
+                return as_ROCrate(request, id, download=True, connector=self._connector, workflow_only=False, nested=True)
             else:
-                return as_ROCrate(request, id, objects, download=False, connector=self._connector)
+                return as_ROCrate(request, id, download=False, connector=self._connector, workflow_only=False, nested=True)
         elif response_format == "workflowrocrate":
-            objects = self._connector.resolve_objects(id, nested=True, workflow_only=True)
-            return as_ROCrate(request, id, objects, download=download or accept == "application/zip", connector=self._connector, workflow_only=True)
+            return as_ROCrate(request, id, download=download or accept == "application/zip", connector=self._connector, workflow_only=True, nested=True)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
             return JsonResponse(object)
         else:
-            objects = self._connector.resolve_objects(id, nested=False, workflow_only=False)
-            return self.render(request, id, objects)
+            return self.render(request, id, nested=False, workflow_only=False)
 
     def _jsonld(self, object_id, objects):
         jsonld.set_document_loader(pyld_caching_document_loader)

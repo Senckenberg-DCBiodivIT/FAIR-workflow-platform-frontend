@@ -115,5 +115,4 @@ class WorkflowDownloadView(View):
                 raise Http404
             raise
 
-        objects = self._connector.resolve_objects(workflow_id, nested=False, workflow_only=False)
-        return as_ROCrate(request, workflow_id, objects, download=True, connector=self._connector)
+        return as_ROCrate(request, workflow_id, download=True, connector=self._connector, workflow_only=False, nested=False)
