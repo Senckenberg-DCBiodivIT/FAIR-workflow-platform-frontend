@@ -247,3 +247,4 @@ REST_FRAMEWORK = {
 }
 
 API_KEY_CUSTOM_HEADER = "HTTP_API_KEY"
+API_KEY_CUSTOM_MODEL = "cwr_frontend.api.models.CustomAPIKey"

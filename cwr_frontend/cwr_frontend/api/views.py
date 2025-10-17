@@ -10,8 +10,9 @@ from requests import HTTPError
 from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, as_ROCrate
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 from cwr_frontend.cordra.CordraConnector import CordraConnector
-from cwr_frontend.api.serializers import WorkflowStatusSerializer, WorkflowSubmissionSerializer
-from rest_framework_api_key.permissions import HasAPIKey
+from .serializers import WorkflowStatusSerializer, WorkflowSubmissionSerializer
+from .models import ApiKeyIdentity, CustomAPIKey
+from .permissions import HasCustomAPIKey
 
 def workflow_status_response(status:str, workflow_id:str = None, details:dict = None, status_code:int=200):
     data = { "status": status}
@@ -28,7 +29,7 @@ def swagger_ui_view(request):
 class SubmitWorkflowView(APIView):
 
     _connector = WorkflowServiceConnector()
-    permission_classes = [HasAPIKey]
+    permission_classes = [HasCustomAPIKey]
 
     def post(self, request):
         serializer = WorkflowSubmissionSerializer(data=request.data)
@@ -59,7 +60,12 @@ class SubmitWorkflowView(APIView):
 
         license = crate.root_dataset["license"]
         workflow_license = license if isinstance(license, str) else license.id
-        
+
+        # Get submitter information from api key
+        api_key = request.META["HTTP_API_KEY"]
+        api_key_obj = CustomAPIKey.objects.get_from_key(api_key)
+        submitter = ApiKeyIdentity.objects.get(id = api_key_obj.identity_id)
+
         submit_status, submit_result = self._connector.submit_workflow(
             workflow=workflow,
             title=crate.root_dataset.get("name", "Workflow"),
@@ -67,8 +73,8 @@ class SubmitWorkflowView(APIView):
             keywords=crate.root_dataset.get("keywords", []),
             license=workflow_license,
             override_parameters=override_parameters,
-            submitter_name='Lena',
-            submitter_orcid='0000-0002-0487-2151',
+            submitter_name=submitter.name,
+            submitter_orcid=submitter.orcid,
             dry_run=dry_run,
             webhook_url=webhook_url,
         )

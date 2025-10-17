@@ -34,6 +34,12 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 - SECRET_KEY: Django secret key
 - PROJECT_NAME: Name of the project, used in the UI
 
+## Administration
+
+Add API keys with the management command:
+
+`python manage.py create_api_key --orcid <user-orcid> --name <user-name>`
+
 ## License
 
 Licensed under the [MIT](./LICENSE) license.
