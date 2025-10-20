@@ -1,0 +1,44 @@
+kind: Workflow
+metadata:
+  generateName: hello-world-
+spec:
+  arguments:
+    parameters:
+    - name: name
+      description: Name of the person to greet
+      value: World
+
+  artifactGC:
+    forceFinalizerRemoval: true
+  podGC:
+    strategy: OnWorkflowSuccess
+
+  entrypoint: workflow
+  
+  templates:
+  - name: workflow
+    steps:
+    - - name: print-message
+        template: print-to-file
+        arguments:
+          parameters:
+          - name: name
+            value: '{{workflow.parameters.name}}'
+  
+  - name: print-to-file
+    inputs:
+      parameters:
+      - name: name
+    outputs:
+      artifacts:
+      - name: outputfile
+        path: /tmp/output.txt  
+        archive:
+          none: {}
+    script:
+      image: python:3.9
+      command: [python]
+      source: |
+        with open("/tmp/output.txt", "w") as outf:
+            outf.write(f"Hola {{inputs.parameters.name}}")
+        print("Created output file /tmp/output.txt")

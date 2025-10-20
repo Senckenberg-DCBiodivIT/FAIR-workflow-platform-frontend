@@ -26,6 +26,7 @@ from cwr_frontend.views.DatasetListView import DatasetListView
 from cwr_frontend.views.DatasetDetailView import DatasetDetailView
 from cwr_frontend.views.AboutView import AboutView
 
+
 def redirect_orcid_login(request):
     next_url = request.GET.get("next", "/")
     orcid_login_url = reverse("orcid_login") + "?process=login&next=" + next_url
@@ -37,9 +38,9 @@ urlpatterns = [
     # list of datasets
     re_path(r'^/?$', DatasetListView.as_view(), name="dataset_list"),
     # regex for dataset ids with forward slash (id=prefix/object_id)
-    re_path(r'dataset/(?P<id>([a-z0-9]+)/([a-z0-9]+))/?', DatasetDetailView.as_view(), name="dataset_detail"),
-    re_path('workflows/submit', login_required(WorkflowSubmissionView.as_view()), name="submit_workflow"),
-    re_path('workflows', login_required(WorkflowListView.as_view()), name="list_workflows"),
+    re_path(r'^dataset/(?P<id>[\w-]+/[\w-]+)/?$', DatasetDetailView.as_view(), name="dataset_detail"),
+    re_path(r'^workflows/submit/?$', login_required(WorkflowSubmissionView.as_view()), name="submit_workflow"),
+    re_path(r'^workflows/?$', login_required(WorkflowListView.as_view()), name="list_workflows"),
     re_path('about', AboutView.as_view(), name="about"),
     re_path('imprint', TemplateView.as_view(template_name="imprint.html"), name="imprint"),
     # an ugly hack to serve a placeholder image without using static files
@@ -47,4 +48,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("accounts/login/", redirect_orcid_login, name="account_login"), # skip login selection page -> always orcid
     path("accounts/", include("allauth.urls")),
+    path('api/v1/', include('cwr_frontend.api.urls')),
 ]

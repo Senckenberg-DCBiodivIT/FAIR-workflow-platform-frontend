@@ -26,6 +26,7 @@ django-static-fontawesome==6.5.2.0
 django4-background-tasks==1.2.10
 django_signposting==0.10.0
 djangorestframework==3.15.2
+djangorestframework-api-key==3.1.0
 filelock==3.14.0
 frozendict==2.4.4
 frozenlist==1.4.1

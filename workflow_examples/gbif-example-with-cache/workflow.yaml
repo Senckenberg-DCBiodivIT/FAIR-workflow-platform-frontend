@@ -1,0 +1,209 @@
+kind: Workflow
+metadata:
+  generateName: gbif-example-workflow-
+spec:
+  arguments:
+    parameters:
+    - name: species
+      description: Scientific species name
+      value: Helianthus annuus # default value
+
+  artifactGC:
+    forceFinalizerRemoval: true
+  podGC:
+    strategy: OnWorkflowSuccess
+
+  entrypoint: main
+
+  templates:
+
+  - name: main
+    steps:
+    - - name: download-data
+        template: download-data
+        arguments:
+          parameters:
+            - name: species
+              value: '{{workflow.parameters.species}}'
+    - - name: process-data
+        template: process-data
+        arguments:
+          parameters:
+            - name: species
+              value: '{{workflow.parameters.species}}'
+            - name: genus
+              value: "{{steps.download-data.outputs.parameters.genus}}"
+
+  # Step 1
+  - name: download-data
+    inputs:
+      parameters:
+        - name: species
+      artifacts:
+        - name: data-cache
+          path: /src/Data
+          s3:
+            key: cache/gbif-data
+          optional: true
+    outputs:
+      artifacts:
+        - name: data-cache-updated
+          path: /src/Data
+          s3:
+            key: cache/gbif-data
+          archive:
+            none: {}
+      parameters:
+        - name: genus
+          valueFrom:
+            path: "/tmp/genus.txt"
+    script:
+      image: rocker/tidyverse:4.5.1
+      command: [Rscript]
+      source: |
+          library(dplyr, warn.conflicts = FALSE)
+          library(jsonlite)
+          species <- "{{inputs.parameters.species}}"
+          match_url <- paste0(
+            "https://api.gbif.org/v1/species/match?name=",
+            URLencode(species, reserved = TRUE)
+          )
+          res <- tryCatch({
+            fromJSON(match_url)
+          }, error = function(e) {
+            stop("❌ GBIF species match failed: ", e$message)
+          })
+
+          if (!("genus" %in% names(res)) || is.null(res$genus) || res$genus == "") {
+            stop("❌ Could not determine genus for species: ", species)
+          }
+
+          genus <- res$genus
+          genusKey <- res$genusKey
+          message("ℹ️ Determined genus: ", genus)
+          writeLines(genus, "/tmp/genus.txt")
+          dir.create("/src/Data", showWarnings = FALSE)
+          fname <- paste0("/src/Data/gbif_occurrences_",genus, ".csv")
+
+          if (file.exists(fname)) {
+            message("✅ Cached data for ", genus, " found, skipping download.")
+            quit(save = "no")
+          } 
+          message("⬇️ No cache for ", genus, " found, downloading from GBIF API...")
+          
+          encoded <- URLencode(genus, reserved = TRUE)
+          url <- paste0(
+            "https://api.gbif.org/v1/occurrence/search?taxonKey=",
+            genusKey,
+            "&limit=1000"
+          )
+          
+          json_data <- tryCatch({
+            readLines(url, warn = FALSE)
+          }, error = function(e) {
+            stop("❌ Failed to fetch from GBIF API: ", e$message)
+          })
+          
+          # Parse JSON
+          json_data <- fromJSON(paste(json_data, collapse = ""))
+
+          # Convert to DataFrame
+          occurrences <- json_data$results
+
+          # Select useful columns
+          df <- occurrences %>%
+            select(
+              species,
+              country,
+              eventDate,
+              decimalLatitude,
+              decimalLongitude,
+              basisOfRecord,
+              datasetKey
+            )
+
+          # Filter out entries with missing coordinates
+          df_clean <- df %>%
+            filter(!is.na(decimalLatitude) & !is.na(decimalLongitude))
+
+          # Create new column: Year extracted from eventDate
+          df_clean <- df_clean %>%
+            mutate(year = as.integer(substr(eventDate, 1, 4)))
+
+          write.csv(df_clean, file = fname, row.names = FALSE)
+
+          
+
+  # Step 2
+  - name: process-data
+    inputs:
+      parameters:
+        - name: species
+        - name: genus
+      artifacts:
+        - name: data-cache
+          path: /src/Data
+          s3:
+            key: cache/gbif-data
+    outputs:
+      artifacts:
+        - name: species-barplot
+          path: "/tmp/species_barplot.png"
+          archive:
+            none: {}
+    script:
+      image: rocker/tidyverse:4.5.1
+      command: [Rscript]
+      source: |
+          library(dplyr, warn.conflicts = FALSE)
+          species_name <- "{{inputs.parameters.species}}"
+          genus <- "{{inputs.parameters.genus}}"
+          fname <- paste0("/src/Data/gbif_occurrences_",genus, ".csv")
+          if (!file.exists(fname)) stop("❌ Data file not found")
+
+          df <- read.csv(fname)
+
+          # Ensure matching species case-insensitively
+          df$species <- tolower(df$species)
+          species_name <- tolower(species_name)
+
+          df_species <- df %>% filter(species == species_name)
+
+          # Summary
+          message("📊 Summary for species: ", species_name, " of genus: ", genus)
+
+          message("• Total genus records: ", nrow(df))
+          message("• Species records: ", nrow(df_species))
+
+          if (nrow(df_species) == 0) {
+            stop("⚠️ No records found for this species in the cached genus data.")
+          }
+   
+          # calculate % of genus total
+          message("📈 Proportion of genus records: ", round(nrow(df_species) / nrow(df) * 100, 2), "%")
+
+          library(ggplot2)
+
+          # Count records per species
+          species_counts <- df %>%
+            group_by(species) %>%
+            summarise(records = n()) %>%
+            ungroup()
+
+          # Create a highlight flag
+          species_counts <- species_counts %>%
+            mutate(
+              highlight = ifelse(species == species_name, "Selected Species", "Other")
+            )
+
+          # Plot
+          p <- ggplot(species_counts, aes(x = reorder(species, -records), y = records, fill = highlight)) +
+            geom_col() +
+            scale_fill_manual(values = c("Selected Species" = "red", "Other" = "gray")) +
+            labs(
+              x = "Species",
+              y = "Records"
+            ) +
+            theme_minimal() +
+            theme(axis.text.x = element_text(angle = 45, hjust = 1))
+          ggsave("/tmp/species_barplot.png", p, width = 10, height = 6)

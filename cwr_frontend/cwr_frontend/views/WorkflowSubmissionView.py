@@ -1,23 +1,13 @@
-import io
 import json
 import logging
-import tempfile
-import zipfile
-from pathlib import Path
-from typing import Any
 
-import django
 import yaml
 from django.conf import settings
-import requests
-from django.urls import reverse
-from rocrate.rocrate import ROCrate
 
-from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from allauth.socialaccount.models import SocialAccount
-
+from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, get_crate_workflow_from_id
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 
 
@@ -46,73 +36,16 @@ class WorkflowSubmissionView(TemplateView):
         context = {"step": 1}
         return render(request, self.template_name, context=context)
 
-    def get_crate_workflow_from_zip(self, file) -> tuple[ROCrate, dict[str, Any]]:
-        # check if this is a zip file
-        if (file.content_type != "application/zip"):
-            raise BadRequest("File is not a zip file")
-
-        # assert zip file is valid
-        try:
-            bytes = io.BytesIO(file.read())
-            zipfile.ZipFile(bytes)
-            file.seek(0)
-        except zipfile.BadZipFile as e:
-            file.close()
-            raise BadRequest("File is not a zip file")
-
-        # Parse RO crate and extract workflow
-        with file as f:
-            # parse ro-crate and find workflow file
-            with tempfile.NamedTemporaryFile(delete=True) as tmp:
-                if isinstance(f, django.core.files.base.File):
-                    # django file object
-                    chunks = f.chunks()
-                else:
-                    # object is http request
-                    chunks = f.iter_content(chunk_size=8192)
-
-                for chunk in chunks:
-                    tmp.write(chunk)
-                tmp.flush()
-
-                crate = ROCrate(tmp.name)
-                workflow_path = crate.source / crate.root_dataset["mainEntity"].id
-
-                # check workflow file and set it to the session
-                if workflow_path.exists():
-                    workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
-                else:
-                    raise Exception("Workflow file not found in RO-Crate")
-
-                return crate, workflow
-
-    def get_crate_workflow_from_id(self, request, crate_id):
-        crate_url = request.build_absolute_uri(reverse("dataset_detail", kwargs={"id": crate_id}))
-        crate_url += "?format=ROCrate"
-        response = requests.get(crate_url, stream=True, verify=False)
-        response.raise_for_status()
-        with tempfile.TemporaryDirectory(delete=True) as tmp_dir:
-            file = open(tmp_dir + "/ro-crate-metadata.json", "wb")
-            for chunk in response.iter_content(chunk_size=8192):
-                file.write(chunk)
-            file.flush()
-
-            crate = ROCrate(source=tmp_dir)
-            workflow_url = crate.root_dataset["mainEntity"].id
-            workflow_response = requests.get(workflow_url, verify=False)
-            workflow_response.raise_for_status()
-            workflow = yaml.load(workflow_response.content, Loader=yaml.CLoader)
-            return crate, workflow
 
     def step_2(self, request):
         self._logger.info("Render step 2")
 
         if request.method == "POST":
             file = request.FILES["rocratefile"]
-            crate, workflow = self.get_crate_workflow_from_zip(file)
+            crate, workflow = get_crate_workflow_from_zip(file)
         else:
             crate_id = request.GET["crate_id"]
-            crate, workflow = self.get_crate_workflow_from_id(request, crate_id)
+            crate, workflow = get_crate_workflow_from_id(request, crate_id)
 
         workflow_name = crate.root_dataset.get("name", "Workflow")
         workflow_description = crate.root_dataset.get("description", None)

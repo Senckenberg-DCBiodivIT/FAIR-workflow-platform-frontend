@@ -11,7 +11,7 @@ from rocrate.rocrate import ROCrate
 from rocrate.model import RootDataset
 import tempfile
 
-from cwr_frontend import rocrate_utils
+from cwr_frontend.rocrate_builder import build_ROCrate
 
 def compare_dicts(expected, actual):
     for key in expected:
@@ -42,7 +42,7 @@ def build_test_crate(json_file_name: str, detached: bool, workflow_only: bool = 
             for parent in object["isPartOf"]:
                 remote_urls[parent] = "https://example.com/" + parent
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=detached, workflow_only=workflow_only)
+    ro_crate = build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=detached, workflow_only=workflow_only)
     return ro_crate
 
 
@@ -298,7 +298,7 @@ def test_detached_workflow_run_ro_crate_missing_urls():
 
     # should throw without remote urls for a file
     with pytest.raises(ValueError):
-        rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
+        build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
 
 
     remote_urls = {}
@@ -307,7 +307,7 @@ def test_detached_workflow_run_ro_crate_missing_urls():
             remote_urls[id] = "https://example.com/" + id
     # should throw without remote urls for a file
     with pytest.raises(ValueError):
-        rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
+        build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
 
     # should not throw for missing remote url for a person
     remote_urls = {"cwr/2b408313359f2b6f18c2": "https://example.com/abc"}  # missing file url
@@ -315,7 +315,7 @@ def test_detached_workflow_run_ro_crate_missing_urls():
         if "MediaObject" in object["@type"]:  # not for person!
             remote_urls[id] = "https://example.com/" + id
 
-    ro_crate = rocrate_utils.build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
+    ro_crate = build_ROCrate(dataset_id, dataset_objects, remote_urls=remote_urls, with_preview=False, detached=True)
     assert ro_crate is not None
 
     author = ro_crate.root_dataset["author"]

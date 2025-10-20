@@ -99,6 +99,9 @@ INSTALLED_APPS = [
     "django_browser_reload",  # auto reload website in development
     "django_static_fontawesome",
     "django_json_ld",
+    "cwr_frontend.api",
+    "rest_framework",
+    "rest_framework_api_key",
 ]
 
 MIDDLEWARE = [
@@ -238,3 +241,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+API_KEY_CUSTOM_HEADER = "HTTP_API_KEY"
+API_KEY_CUSTOM_MODEL = "cwr_frontend.api.models.CustomAPIKey"

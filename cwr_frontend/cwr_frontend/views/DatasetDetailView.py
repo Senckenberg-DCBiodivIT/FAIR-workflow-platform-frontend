@@ -1,21 +1,18 @@
-import ssl
 from datetime import datetime
-from typing import Any
 
 from pyld import jsonld
-from django.http import JsonResponse, HttpResponseBase, StreamingHttpResponse, Http404
+from django.http import JsonResponse, Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
 from requests import HTTPError
-from rocrate.rocrate import ROCrate
 from signposting import LinkRel, Signpost
 import requests
-from cwr_frontend import rocrate_utils
 
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader, cached_frame
 from cwr_frontend.cordra.CordraConnector import CordraConnector
+from cwr_frontend.rocrate_io import as_ROCrate
 
 
 
@@ -23,8 +20,10 @@ class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
     _connector = CordraConnector()
 
-    def render(self, request, id: str, objects: dict[str, dict[str, Any]]):
+    def render(self, request, id: str, nested=False, workflow_only=False):
         """ Return a html representation with signposts from the given digital object """
+
+        objects = self._connector.resolve_objects(id, nested=nested, workflow_only=workflow_only)
         dataset = objects[id]
 
         # tuples of author names and identifiers
@@ -146,48 +145,7 @@ class DatasetDetailView(TemplateView):
         add_signposts(response, *signposts)
         return response
 
-    def _build_ROCrate(self, request, dataset_id: str, objects: dict[str, dict[str, Any]], with_preview: bool, detached: bool, workflow_only=False) -> ROCrate:
-        remote_urls = {}
-        for cordra_id in objects:
-            if "contentUrl" in objects[cordra_id]:
-                url = request.build_absolute_uri(self._connector.get_object_abs_url(cordra_id, objects[cordra_id]["contentUrl"]))
-                remote_urls[cordra_id] = url
-            elif "identifier" in objects[cordra_id]:
-                url = request.build_absolute_uri(self._connector.get_object_abs_url(cordra_id))
-                remote_urls[cordra_id] = url
-            elif "Dataset" in objects[cordra_id]["@type"]:
-                url = request.build_absolute_uri(reverse("dataset_detail", args=[cordra_id]))
-                remote_urls[cordra_id] = url
-                if "isPartOf" in objects[cordra_id]:
-                    for parent_id in objects[cordra_id]["isPartOf"]:
-                        remote_urls[parent_id] = request.build_absolute_uri(reverse("dataset_detail", args=[parent_id]))
-        crate = rocrate_utils.build_ROCrate(dataset_id, objects, remote_urls=remote_urls, with_preview=with_preview, detached=detached, workflow_only=workflow_only)
-        return crate
 
-    def as_ROCrate(self, request, id: str, objects: dict[str, dict[str, Any]], download: bool, workflow_only=False) -> HttpResponseBase:
-        """ return a downloadable zip in RO-Crate format from the given dataset entity
-        the zip file is build on the fly by streaming payload objects directly from the api
-
-        params:
-          id - the pid of the dataset
-          objects - list of digital objects of the dataset
-          download - return a downloadable zip in RO-Crate format
-        """
-        crate = self._build_ROCrate(request, id, objects, with_preview=download, detached=not download, workflow_only=workflow_only)
-
-        if not download:
-            # return just the metadata
-            return JsonResponse(crate.metadata.generate())
-        else:
-            try:
-                ssl._create_default_https_context = ssl._create_unverified_context
-                archive_name = f'{id.replace("/", "_")}.zip'
-                response = StreamingHttpResponse(crate.stream_zip(), content_type="application/zip")
-                response["Content-Disposition"] = f"attachment; filename={archive_name}"
-                return response
-            finally:
-                # restore default ssl context
-                ssl._create_default_https_context = ssl._create_default_https_context
 
     def get(self, request, **kwargs):
         id = kwargs.get("id")
@@ -213,19 +171,16 @@ class DatasetDetailView(TemplateView):
         accept = request.META.get("HTTP_ACCEPT", None).lower()
 
         if response_format == "rocrate":
-            objects = self._connector.resolve_objects(id, nested=True, workflow_only=False)
             if download or accept == "application/zip":
-                return self.as_ROCrate(request, id, objects, download=True)
+                return as_ROCrate(request, id, download=True, connector=self._connector, workflow_only=False, nested=True)
             else:
-                return self.as_ROCrate(request, id, objects, download=False)
+                return as_ROCrate(request, id, download=False, connector=self._connector, workflow_only=False, nested=True)
         elif response_format == "workflowrocrate":
-            objects = self._connector.resolve_objects(id, nested=True, workflow_only=True)
-            return self.as_ROCrate(request, id, objects, download=download or accept == "application/zip", workflow_only=True)
+            return as_ROCrate(request, id, download=download or accept == "application/zip", connector=self._connector, workflow_only=True, nested=True)
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
             return JsonResponse(object)
         else:
-            objects = self._connector.resolve_objects(id, nested=False, workflow_only=False)
-            return self.render(request, id, objects)
+            return self.render(request, id, nested=False, workflow_only=False)
 
     def _jsonld(self, object_id, objects):
         jsonld.set_document_loader(pyld_caching_document_loader)
