@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pyld import jsonld
 from django.http import JsonResponse, Http404
@@ -36,6 +37,7 @@ class DatasetDetailView(TemplateView):
         link_digital_object = request.build_absolute_uri(reverse("dataset_detail", args=[id])) + "?format=json"
 
         prov_action = next(iter(elem for (key, elem) in objects.items() if "CreateAction" in elem["@type"]), None)
+        prov_context: dict[str, Any] | None
         if prov_action is None:
             # if there is no provenance, check if there is a parent dataset to link to
             if "isPartOf" in dataset:
@@ -50,26 +52,28 @@ class DatasetDetailView(TemplateView):
             prov_end_time = prov_action.get("endTime", None)
 
             prov_agent = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_agent_internal_id), None)
-            prov_agent_id = prov_agent.get("identifier")
-            prov_agent_name = prov_agent.get("name")
+            if prov_agent is not None:
+                prov_agent_id = prov_agent.get("identifier")
+                prov_agent_name = prov_agent.get("name")
 
             parameters = [(elem.get("name"), elem.get("value")) for (key, elem) in objects.items() if elem["@id"] in prov_action.get("object", [])]
 
             prov_instrument_internal_id = prov_action.get("instrument")
+            prov_instrument_obj = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_instrument_internal_id and prov_instrument_internal_id is not None), None)
             prov_instrument = {}
-            if prov_instrument_internal_id is not None:
-                prov_instrument = next(iter(elem for (key, elem) in objects.items() if elem["@id"] == prov_instrument_internal_id and prov_instrument_internal_id is not None), None)
-                prov_instrument["name"] = prov_instrument.get("name", prov_instrument.get("contentUrl"))
-                prov_instrument["description"] = prov_instrument.get("description")
-                if "SoftwareApplication" in prov_instrument["@type"]:
-                    prov_instrument["url"] = prov_instrument.get("identifier")
-                elif "ComputationalWorkflow" in prov_instrument["@type"]:
-                    prov_instrument["url"] = self._connector.get_object_abs_url(prov_instrument_internal_id, prov_instrument["contentUrl"])
-                    prov_instrument["programmingLanguage"] = prov_instrument.get("programmingLanguage")
+            
+            if prov_instrument_internal_id is not None and prov_instrument_obj is not None:
+                prov_instrument["name"] = prov_instrument_obj.get("name", prov_instrument_obj.get("contentUrl"))
+                prov_instrument["description"] = prov_instrument_obj.get("description")
+                if "SoftwareApplication" in prov_instrument_obj["@type"]:
+                    prov_instrument["url"] = prov_instrument_obj.get("identifier")
+                elif "ComputationalWorkflow" in prov_instrument_obj["@type"]:
+                    prov_instrument["url"] = self._connector.get_object_abs_url(prov_instrument_internal_id, prov_instrument_obj["contentUrl"])
+                    prov_instrument["programmingLanguage"] = prov_instrument_obj.get("programmingLanguage")
 
             prov_context = {
                 "agent_id": prov_agent_id,
-                "agent_name": prov_agent_name,
+                "agent_name": prov_agent_name if prov_agent is not None else None,
                 "instrument": prov_instrument,
                 "start_time": datetime.strptime(prov_start_time, "%Y-%m-%dT%H:%M:%SZ") if prov_start_time is not None else None,
                 "end_time": datetime.strptime(prov_end_time, "%Y-%m-%dT%H:%M:%SZ") if prov_end_time is not None else None,

@@ -26,7 +26,7 @@ class CordraConnector:
             url += f"?payload={payload_name}"
         return url
 
-    def list_datasets(self, page_num=0, page_size=25, include_nested: bool = False) -> list[dict[str, str]]:
+    def list_datasets(self, page_num=0, page_size=25, include_nested: bool = False) -> dict[str, Any]:
         """ retrieve list of objects from cordra """
         query = "type:Dataset"
         if not include_nested:

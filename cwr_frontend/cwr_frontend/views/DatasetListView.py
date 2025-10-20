@@ -45,7 +45,7 @@ class DatasetListView(TemplateView):
             response = self.connector.list_datasets(number-1, self.page_size, self.list_all)
             return self._results_to_page(response["results"], number)
 
-        def _results_to_page(self, results: dict[str, Any], page_num: int) -> Page:
+        def _results_to_page(self, results: list[dict[str, Any]], page_num: int) -> Page:
             items_reduced = []
             for item in results:
                 id = item["id"]
