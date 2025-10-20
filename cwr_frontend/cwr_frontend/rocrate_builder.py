@@ -16,7 +16,7 @@ def _remove_children_from_objects(objects, child_id):
             _remove_children_from_objects(objects, grandchild_id)
     objects.pop(child_id, None)
 
-def _filter_objects_for_workflow_crate(objects: dict[str, dict[str, Any]], dataset_id: str) -> dict[str, dict[str, Any]]:
+def _filter_objects_for_workflow_crate(objects: dict[str, dict[str, Any]], dataset_id: str) -> None:
     workflow_id = objects[dataset_id].get("mainEntity", None)
     if not workflow_id:
         raise ValueError("No mainEntity found in dataset")
@@ -118,7 +118,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
                     del object[key]
 
             # make ro-crate-py / validator happy.
-            if not remote_url.endswith("/"):
+            if remote_url and not remote_url.endswith("/"):
                 remote_url += "/"
 
             crate_obj = crate.add_file(remote_url, fetch_remote=False, properties=object)

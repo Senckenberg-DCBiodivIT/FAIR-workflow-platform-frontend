@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from xml.sax import handler
+from typing import Any
 
 # read environment variables
 import environ
@@ -167,6 +168,7 @@ if env("ORCID_CLIENT_ID", default=None) is not None:
     ORCID_ALLOW_LIST = env("ORCID_ALLOW_LIST", default="").split(",")
     ORCID_ADMIN_LIST = env("ORCID_ADMIN_LIST", default="").split(",")
 
+CACHES: dict[str, dict[str, Any]]
 if DEBUG:
     CACHES = {
         "default": {

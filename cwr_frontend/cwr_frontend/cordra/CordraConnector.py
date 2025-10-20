@@ -1,5 +1,5 @@
 from itertools import batched
-from typing import Any
+from typing import Any, Sequence
 from urllib.parse import urlencode, urljoin
 import requests
 from django.conf import settings
@@ -52,7 +52,7 @@ class CordraConnector:
 
         return response.json()
 
-    def search_for_ids(self, ids: list[str]) -> list[dict[str, Any]]:
+    def search_for_ids(self, ids: Sequence[str]) -> list[dict[str, Any]]:
         url = urljoin(self._base_url, "search")
         url = f"{url}?{urlencode({'query': ' OR '.join(['id:' + id for id in ids])})}"
         response = requests.get(url, verify=False)
@@ -122,7 +122,7 @@ class CordraConnector:
 
         return response.json()["@graph"]
 
-    def resolve_objects(self, object_id: str, nested: bool = False, workflow_only: bool = False) -> dict[str, [dict[str, Any]]]:
+    def resolve_objects(self, object_id: str, nested: bool = False, workflow_only: bool = False) -> dict[str, dict[str, Any]]:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """

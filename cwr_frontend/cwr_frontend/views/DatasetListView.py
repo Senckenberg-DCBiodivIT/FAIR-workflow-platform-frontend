@@ -21,7 +21,7 @@ class DatasetListView(TemplateView):
     _logger = logging.getLogger(__name__)
 
     class DatasetPaginator(Paginator):
-        def __init__(self, connector, page_size, list_all):
+        def __init__(self, connector: CordraConnector, page_size, list_all):
             self.connector = connector
             self.page_size = page_size
             self.list_all = list_all
