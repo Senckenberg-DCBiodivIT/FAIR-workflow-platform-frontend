@@ -62,7 +62,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
     crate = ROCrate(gen_preview=with_preview)
 
     if detached:
-        if not dataset_id in remote_urls:
+        if dataset_id not in remote_urls:
             raise ValueError("Missing remote url for root dataset entity")
         # replace id of root dataset in detached crate (see https://github.com/ResearchObject/ro-crate-py/issues/206)
         _original_root = crate.root_dataset
@@ -134,7 +134,8 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
     # Add attributes to root dataset entity
     dataset = next(filter(lambda o: "@id" in o and o["@id"] == dataset_id, flattened["@graph"]))
     for key, value in dataset.items():
-        if key == "@context" or key == "@id" or key == "@type": continue
+        if key == "@context" or key == "@id" or key == "@type": 
+            continue
         if key == "isPartOf":
             # this is a child Crate. Add reference to parent crate
             parent_dataset = crate.add_dataset(remote_urls[value["@id"]], fetch_remote=False)
@@ -147,13 +148,14 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             crate.root_dataset[key] = replace_values(value, id_map)
 
     # nested crates don't always have a description (ModGP), so we use their name to make a valid crate
-    if not "description" in crate.root_dataset:
+    if "description" not in crate.root_dataset:
         crate.root_dataset["description"] = crate.root_dataset["name"]
 
     # Replace corda IDs with RO-Crate IDs
     for entity in crate.get_entities():
         for key in entity:
-            if key in ["@type", "@id", "@context"]: continue
+            if key in ["@type", "@id", "@context"]: 
+                continue
             replaced = replace_values(entity.as_jsonld()[key], id_map)
             if replaced != entity[key]:
                 # The RO-Crate rewrited {"@id": xxx} to xxx if the id is not present in the crate yet.

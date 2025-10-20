@@ -26,7 +26,7 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
             bytes = io.BytesIO(file.read())
             zipfile.ZipFile(bytes)
             file.seek(0)
-        except zipfile.BadZipFile as e:
+        except zipfile.BadZipFile:
             file.close()
             raise ValidationError("File is not a zip file")
 
@@ -55,7 +55,7 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
                     raise ValidationError("Workflow file not found in RO-Crate")
                 
                 # check if license is defined
-                if not "license" in crate.root_dataset:
+                if "license" not in crate.root_dataset:
                     raise ValidationError("License not defined in RO-Crate")
 
                 return crate, workflow

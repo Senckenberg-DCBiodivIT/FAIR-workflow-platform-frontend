@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
-from xml.sax import handler
 from typing import Any
 
 # read environment variables

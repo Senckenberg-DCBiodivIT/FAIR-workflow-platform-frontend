@@ -31,7 +31,7 @@ class DatasetListView(TemplateView):
 
         @property
         def count(self):
-            if self._count == None:
+            if self._count is None:
                 response = self.connector.list_datasets(1, self.page_size, self.list_all)
                 self._count = response["size"]
                 self._cached_page = self._results_to_page(response["results"], 0)
@@ -79,7 +79,7 @@ class DatasetListView(TemplateView):
         paginator = self.DatasetPaginator(self._connector, page_size, show_nested)
         try:
             page = paginator.page(page_num)
-        except EmptyPage as e:
+        except EmptyPage:
             if page_num > 1:
                 return HttpResponseRedirect(reverse("dataset_list"))
             else:

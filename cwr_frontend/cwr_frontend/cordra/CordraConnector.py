@@ -79,7 +79,8 @@ class CordraConnector:
                 ids_to_resolve = set()
 
             for (key, value) in obj.items():
-                if key == "@id": continue
+                if key == "@id": 
+                    continue
 
                 if isinstance(value, dict):
                     find_all_ids_in_obj(value, ids_to_resolve)
