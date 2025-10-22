@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, HttpResponseBase
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
@@ -115,7 +115,7 @@ class WorkflowDownloadView(View):
         self.prefix = prefix
         self._connector = CordraConnector(user = user, password=password)
 
-    def get(self, request, workflow_id)->StreamingHttpResponse:
+    def get(self, request, workflow_id) -> HttpResponseBase:
         workflow_id = f"{self.prefix}/{workflow_id}"
         try:
             self._connector.get_object_by_id(workflow_id)

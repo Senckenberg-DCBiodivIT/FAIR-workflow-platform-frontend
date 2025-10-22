@@ -114,8 +114,8 @@ def as_ROCrate(request, id: str, download: bool, connector: CordraConnector, wor
         return JsonResponse(crate.metadata.generate())
     else:
         try:
-            ssl._create_default_https_context = ssl._create_unverified_context
-            archive_name = f'{"_".join(id.split('/')[1:])}.zip'
+            ssl._create_default_https_context = ssl._create_unverified_context # type: ignore
+            archive_name = f'{"_".join(id.split("/")[1:])}.zip'
             response = StreamingHttpResponse(crate.stream_zip(), content_type="application/zip")
             response["Content-Disposition"] = f"attachment; filename={archive_name}"
             return response

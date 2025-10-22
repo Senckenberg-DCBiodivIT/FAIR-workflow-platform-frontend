@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from pyld import jsonld
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -21,7 +21,7 @@ class DatasetDetailView(TemplateView):
     template_name = "dataset_detail.html"
     _connector = CordraConnector()
 
-    def render(self, request, id: str, nested=False, workflow_only=False):
+    def render(self, request, id: str, nested=False, workflow_only=False) -> HttpResponse:
         """ Return a html representation with signposts from the given digital object """
 
         objects = self._connector.resolve_objects(id, nested=nested, workflow_only=workflow_only)
@@ -151,8 +151,10 @@ class DatasetDetailView(TemplateView):
 
 
 
-    def get(self, request, **kwargs):
+    def get(self, request, **kwargs) -> HttpResponse:
         id = kwargs.get("id")
+        if not id:
+            raise Http404("Missing ID")
         # get digital object from cordra
         try:
             object = self._connector.get_object_by_id(id)
@@ -172,15 +174,18 @@ class DatasetDetailView(TemplateView):
         download = False
         if "download" in request.GET:
             download = request.GET.get("download").lower() == "true"
-        accept = request.META.get("HTTP_ACCEPT", None).lower()
+        accept = request.META.get("HTTP_ACCEPT", "").lower()
 
         if response_format == "rocrate":
             if download or accept == "application/zip":
-                return as_ROCrate(request, id, download=True, connector=self._connector, workflow_only=False, nested=True)
+                return cast(HttpResponse,
+                            as_ROCrate(request, id, download=True, connector=self._connector, workflow_only=False, nested=True))
             else:
-                return as_ROCrate(request, id, download=False, connector=self._connector, workflow_only=False, nested=True)
+                return cast(HttpResponse, 
+                            as_ROCrate(request, id, download=False, connector=self._connector, workflow_only=False, nested=True))
         elif response_format == "workflowrocrate":
-            return as_ROCrate(request, id, download=download or accept == "application/zip", connector=self._connector, workflow_only=True, nested=True)
+            return cast(HttpResponse, 
+                        as_ROCrate(request, id, download=download or accept == "application/zip", connector=self._connector, workflow_only=True, nested=True))
         elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
             return JsonResponse(object)
         else:
