@@ -167,7 +167,7 @@ def build_ROCrate(dataset_id: str, objects: dict[str, dict[str, Any]], remote_ur
             entity[key] = replaced
 
     # make this a valid 1.2-DRAFT RO-Crate
-    crate.metadata.PROFILE = "https://w3id.org/ro/crate/1.2-DRAFT"
+    crate.metadata.profile = "https://w3id.org/ro/crate/1.2-DRAFT"
     crate.metadata["conformsTo"] = [{"@id": "https://w3id.org/ro/crate/1.2-DRAFT"}]
 
     if "mainEntity" in crate.root_dataset:
