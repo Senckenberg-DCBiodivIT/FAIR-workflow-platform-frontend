@@ -21,10 +21,11 @@ class DatasetListView(TemplateView):
     _logger = logging.getLogger(__name__)
 
     class DatasetPaginator(Paginator):
-        def __init__(self, connector: CordraConnector, page_size, list_all):
+        def __init__(self, connector: CordraConnector, page_size, list_all, logger: logging.Logger):
             self.connector = connector
             self.page_size = page_size
             self.list_all = list_all
+            self._logger = logger
             self._count = None
             self._cached_page = None
             super().__init__([], page_size)
@@ -76,7 +77,7 @@ class DatasetListView(TemplateView):
         page_num = int(request.GET.get("page", 1))
         page_size = int(request.GET.get("page_size", 20))
         show_nested = request.GET.get("nested", "true").lower() == "true"
-        paginator = self.DatasetPaginator(self._connector, page_size, show_nested)
+        paginator = self.DatasetPaginator(self._connector, page_size, show_nested, self._logger)
         try:
             page = paginator.page(page_num)
         except EmptyPage:
