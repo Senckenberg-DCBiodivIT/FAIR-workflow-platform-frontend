@@ -21,17 +21,18 @@ class DatasetListView(TemplateView):
     _logger = logging.getLogger(__name__)
 
     class DatasetPaginator(Paginator):
-        def __init__(self, connector, page_size, list_all):
+        def __init__(self, connector: CordraConnector, page_size, list_all, logger: logging.Logger):
             self.connector = connector
             self.page_size = page_size
             self.list_all = list_all
+            self._logger = logger
             self._count = None
             self._cached_page = None
             super().__init__([], page_size)
 
         @property
         def count(self):
-            if self._count == None:
+            if self._count is None:
                 response = self.connector.list_datasets(1, self.page_size, self.list_all)
                 self._count = response["size"]
                 self._cached_page = self._results_to_page(response["results"], 0)
@@ -45,7 +46,7 @@ class DatasetListView(TemplateView):
             response = self.connector.list_datasets(number-1, self.page_size, self.list_all)
             return self._results_to_page(response["results"], number)
 
-        def _results_to_page(self, results: dict[str, Any], page_num: int) -> Page:
+        def _results_to_page(self, results: list[dict[str, Any]], page_num: int) -> Page:
             items_reduced = []
             for item in results:
                 id = item["id"]
@@ -76,10 +77,10 @@ class DatasetListView(TemplateView):
         page_num = int(request.GET.get("page", 1))
         page_size = int(request.GET.get("page_size", 20))
         show_nested = request.GET.get("nested", "true").lower() == "true"
-        paginator = self.DatasetPaginator(self._connector, page_size, show_nested)
+        paginator = self.DatasetPaginator(self._connector, page_size, show_nested, self._logger)
         try:
             page = paginator.page(page_num)
-        except EmptyPage as e:
+        except EmptyPage:
             if page_num > 1:
                 return HttpResponseRedirect(reverse("dataset_list"))
             else:

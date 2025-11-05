@@ -1,11 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, HttpResponseBase
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 from django.core.exceptions import ValidationError
 from requests import HTTPError
+from typing import Optional, Any
 
 from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, as_ROCrate
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
@@ -14,14 +15,18 @@ from .serializers import WorkflowStatusSerializer, WorkflowSubmissionSerializer
 from .models import ApiKeyIdentity, CustomAPIKey
 from .permissions import HasCustomAPIKey
 
-def workflow_status_response(status:str, workflow_id:str = None, details:dict = None, status_code:int=200):
-    data = { "status": status}
+
+def workflow_status_response(
+    status: str, workflow_id: Optional[str] = None, details: Optional[dict] = None, status_code: int = 200
+):
+    data: dict[str, Any] = {"status": status}
     if workflow_id is not None:
         data['workflow_id'] = workflow_id  
     if details is not None:
         data['details'] = details    
     serializer = WorkflowStatusSerializer(data)
     return Response(serializer.data, status=status_code)
+
 
 def swagger_ui_view(request):
     return render(request, 'swagger_ui.html')
@@ -110,7 +115,7 @@ class WorkflowDownloadView(View):
         self.prefix = prefix
         self._connector = CordraConnector(user = user, password=password)
 
-    def get(self, request, workflow_id)->StreamingHttpResponse:
+    def get(self, request, workflow_id) -> HttpResponseBase:
         workflow_id = f"{self.prefix}/{workflow_id}"
         try:
             self._connector.get_object_by_id(workflow_id)

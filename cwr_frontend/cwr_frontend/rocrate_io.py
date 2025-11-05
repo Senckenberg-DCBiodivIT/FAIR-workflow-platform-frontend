@@ -26,7 +26,7 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
             bytes = io.BytesIO(file.read())
             zipfile.ZipFile(bytes)
             file.seek(0)
-        except zipfile.BadZipFile as e:
+        except zipfile.BadZipFile:
             file.close()
             raise ValidationError("File is not a zip file")
 
@@ -55,7 +55,7 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
                     raise ValidationError("Workflow file not found in RO-Crate")
                 
                 # check if license is defined
-                if not "license" in crate.root_dataset:
+                if "license" not in crate.root_dataset:
                     raise ValidationError("License not defined in RO-Crate")
 
                 return crate, workflow
@@ -114,8 +114,8 @@ def as_ROCrate(request, id: str, download: bool, connector: CordraConnector, wor
         return JsonResponse(crate.metadata.generate())
     else:
         try:
-            ssl._create_default_https_context = ssl._create_unverified_context
-            archive_name = f'{"_".join(id.split('/')[1:])}.zip'
+            ssl._create_default_https_context = ssl._create_unverified_context # type: ignore
+            archive_name = f'{"_".join(id.split("/")[1:])}.zip'
             response = StreamingHttpResponse(crate.stream_zip(), content_type="application/zip")
             response["Content-Disposition"] = f"attachment; filename={archive_name}"
             return response

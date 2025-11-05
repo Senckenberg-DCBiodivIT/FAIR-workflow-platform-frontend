@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urljoin
 import requests
 from requests.auth import HTTPBasicAuth
@@ -27,11 +27,7 @@ class WorkflowServiceConnector:
                 response.raise_for_status()
         return True, response.json()
 
-    def submit_workflow(self, workflow: dict[str, Any], title: str, description: str, submitter_name: str, submitter_orcid: str, license: str = None, keywords: list[str] = None, override_parameters: dict[str, str] = None, dry_run: bool = False, webhook_url: str = None) -> tuple[bool, dict[str, Any]]:
-        if override_parameters is None:
-            override_parameters = {}
-        if keywords is None:
-            keywords = []
+    def submit_workflow(self, workflow: dict[str, Any], title: str, description: str, submitter_name: str, submitter_orcid: str, license: Optional[str] = None, keywords: list[str] = [], override_parameters: dict[str, str] = {}, dry_run: bool = False, webhook_url: Optional[str] = None) -> tuple[bool, dict[str, Any]]:
 
         files = {"file": ("workflow.yaml", yaml.dump(workflow, indent=2))}
         form_data = {

@@ -2,13 +2,12 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -25,7 +24,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest
-    - name: Run Tests
+    - name: Lint code with ruff
+      run: ruff check --output-format=github
+    - name: Type checking with mypy
+      run: |
+        cd cwr_frontend/
+        mypy . --config-file ../mypy.ini
+    - name: Run tests
       run: |
         python -m pytest cwr_frontend
+    - name: Check for security vulnerabilities with trivy
+      uses: aquasecurity/trivy-action@0.28.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        severity: 'CRITICAL,HIGH'
+        exit-code: '1'

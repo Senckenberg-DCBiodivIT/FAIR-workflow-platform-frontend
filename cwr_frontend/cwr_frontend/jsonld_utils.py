@@ -68,7 +68,7 @@ def _pyld_extended_loader(url, options={}):
             try:
                 parsed_link_header = parse_link_header(link_header)
                 linked_context = parsed_link_header.get(LINK_HEADER_REL, parsed_link_header.get("alternate"))
-            except:
+            except Exception:
                 linked_context = None
 
             if linked_context:

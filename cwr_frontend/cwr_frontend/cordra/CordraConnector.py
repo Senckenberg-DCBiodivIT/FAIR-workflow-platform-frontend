@@ -1,5 +1,5 @@
 from itertools import batched
-from typing import Any
+from typing import Any, Sequence
 from urllib.parse import urlencode, urljoin
 import requests
 from django.conf import settings
@@ -26,7 +26,7 @@ class CordraConnector:
             url += f"?payload={payload_name}"
         return url
 
-    def list_datasets(self, page_num=0, page_size=25, include_nested: bool = False) -> list[dict[str, str]]:
+    def list_datasets(self, page_num=0, page_size=25, include_nested: bool = False) -> dict[str, Any]:
         """ retrieve list of objects from cordra """
         query = "type:Dataset"
         if not include_nested:
@@ -52,7 +52,7 @@ class CordraConnector:
 
         return response.json()
 
-    def search_for_ids(self, ids: list[str]) -> list[dict[str, Any]]:
+    def search_for_ids(self, ids: Sequence[str]) -> list[dict[str, Any]]:
         url = urljoin(self._base_url, "search")
         url = f"{url}?{urlencode({'query': ' OR '.join(['id:' + id for id in ids])})}"
         response = requests.get(url, verify=False)
@@ -79,7 +79,8 @@ class CordraConnector:
                 ids_to_resolve = set()
 
             for (key, value) in obj.items():
-                if key == "@id": continue
+                if key == "@id": 
+                    continue
 
                 if isinstance(value, dict):
                     find_all_ids_in_obj(value, ids_to_resolve)
@@ -122,7 +123,7 @@ class CordraConnector:
 
         return response.json()["@graph"]
 
-    def resolve_objects(self, object_id: str, nested: bool = False, workflow_only: bool = False) -> dict[str, [dict[str, Any]]]:
+    def resolve_objects(self, object_id: str, nested: bool = False, workflow_only: bool = False) -> dict[str, dict[str, Any]]:
         """ Recursively resolves cordra objects until the max recursion depth is reached.
         Returns a map of all resolved objects in the form {object_id: object}
         """
