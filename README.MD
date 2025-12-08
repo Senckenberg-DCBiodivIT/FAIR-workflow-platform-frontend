@@ -33,6 +33,7 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 - FORCE_SCRIPT_NAME: must be set to make the frontend available under a subpath like /cwr
 - SECRET_KEY: Django secret key
 - PROJECT_NAME: Name of the project, used in the UI
+- DB_PATH: Path to the django database
 
 ## Administration
 
