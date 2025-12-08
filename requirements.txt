@@ -11,7 +11,7 @@ charset-normalizer==3.4.4
 click==8.3.0
 colorlog==6.10.1
 cryptography==43.0.1
-Django==5.2.7
+Django==5.2.8
 django-allauth==64.0.0
 django-browser-reload==1.13.0
 django-compat==1.0.15
@@ -53,7 +53,7 @@ prettytable==3.16.0
 prompt_toolkit==3.0.52
 pycparser==2.23
 Pygments==2.19.2
-PyJWT==2.9.0
+PyJWT==2.10.1
 PyLD==2.0.4
 pyparsing==3.2.5
 pyshacl==0.26.0
@@ -82,7 +82,7 @@ types-PyYAML==6.0.12.20250915
 types-requests==2.32.4.20250913
 typing_extensions==4.15.0
 url-normalize==2.2.1
-urllib3==2.5.0
+urllib3==2.6.0
 wcwidth==0.2.14
 webencodings==0.5.1
 whitenoise==6.6.0
