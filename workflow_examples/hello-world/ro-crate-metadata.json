@@ -41,6 +41,9 @@
       "dateModified": "2024-11-04T14:25:48.125Z",
       "datePublished": "2024-11-04T14:25:48.125Z",
       "description": "An example workflow for the FAIR workflow platform",
+            "license": {
+        "@id": "https://spdx.org/licenses/MIT"
+      },
       "hasPart": [
         {
           "@id": "workflow.yaml"
