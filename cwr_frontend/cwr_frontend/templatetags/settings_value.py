@@ -20,3 +20,7 @@ def favicon():
 @register.simple_tag
 def project_name():
     return settings.PROJECT_NAME
+
+@register.simple_tag
+def orcid_enabled():
+    return settings.ORCIC_ENABLED
