@@ -19,6 +19,8 @@ from django.urls import re_path, path, include, reverse
 from django.views.generic import TemplateView
 from django.contrib import admin
 from django.http import HttpResponseRedirect
+from django.conf import settings
+from django.shortcuts import render
 
 from cwr_frontend.views.WorkflowListView import WorkflowListView
 from cwr_frontend.views.WorkflowSubmissionView import WorkflowSubmissionView
@@ -28,6 +30,9 @@ from cwr_frontend.views.AboutView import AboutView
 
 
 def redirect_orcid_login(request):
+    if not getattr(settings, "ORCID_ENABLED", False):
+        # fallback to safe page
+        return render(request, "orcid_missing.html")
     next_url = request.GET.get("next", "/")
     orcid_login_url = reverse("orcid_login") + "?process=login&next=" + next_url
     return HttpResponseRedirect(orcid_login_url)
