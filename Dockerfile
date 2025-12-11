@@ -14,8 +14,9 @@ RUN pip install --upgrade pip --no-cache-dir
 RUN pip install -r requirements.txt --no-cache-dir
 
 # set work directory
-COPY cwr_frontend /app
-
+COPY cwr_frontend/manage.py .
+COPY cwr_frontend/cwr_frontend /app/cwr_frontend
 COPY entrypoint.sh .
+
 RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
