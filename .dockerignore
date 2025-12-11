@@ -1,0 +1,26 @@
+# Ignore env files
+**/.env
+# Ignore Python caches
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Ignore venv
+.venv/
+venv/
+
+# Ignore Git
+.git/
+.gitignore
+
+# Ignore local DB or migrations if not needed
+**/db/
+**/*.sqlite3
+
+# Ignore workflow examples, docs, tests if not needed
+**/workflow_examples/
+**/tests/

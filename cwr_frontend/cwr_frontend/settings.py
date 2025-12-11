@@ -151,13 +151,16 @@ AUTHENTICATION_BACKENDS = [
 SOCIALACCOUNT_ONLY = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
-if env("ORCID_CLIENT_ID", default=None) is not None:
+ORCID_CLIENT_ID = env("ORCID_CLIENT_ID", default=None)
+ORCID_ENABLED = ORCID_CLIENT_ID is not None
+
+if ORCID_ENABLED:
     SOCIALACCOUNT_PROVIDERS = {
         "orcid": {
             "BASE_DOMAIN": env("ORCID_BASE_DOMAIN", default="orcid.org"),
             "MEMBER_API": False,  # only need public api for login
             "APP": {
-                "client_id": env("ORCID_CLIENT_ID"),
+                "client_id": ORCID_CLIENT_ID,
                 "secret": env("ORCID_SECRET"),
                 "key": "",
             },
