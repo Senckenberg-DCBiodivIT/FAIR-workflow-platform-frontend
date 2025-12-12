@@ -13,32 +13,69 @@ spec:
   podGC:
     strategy: OnWorkflowSuccess
 
-  entrypoint: workflow
-  
+  entrypoint: main-workflow
+
   templates:
-  - name: workflow
+
+  #######################################################
+  # Main workflow
+  #######################################################
+  - name: main-workflow
     steps:
-    - - name: print-message
-        template: print-to-file
+    - - name: generate-greeting
+        template: step1-script
         arguments:
           parameters:
           - name: name
             value: '{{workflow.parameters.name}}'
-  
-  - name: print-to-file
+    - - name: summarize-greeting
+        template: step2-container
+        arguments:
+          parameters:
+          - name: greeting
+            value: '{{steps.generate-greeting.outputs.parameters.greeting}}'
+
+  #######################################################
+  # Step 1: Script produces a greeting parameter
+  #######################################################
+  - name: step1-script
     inputs:
       parameters:
       - name: name
     outputs:
-      artifacts:
-      - name: outputfile
-        path: /tmp/output.txt  
-        archive:
-          none: {}
+      parameters:
+      - name: greeting
+        valueFrom:
+          path: /tmp/greeting.txt
     script:
       image: python:3.9
-      command: [python]
+      command: ["python"]
       source: |
-        with open("/tmp/output.txt", "w") as outf:
-            outf.write(f"Hola {{inputs.parameters.name}}")
-        print("Created output file /tmp/output.txt")
+        name = "{{inputs.parameters.name}}"
+        greeting = f"Hello, {name}!"
+        
+        # Write greeting to the parameter file
+        with open("/tmp/greeting.txt", "w") as f:
+            f.write(greeting)
+
+  #######################################################
+  # Step 2: Container reads greeting parameter
+  #######################################################
+  - name: step2-container
+    inputs:
+      parameters:
+      - name: greeting  
+    outputs:
+      artifacts:
+      - name: summary-file
+        path: /tmp/summary.txt
+        archive:
+          none: {}
+    container:
+      name: summarize-container
+      image: alpine
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Greeting: {{inputs.parameters.greeting}}" > /tmp/summary.txt
+        echo "Saved summary to /tmp/summary.txt"

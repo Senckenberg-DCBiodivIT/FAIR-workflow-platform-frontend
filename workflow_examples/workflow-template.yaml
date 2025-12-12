@@ -1,0 +1,90 @@
+kind: Workflow
+metadata:
+  generateName: <<<WORKFLOW-NAME-PREFIX>>> # e.g., hello-world-
+spec:
+  # Workflow-level input parameters
+  arguments:
+    parameters:
+    - name: <<<PARAMETER1_NAME>>>          # e.g., name
+      description: <<<PARAMETER1_DESCRIPTION>>>  # e.g., Name of the person to greet
+      value: <<<PARAMETER1_DEFAULT_VALUE>>>     # e.g., World
+
+  artifactGC:
+    forceFinalizerRemoval: true
+  podGC:
+    strategy: OnWorkflowSuccess
+
+  entrypoint: <<<ENTRYPOINT_TEMPLATE>>> # Main workflow template name
+
+  templates:
+
+  #######################################################
+  # Main workflow: defines the sequence of steps
+  #######################################################
+  - name: <<<ENTRYPOINT_TEMPLATE>>>  
+    steps:
+    - - name: <<<STEP1_NAME>>>             # First step name
+        template: <<<STEP1_TEMPLATE>>>     # Template to execute
+        arguments:
+          parameters:
+          - name: <<<PARAMETER1_NAME>>>
+            value: '{{workflow.parameters.<<<PARAMETER1_NAME>>>}}'
+    - - name: <<<STEP2_NAME>>>             # Second step
+        template: <<<STEP2_TEMPLATE>>>  
+        arguments:
+          parameters:
+          - name: <<<PARAMETER1_NAME>>>
+            value: '{{workflow.parameters.<<<PARAMETER1_NAME>>>}}'
+          - name: <<<STEP2_ADDITIONAL_PARAM>>>
+            value: '{{steps.<<<STEP1_NAME>>>.outputs.parameters.<<<STEP1_OUTPUT_PARAM_NAME>>>}}'
+
+  #######################################################
+  # Step 1: Example of a step (script)
+  #######################################################
+  - name: <<<STEP1_TEMPLATE>>>  
+    inputs:
+      parameters:
+      - name: <<<PARAMETER1_NAME>>>
+    outputs:
+      parameters:
+      - name: <<<STEP1_OUTPUT_PARAM_NAME>>>   # e.g., output value
+        valueFrom:
+          path: /tmp/<<<STEP1_OUTPUT_PARAM_FILENAME>>>  # must match script
+      artifacts:
+      - name: <<<STEP1_OUTPUT_ARTIFACT_NAME>>> # e.g., output file
+        path: /tmp/<<<STEP1_OUTPUT_FILENAME>>>  # must match script
+        archive:
+          none: {}
+    script:
+      image: <<<STEP1_SCRIPT_IMAGE>>>
+      command: <<<STEP1_SCRIPT_COMMAND>>>
+      source: |
+        # Example script
+        output_file = "/tmp/<<<STEP1_OUTPUT_FILENAME>>>"
+        with open(output_file, "w") as f:
+            f.write("<<<OUTPUT_VALUE>>>")
+        
+        # Write output parameter
+        with open("/tmp/<<<STEP1_OUTPUT_PARAM_FILENAME>>>", "w") as f:
+            f.write("<<<OUTPUT_VALUE>>>")
+
+  #######################################################
+  # Step 2: Another step (container)
+  #######################################################
+  - name: <<<STEP2_TEMPLATE>>>
+    inputs:
+      parameters:
+      - name: <<<PARAMETER1_NAME>>>
+      - name: <<<STEP2_ADDITIONAL_PARAM>>>   # e.g., output from step 1
+    outputs:
+      artifacts:
+      - name: <<<STEP2_OUTPUT_ARTIFACT_NAME>>> # e.g., final report
+        path: <<<STEP2_OUTPUT_ARTIFACT_PATH>>>
+        archive:
+          none: {}
+    container:
+      name: <<<STEP2_CONTAINER_NAME>>>
+      image: <<<STEP2_IMAGE>>>
+      command: <<<STEP2_COMMAND>>>
+      args: <<<STEP2_ARGS>>>
+      workingDir: <<<STEP2_WORKDIR>>>

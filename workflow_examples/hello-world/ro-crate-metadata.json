@@ -22,9 +22,24 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Example Workflow: Printing Hello World",
-      "author": {
-        "@id": "https://orcid.org/0000-0001-9447-460X"
+      "name": "Hello World Workflow Example",
+      "description": "An example Argo workflow that prints 'Hello World' into a text file.",
+      "keywords": [
+        "Hello World",
+        "Example",
+        "Argo Workflow",
+        "Test"
+      ],
+      "license": {
+        "@id": "https://spdx.org/licenses/MIT"
+      },
+      "hasPart": [
+        {
+          "@id": "workflow.yaml"
+        }
+      ],
+      "mainEntity": {
+        "@id": "workflow.yaml"
       },
       "conformsTo": [
         {
@@ -36,51 +51,7 @@
         {
           "@id": "https://w3id.org/ro/wfrun/workflow/0.5"
         }
-      ],
-      "dateCreated": "2024-11-04T14:25:49.698Z",
-      "dateModified": "2024-11-04T14:25:48.125Z",
-      "datePublished": "2024-11-04T14:25:48.125Z",
-      "description": "An example workflow for the FAIR workflow platform",
-            "license": {
-        "@id": "https://spdx.org/licenses/MIT"
-      },
-      "hasPart": [
-        {
-          "@id": "workflow.yaml"
-        }
-      ],
-      "keywords": [
-        "Example",
-        "Test",
-        "Hello World"
-      ],
-      "mainEntity": {
-        "@id": "workflow.yaml"
-      }
-    },
-    {
-        "@id": "https://w3id.org/ro/wfrun/process/0.5",
-        "@type": "CreativeWork",
-        "name": "Process Run Crate",
-        "version": "0.1"
-    },
-    {
-        "@id": "https://w3id.org/ro/wfrun/workflow/0.5",
-        "@type": "CreativeWork",
-        "name": "Workflow Run Crate",
-        "version": "0.1"
-    },
-    {
-        "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
-        "@type": "CreativeWork",
-        "name": "Workflow RO-Crate",
-        "version": "1.0"
-    },
-    {
-      "@id": "https://orcid.org/0000-0001-9447-460X",
-      "@type": "Person",
-      "name": "Daniel Bauer",
-      "url": "https://orcid.org/0000-0001-9447-460X"
+      ]
     },
     {
       "@id": "workflow.yaml",
@@ -90,7 +61,7 @@
         "SoftwareSourceCode"
       ],
       "name": "workflow.yaml",
-      "description": "Argo workflow that prints hello world into a file",
+      "description": "Argo workflow YAML file that prints a greeting to a text file.",
       "encodingFormat": "text/yaml",
       "input": [
         {
@@ -106,14 +77,32 @@
       "@type": "FormalParameter",
       "additionalType": "Text",
       "name": "name",
-      "description": "Name of the person to greet in the Hello World",
+      "description": "Name of the person to greet in the Hello World message.",
       "valueRequired": "true"
     },
     {
-        "@id": "https://argoproj.github.io/workflows",
-        "@type": "ComputerLanguage",
-        "name": "Argo",
-        "url": "https://argoproj.github.io/workflows"
+      "@id": "https://argoproj.github.io/workflows",
+      "@type": "ComputerLanguage",
+      "name": "Argo",
+      "url": "https://argoproj.github.io/workflows"
+    },
+    {
+      "@id": "https://w3id.org/ro/wfrun/process/0.5",
+      "@type": "CreativeWork",
+      "name": "Process Run Crate",
+      "version": "0.1"
+    },
+    {
+      "@id": "https://w3id.org/ro/wfrun/workflow/0.5",
+      "@type": "CreativeWork",
+      "name": "Workflow Run Crate",
+      "version": "0.1"
+    },
+    {
+      "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
+      "@type": "CreativeWork",
+      "name": "Workflow RO-Crate",
+      "version": "1.0"
     }
   ]
 }

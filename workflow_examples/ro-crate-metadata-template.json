@@ -1,0 +1,118 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/terms/workflow-run/context"
+    ],
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "name": "<<<UPDATE WORKFLOW NAME HERE>>>",
+            "description": "<<<UPDATE WORKFLOW DESCRIPTION HERE>>>",
+            "keywords": [
+                "<<<KEYWORD1>>>",
+                "<<<KEYWORD2>>>",
+                "<<<KEYWORD3>>>"
+            ],
+            "license": {
+                "@id": "<<<UPDATE LICENSE URL HERE>>>"
+            },
+            "hasPart": [
+                {
+                    "@id": "workflow.yaml"
+                }
+            ],
+            "mainEntity": {
+                "@id": "workflow.yaml"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wfrun/workflow/0.5"
+                }
+            ]
+        },
+        {
+            "@id": "workflow.yaml",
+            "@type": [
+                "File",
+                "ComputationalWorkflow",
+                "SoftwareSourceCode"
+            ],
+            "name": "workflow.yaml",
+            "description": "<<<UPDATE WORKFLOW FILE DESCRIPTION HERE>>>",
+            "encodingFormat": "text/yaml",
+            "input": [
+                {
+                    "@id": "<<<INPUT_PARAMETER1_ID>>>"
+                },
+                {
+                    "@id": "<<<INPUT_PARAMETER2_ID>>>"
+                }
+            ],
+            "programmingLanguage": {
+                "@id": "https://argoproj.github.io/workflows"
+            }
+        },
+        {
+            "@id": "<<<INPUT_PARAMETER1_ID>>>",
+            "@type": "FormalParameter",
+            "additionalType": "<<<INPUT_TYPE1>>>",
+            "name": "<<<INPUT_NAME1>>>",
+            "description": "<<<INPUT_DESCRIPTION1>>>",
+            "valueRequired": "<<<true/false>>>"
+        },
+        {
+            "@id": "<<<INPUT_PARAMETER2_ID>>>",
+            "@type": "FormalParameter",
+            "additionalType": "<<<INPUT_TYPE2>>>",
+            "name": "<<<INPUT_NAME2>>>",
+            "description": "<<<INPUT_DESCRIPTION2>>>",
+            "valueRequired": "<<<true/false>>>"
+        },
+        {
+            "@id": "https://argoproj.github.io/workflows",
+            "@type": "ComputerLanguage",
+            "name": "Argo",
+            "url": "https://argoproj.github.io/workflows"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/process/0.5",
+            "@type": "CreativeWork",
+            "name": "Process Run Crate",
+            "version": "0.1"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/workflow/0.5",
+            "@type": "CreativeWork",
+            "name": "Workflow Run Crate",
+            "version": "0.1"
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
+            "@type": "CreativeWork",
+            "name": "Workflow RO-Crate",
+            "version": "1.0"
+        }
+    ]
+}
