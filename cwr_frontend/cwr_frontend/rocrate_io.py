@@ -7,6 +7,7 @@ from typing import Any
 import django
 import requests
 import yaml
+from yaml.scanner import ScannerError
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseBase, JsonResponse, StreamingHttpResponse
 from django.urls import reverse
@@ -50,7 +51,11 @@ def get_crate_workflow_from_zip(file) -> tuple[ROCrate, dict[str, Any]]:
 
                 # check workflow file and set it to the session
                 if workflow_path.exists():
-                    workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
+                    try:
+                        workflow = yaml.load(open(workflow_path, "r"), Loader=yaml.CLoader)
+                    except ScannerError as e:
+                        raise ValidationError(f"Workflow file corrupted: {e.problem} {e.context}")
+
                 else:
                     raise ValidationError("Workflow file not found in RO-Crate")
                 
