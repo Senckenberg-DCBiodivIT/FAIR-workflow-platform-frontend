@@ -79,7 +79,7 @@ class SubmitWorkflowView(APIView):
             license=workflow_license,
             override_parameters=override_parameters,
             submitter_name=submitter.name,
-            submitter_orcid=submitter.orcid,
+            submitter_id=submitter.get_url(),
             dry_run=dry_run,
             webhook_url=webhook_url,
         )

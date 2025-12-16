@@ -106,7 +106,7 @@ class WorkflowSubmissionView(TemplateView):
             keywords=request.POST["keywords"].split(","),
             license=request.POST["license"],
             submitter_name=name,
-            submitter_orcid=orcid,
+            submitter_id=orcid,
             override_parameters=override_parameters,
             dry_run=request.POST.get("dryrun", None)  == "DryRun",
         )
