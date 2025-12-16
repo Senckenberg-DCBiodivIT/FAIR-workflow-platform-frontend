@@ -27,9 +27,16 @@ class DatasetDetailView(TemplateView):
         objects = self._connector.resolve_objects(id, nested=nested, workflow_only=workflow_only)
         dataset = objects[id]
 
-        # tuples of author names and identifiers
-        authors = [(elem["name"], elem.get("identifier")) for (elem_id, elem) in objects.items() if
-                            "Person" in elem["@type"] and elem_id in dataset["author"]]
+        authors = []
+        for elem_id, elem in objects.items():
+            if elem_id not in dataset["author"]:
+                continue
+            types = elem.get("@type", []) or []
+            if isinstance(types, str):
+                types = [types]
+            if not any(t in ("Person", "Organization") for t in types):
+                continue
+            authors.append((elem["name"], elem.get("identifier")))
 
         license_id = dataset["license"] if "license" in dataset else None
 
