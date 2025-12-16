@@ -39,7 +39,8 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 
 Add API keys with the management command:
 
-`python manage.py create_api_key --orcid <user-orcid> --name <user-name>`
+`python manage.py create_api_key --type <type> --identifier <id> --name <user-name>`
+type must be any of: orcid, ror or doi
 
 ## License
 

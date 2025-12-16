@@ -1,27 +1,35 @@
 from django.core.management.base import BaseCommand
 from cwr_frontend.api.models import CustomAPIKey, ApiKeyIdentity
 
+IDENTIFIER_TYPES = ['orcid', 'doi', 'ror']
 
 class Command(BaseCommand):
-    help = "Create an API key linked to an ORCID identity"
+    help = "Create an API key linked to a persistent identifier"
 
     def add_arguments(self, parser):
-        parser.add_argument("--orcid", required=True, help="ORCID identifier (format XXXX-XXXX-XXXX-XXXX)")
-        parser.add_argument("--name", required=True, help="Person name for the identity")
+        parser.add_argument('--type', choices=IDENTIFIER_TYPES, required=True,
+                            help='Type of identifier (orcid, doi, ror)')
+        parser.add_argument("--identifier", required=True, help="The identifier value (e.g., 0000-0002-1825-0097 or 10.3030/101181294)")
+        parser.add_argument("--name", required=True, help="Name for the identity")
         parser.add_argument(
             "--key-name",
             default=None,
-            help="Name for the API key (defaults to 'key-for-<ORCID>')",
+            help="Optional name for the API key",
         )
 
     def handle(self, *args, **options):
-        orcid = options["orcid"]
-        person_name = options["name"]
-        key_name = options["key_name"] or f"key-for-{orcid}"
+        id_type = options["type"]
+        identifier = options["identifier"]
+        name = options["name"]
+        key_name = options["key_name"] or f"key-for-{identifier}"
 
         identity, created = ApiKeyIdentity.objects.get_or_create(
-            orcid=orcid, defaults={"name": person_name}
+            id_type=id_type,
+            identifier = identifier,
+            defaults={"name": name}
         )
+
+        identity.full_clean()
 
         api_key_obj, raw_key = CustomAPIKey.objects.create_key(
             name=key_name, identity=identity
