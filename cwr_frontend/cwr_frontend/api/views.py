@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.http import Http404, HttpResponseBase
+from django.http import JsonResponse, HttpResponseBase
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
@@ -79,7 +79,7 @@ class SubmitWorkflowView(APIView):
             license=workflow_license,
             override_parameters=override_parameters,
             submitter_name=submitter.name,
-            submitter_orcid=submitter.orcid,
+            submitter_id=submitter.get_url(),
             dry_run=dry_run,
             webhook_url=webhook_url,
         )
@@ -123,7 +123,7 @@ class WorkflowDownloadView(View):
         except HTTPError as e:
             # Cordra responds with 401 if not a public object is not found.
             if e.response.status_code == 401 or e.response.status_code == 404:
-                raise Http404
-            raise
+                return JsonResponse({"detail": f"Workflow {workflow_id} not found"}, status=404)
+            return JsonResponse({"detail": e.response.text}, status=500)
 
         return as_ROCrate(request, workflow_id, download=True, connector=self._connector, workflow_only=False, nested=False)

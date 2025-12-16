@@ -21,7 +21,7 @@
     <tr class="mt5 stripe-dark pa2">
         <td>{{ wfl.name }}<br /><span class="f7"><a href="{% argo_url %}/{{ wfl.workflow_name }}">{{ wfl.workflow_name }}</a></span></td>
         {% if wfl.submitterName %}
-        <td>{{ wfl.submitterName }}<br /><span class="f7"><a href="https://orcid.org/{{ wfl.submitterOrcid }}">{{ wfl.submitterOrcid }}</a></span></td>
+        <td>{{ wfl.submitterName }}<br /><span class="f7"><a href="{{ wfl.submitterId }}">{{ wfl.submitterId }}</a></span></td>
         {% else %}
         <td></td>
         {% endif %}

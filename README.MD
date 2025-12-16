@@ -33,13 +33,23 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 - FORCE_SCRIPT_NAME: must be set to make the frontend available under a subpath like /cwr
 - SECRET_KEY: Django secret key
 - PROJECT_NAME: Name of the project, used in the UI
-- DB_PATH: Path to the django database
+
+DB Variables:
+- USE_POSTGRES: Whether to use a postgres db (recommended for the API usecase) (default: FALSE)
+- DB_PATH: Path to the django database (only required if USE_POSTGRES is FALSE)
+- POSTGRES_DB: Postgres db name (only required if USE_POSTGRES is TRUE)
+- POSTGRES_USER: Postgres user (only required if USE_POSTGRES is TRUE)
+- POSTGRES_PASSWORD: Postgres password (only required if USE_POSTGRES is TRUE)
+- POSTGRES_HOST: Postgres host (only required if USE_POSTGRES is TRUE)
+- POSTGRES_PORT: Postgres port (only required if USE_POSTGRES is TRUE)
+
 
 ## Administration
 
 Add API keys with the management command:
 
-`python manage.py create_api_key --orcid <user-orcid> --name <user-name>`
+`python manage.py create_api_key --type <type> --identifier <id> --name <user-name>`
+type must be any of: orcid, ror or doi
 
 ## License
 

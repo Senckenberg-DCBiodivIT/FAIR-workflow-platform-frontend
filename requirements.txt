@@ -51,6 +51,9 @@ platformdirs==4.5.0
 pluggy==1.6.0
 prettytable==3.16.0
 prompt_toolkit==3.0.52
+psycopg==3.3.2
+psycopg-binary==3.3.2
+psycopg-pool==3.3.0
 pycparser==2.23
 Pygments==2.19.2
 PyJWT==2.10.1

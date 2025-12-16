@@ -5,6 +5,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import yaml
 from django.conf import settings
+from rest_framework.exceptions import APIException
 
 
 class WorkflowServiceConnector:
@@ -27,14 +28,14 @@ class WorkflowServiceConnector:
                 response.raise_for_status()
         return True, response.json()
 
-    def submit_workflow(self, workflow: dict[str, Any], title: str, description: str, submitter_name: str, submitter_orcid: str, license: Optional[str] = None, keywords: list[str] = [], override_parameters: dict[str, str] = {}, dry_run: bool = False, webhook_url: Optional[str] = None) -> tuple[bool, dict[str, Any]]:
+    def submit_workflow(self, workflow: dict[str, Any], title: str, description: str, submitter_name: str, submitter_id: str, license: Optional[str] = None, keywords: list[str] = [], override_parameters: dict[str, str] = {}, dry_run: bool = False, webhook_url: Optional[str] = None) -> tuple[bool, dict[str, Any]]:
 
         files = {"file": ("workflow.yaml", yaml.dump(workflow, indent=2))}
         form_data = {
             "title": title,
             "description": description,
             "submitterName": submitter_name,
-            "submitterOrcid": submitter_orcid,
+            "submitterId": submitter_id,
             "license": license,
             "keywords": ",".join(keywords),
             "overrideParameters": ",".join([f"{key}:{value}" for key, value in override_parameters.items()]),
@@ -43,7 +44,7 @@ class WorkflowServiceConnector:
         }
         response = requests.post(urljoin(self._base_url, "workflow/submit"), files=files, data=form_data, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
-            if response.status_code == 400 and "message" in response.json()["detail"]:
+            if 400 <= response.status_code < 500:
                 return False, response.json()
             else:
                 response.raise_for_status()
@@ -71,7 +72,7 @@ class WorkflowServiceConnector:
         url = f'{urljoin(self._base_url, f"workflow/detail/{workflow_id}")}'
         response = requests.get(url, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
-            raise Exception(response.text)
+            raise APIException(detail=f"Error from workflow service: {response.text}")
 
         json = response.json()
         return json 
