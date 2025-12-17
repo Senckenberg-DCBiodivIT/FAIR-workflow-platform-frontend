@@ -100,13 +100,23 @@ class SubmitWorkflowView(APIView):
         return workflow_status_response(status, workflow_id)
 
 class WorkflowStatusView(APIView):
-    _connector = WorkflowServiceConnector()
+    def __init__(self, prefix=settings.CORDRA["PREFIX"], user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
+        self.user = user
+        self.password = password
+        self.prefix = prefix
+        self._cordra_connector = CordraConnector(user = user, password=password)
+        self._argo_connector = WorkflowServiceConnector()
 
     def get(self, request, workflow_id):
 
-        wfl = self._connector.get_workflow_detail(workflow_id)
-        status = wfl['status']
-
+        obj = self._cordra_connector.search_for_ids(ids=[self.prefix + "/" + workflow_id])
+        if len(obj) == 1:
+            status = 'Succeeded'
+        else:
+            wfl = self._argo_connector.get_workflow_detail(workflow_id)
+            status = wfl['status']
+            if status == 'Succeeded' and len(obj) == 0:
+                status = 'Ingestion pending'
         return workflow_status_response(status, workflow_id)
 
 
