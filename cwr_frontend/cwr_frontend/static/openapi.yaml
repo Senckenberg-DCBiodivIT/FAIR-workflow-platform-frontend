@@ -35,6 +35,10 @@ paths:
                 webhook_url:
                   type: string
                   description: If provided, webhook will be triggered once workflow is complete.
+                force:
+                  type: boolean
+                  default: true
+                  description: If true, workflow execution is forced, even if the same workflow was already executed previously.
               required:
                 - rocratefile
               additionalProperties:

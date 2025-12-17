@@ -43,6 +43,7 @@ class SubmitWorkflowView(APIView):
         file = serializer.validated_data['rocratefile']
         dry_run = serializer.validated_data['dry_run']
         webhook_url = serializer.validated_data['webhook_url']
+        force = serializer.validated_data['force']
 
         try:
             crate, workflow = get_crate_workflow_from_zip(file = file)
@@ -82,6 +83,7 @@ class SubmitWorkflowView(APIView):
             submitter_id=submitter.get_url(),
             dry_run=dry_run,
             webhook_url=webhook_url,
+            force=force,
         )
 
         if not submit_status:

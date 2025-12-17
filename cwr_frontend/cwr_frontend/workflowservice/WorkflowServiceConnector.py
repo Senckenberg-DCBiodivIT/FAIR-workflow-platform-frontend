@@ -28,8 +28,20 @@ class WorkflowServiceConnector:
                 response.raise_for_status()
         return True, response.json()
 
-    def submit_workflow(self, workflow: dict[str, Any], title: str, description: str, submitter_name: str, submitter_id: str, license: Optional[str] = None, keywords: list[str] = [], override_parameters: dict[str, str] = {}, dry_run: bool = False, webhook_url: Optional[str] = None) -> tuple[bool, dict[str, Any]]:
-
+    def submit_workflow(
+        self,
+        workflow: dict[str, Any],
+        title: str,
+        description: str,
+        submitter_name: str,
+        submitter_id: str,
+        license: Optional[str] = None,
+        keywords: list[str] = [],
+        override_parameters: dict[str, str] = {},
+        dry_run: bool = False,
+        webhook_url: Optional[str] = None,
+        force: bool = True,
+    ) -> tuple[bool, dict[str, Any]]:
         files = {"file": ("workflow.yaml", yaml.dump(workflow, indent=2))}
         form_data = {
             "title": title,
@@ -41,6 +53,7 @@ class WorkflowServiceConnector:
             "overrideParameters": ",".join([f"{key}:{value}" for key, value in override_parameters.items()]),
             "dryRun": dry_run,
             "webhookURL" : webhook_url,
+            "force": force,
         }
         response = requests.post(urljoin(self._base_url, "workflow/submit"), files=files, data=form_data, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
