@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from django.http import JsonResponse, HttpResponseBase
 from django.conf import settings
 from django.shortcuts import render
-from django.views import View
 from django.core.exceptions import ValidationError
 from requests import HTTPError
 from typing import Optional, Any
@@ -100,6 +99,7 @@ class SubmitWorkflowView(APIView):
         return workflow_status_response(status, workflow_id)
 
 class WorkflowStatusView(APIView):
+    permission_classes = [HasCustomAPIKey]
     def __init__(self, prefix=settings.CORDRA["PREFIX"], user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
         self.user = user
         self.password = password
@@ -120,7 +120,8 @@ class WorkflowStatusView(APIView):
         return workflow_status_response(status, workflow_id)
 
 
-class WorkflowDownloadView(View):
+class WorkflowDownloadView(APIView):
+    permission_classes = [HasCustomAPIKey]
     def __init__(self, prefix=settings.CORDRA["PREFIX"], user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
         self.user = user
         self.password = password
