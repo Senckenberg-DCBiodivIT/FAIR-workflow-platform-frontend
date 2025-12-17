@@ -5,7 +5,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import yaml
 from django.conf import settings
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, NotFound
 
 
 class WorkflowServiceConnector:
@@ -22,7 +22,7 @@ class WorkflowServiceConnector:
         files = {"file": ("workflow.yaml", yaml.dump(workflow, indent=2))}
         response = requests.post(urljoin(self._base_url, "workflow/check"), files=files, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
-            if response.status_code == 400 and "detail" in response.json():
+            if 400 <= response.status_code < 500:
                 return False, response.json()
             else:
                 response.raise_for_status()
@@ -72,7 +72,10 @@ class WorkflowServiceConnector:
         url = f'{urljoin(self._base_url, f"workflow/detail/{workflow_id}")}'
         response = requests.get(url, auth=HTTPBasicAuth(self._username, self._password), verify=self._verify_ssl)
         if response.status_code != 200:
-            raise APIException(detail=f"Error from workflow service: {response.text}")
+            if response.status_code == 404:
+                raise NotFound(detail=response.text)
+            else:
+                raise APIException(detail=f"Error from workflow service: {response.text}")
 
         json = response.json()
         return json 
