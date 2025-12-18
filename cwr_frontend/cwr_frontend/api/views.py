@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponseBase
 from django.conf import settings
 from django.shortcuts import render
 from django.core.exceptions import ValidationError
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 from typing import Optional, Any
 
 from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, as_ROCrate
@@ -109,7 +109,10 @@ class WorkflowStatusView(APIView):
 
     def get(self, request, workflow_id):
 
-        obj = self._cordra_connector.search_for_ids(ids=[self.prefix + "/" + workflow_id])
+        try:
+            obj = self._cordra_connector.search_for_ids(ids=[self.prefix + "/" + workflow_id])
+        except ConnectionError:
+            return workflow_status_response(status = 'Server Error', details={'message': 'Object store not available'}, status_code=500)
         if len(obj) == 1:
             status = 'Succeeded'
         else:
@@ -138,5 +141,7 @@ class WorkflowDownloadView(APIView):
             if e.response.status_code == 401 or e.response.status_code == 404:
                 return JsonResponse({"detail": f"Workflow {workflow_id} not found"}, status=404)
             return JsonResponse({"detail": e.response.text}, status=500)
+        except ConnectionError:
+            return JsonResponse({'detail': 'Object store not available'}, status=500)
 
         return as_ROCrate(request, workflow_id, download=True, connector=self._connector, workflow_only=False, nested=False)
