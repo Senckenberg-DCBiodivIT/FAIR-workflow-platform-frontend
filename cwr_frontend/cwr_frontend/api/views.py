@@ -1,11 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.renderers import BaseRenderer
 from django.http import JsonResponse, HttpResponseBase
 from django.conf import settings
-from django.shortcuts import render
 from django.core.exceptions import ValidationError
 from requests import HTTPError, ConnectionError
 from typing import Optional, Any
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, as_ROCrate
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
@@ -16,8 +18,11 @@ from .permissions import HasCustomAPIKey
 
 
 def workflow_status_response(
-    status: str, workflow_id: Optional[str] = None, details: Optional[dict] = None, status_code: int = 200
-):
+    status: str,
+    workflow_id: Optional[str] = None,
+    details: Optional[dict] = None,
+    status_code: int = 200,
+) -> Response:
     data: dict[str, Any] = {"status": status}
     if workflow_id is not None:
         data['workflow_id'] = workflow_id  
@@ -27,14 +32,42 @@ def workflow_status_response(
     return Response(serializer.data, status=status_code)
 
 
-def swagger_ui_view(request):
-    return render(request, 'swagger_ui.html')
+class ZipRenderer(BaseRenderer):
+    media_type = "application/zip"
+    format = "zip"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
 
 class SubmitWorkflowView(APIView):
 
     _connector = WorkflowServiceConnector()
     permission_classes = [HasCustomAPIKey]
 
+    @extend_schema(
+        description="Submit a new workflow RO-Crate for execution.",
+        summary="Submit a new workflow RO-Crate for execution.",
+        request={
+            "multipart/form-data": WorkflowSubmissionSerializer,
+        },
+        parameters=[
+            OpenApiParameter(
+                name="param-*",
+                location=OpenApiParameter.QUERY, # Or FORM if submitted in body
+                description="Dynamic parameters to override workflow defaults. Format: param-KEY=VALUE",
+                required=False,
+                type=str
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Workflow Status.",
+                response=WorkflowStatusSerializer,
+            ),
+        },
+        tags=["Workflows"],
+    )
     def post(self, request):
         serializer = WorkflowSubmissionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -107,7 +140,18 @@ class WorkflowStatusView(APIView):
         self._cordra_connector = CordraConnector(user = user, password=password)
         self._argo_connector = WorkflowServiceConnector()
 
-    def get(self, request, workflow_id):
+    @extend_schema(
+        description="Check workflow execution status.",
+        summary="Check workflow execution status.",
+        responses={
+            200: OpenApiResponse(
+                description="Workflow Status.",
+                response=WorkflowStatusSerializer,
+            ),
+        },
+        tags=["Workflows"],
+    )
+    def get(self, request, workflow_id) -> Response:
 
         try:
             obj = self._cordra_connector.search_for_ids(ids=[self.prefix + "/" + workflow_id])
@@ -125,12 +169,21 @@ class WorkflowStatusView(APIView):
 
 class WorkflowDownloadView(APIView):
     permission_classes = [HasCustomAPIKey]
+    renderer_classes = [ZipRenderer]
     def __init__(self, prefix=settings.CORDRA["PREFIX"], user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
         self.user = user
         self.password = password
         self.prefix = prefix
         self._connector = CordraConnector(user = user, password=password)
 
+    @extend_schema(
+        summary="Download completed workflow as RO-Crate.",
+        description="Download completed workflow as RO-Crate.",
+        responses={
+            200: OpenApiResponse(description="Success.", response=OpenApiTypes.BINARY),
+        },
+        tags=["Workflows"],
+    )
     def get(self, request, workflow_id) -> HttpResponseBase:
         workflow_id = f"{self.prefix}/{workflow_id}"
         try:
