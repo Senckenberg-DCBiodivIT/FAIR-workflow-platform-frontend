@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     "cwr_frontend.api",
     "rest_framework",
     "rest_framework_api_key",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -258,6 +259,29 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Workflow API',
+    'DESCRIPTION': 'Endpoint to submit or check the status of workflow RO-Crates and download completed workflows as RO-Crates.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    "CONTACT": {"email": "lena.perzlmaier@senckenberg.de"},
+    "LICENSE": {"name":"MIT",
+                "url": "https://spdx.org/licenses/MIT"},
+    "SERVERS": [{"url": "http://127.0.0.1:8000"}],
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Api-Key"
+            }
+        }
+    },
+    "SECURITY": [{"ApiKeyAuth": [], }],
+    "AUTHENTICATION_WHITELIST": [],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 API_KEY_CUSTOM_HEADER = "HTTP_API_KEY"
