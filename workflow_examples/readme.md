@@ -233,8 +233,9 @@ curl --location 'baseurl/api/v1/workflows' \
 --header 'Api-Key: ***' \
 --form 'rocratefile=@"/path_to_file/hello-world.zip"' \
 --form 'dry_run="false"' \
+--form 'webhook_url="xxx"'\
 ```
-
+If you provide a webhook url, it will be triggered once the workflow execution completed.
 The hello-world workflow has "name" as an input parameter. In the workflow.yaml you see that by default "name" = "world". If you don't want to use the default "name", you can add the input parameter to the request like this:
 
 ```curl
@@ -255,7 +256,7 @@ This is how the response would look like. You can then use the workflow_id to ch
 ```
 
 ### Get Workflow Status
-Now you can query the workflow status:
+If you have not provided a webhook url upon workflow submission, you can instead query the workflow status:
 
 ```curl
 curl --location 'baseurl/api/v1/workflows/ba45ad7d-e887-4e5c-8a6c-4205452fc18d' \
