@@ -222,7 +222,7 @@ Notes:
 
 ## API Endpoint
 
-[Here](../cwr_frontend/cwr_frontend/static/openapi.yaml) is the openapi documentation of the Workflow API.
+The API documentation of the Workflow API can be retrieved here: [localhost:8000/api/v1/docs](localhost:8000/api/v1/docs).
 
 ### Submit Workflow
 
