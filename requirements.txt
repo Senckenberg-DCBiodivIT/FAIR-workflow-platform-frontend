@@ -85,7 +85,7 @@ types-PyYAML==6.0.12.20250915
 types-requests==2.32.4.20250913
 typing_extensions==4.15.0
 url-normalize==2.2.1
-urllib3==2.6.0
+urllib3==2.6.3
 wcwidth==0.2.14
 webencodings==0.5.1
 whitenoise==6.6.0
