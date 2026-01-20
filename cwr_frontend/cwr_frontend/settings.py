@@ -81,6 +81,7 @@ LOGGING = {
 }
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
+PORT = env("FRONTEND_PORT", default="8000")
 
 
 # Application definition
@@ -269,7 +270,7 @@ SPECTACULAR_SETTINGS = {
     "CONTACT": {"email": "lena.perzlmaier@senckenberg.de"},
     "LICENSE": {"name":"MIT",
                 "url": "https://spdx.org/licenses/MIT"},
-    "SERVERS": [{"url": "http://127.0.0.1:8000"}],
+    "SERVERS": [{"url": f"http://127.0.0.1:{PORT}"}],
     "APPEND_COMPONENTS": {
         "securitySchemes": {
             "ApiKeyAuth": {

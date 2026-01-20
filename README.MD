@@ -10,11 +10,12 @@ This is part of the [FAIR workflow platform](https://github.com/dnlbauer/FAIR-wo
 ## Deployment
 
 
-`docker run -d -p 8000:8000 --env-file .env cwr-frontend`
+`docker run -d -p ${FRONTEND_PORT}:${FRONTEND_PORT} --env-file .env cwr-frontend` 
 
 ### Environment variables
 
 - ALLOWED_HOSTS: Hosts allowed to connect to this instance. Set to the server's ip/domain
+- FRONTEND_PORT: The port the frontend service listens on. Default is 8000.
 - CORDRA_URL: URL of a running cordra instance with no password protection for accessing relevant objects and payloads. The frontend lists objects of type "Dataset" and traverses the graph of linked objects to find associated objects relevant to the dataset.
 - CORDRA_PREFIX: Prefix for cordra objects
 - CORDRA_USER: Username used for accessing cordra, leave blank for anonymous access

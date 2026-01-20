@@ -23,7 +23,7 @@ python manage.py migrate --noinput
 
 # running gunicorn. Increased timeout due to ro crate zip parsing
 gunicorn cwr_frontend.wsgi:application \
-    --bind 0.0.0.0:8000 \
+    --bind 0.0.0.0:${FRONTEND_PORT:-8000}  \
     --timeout ${GUNICORN_TIMEOUT:-120} \
     --workers ${GUNICORN_WORKERS:-2} \
     --threads ${GUNICORN_THREADS:-5} \

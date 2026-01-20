@@ -222,7 +222,7 @@ Notes:
 
 ## API Endpoint
 
-The API documentation of the Workflow API can be retrieved here: [localhost:8000/api/v1/docs](localhost:8000/api/v1/docs).
+The API documentation of the Workflow API can be retrieved at localhost:${FRONTEND_PORT}/api/v1/docs.
 
 ### Submit Workflow
 
