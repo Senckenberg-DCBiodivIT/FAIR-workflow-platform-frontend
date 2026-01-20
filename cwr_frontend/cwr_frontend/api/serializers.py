@@ -38,6 +38,8 @@ class WorkflowSubmissionSerializer(serializers.Serializer):
     )
 
     def validate_webhook_url(self, value):
+        if value is None:
+            return value
         PLACEHOLDER_RE = re.compile(r"\{([^{}]+)\}")
         ALLOWED_WEBHOOK_PLACEHOLDERS = {"workflow_id"}
         fields = set(PLACEHOLDER_RE.findall(value))
