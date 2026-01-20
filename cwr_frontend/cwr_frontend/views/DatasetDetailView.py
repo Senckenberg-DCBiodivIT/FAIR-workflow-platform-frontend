@@ -79,7 +79,7 @@ class DatasetDetailView(TemplateView):
                     prov_instrument["programmingLanguage"] = prov_instrument_obj.get("programmingLanguage")
 
             prov_context = {
-                "agent_id": prov_agent_id,
+                "agent_id": prov_agent_id if prov_agent is not None else None,
                 "agent_name": prov_agent_name if prov_agent is not None else None,
                 "instrument": prov_instrument,
                 "start_time": datetime.strptime(prov_start_time, "%Y-%m-%dT%H:%M:%SZ") if prov_start_time is not None else None,
