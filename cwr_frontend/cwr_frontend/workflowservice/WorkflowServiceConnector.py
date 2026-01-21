@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote_plus
 import requests
 from requests.auth import HTTPBasicAuth
 import yaml
@@ -50,7 +50,7 @@ class WorkflowServiceConnector:
             "submitterId": submitter_id,
             "license": license,
             "keywords": ",".join(keywords),
-            "overrideParameters": ",".join([f"{key}:{value}" for key, value in override_parameters.items()]),
+            "overrideParameters": ",".join([f"{key}:{quote_plus(value)}" for key, value in override_parameters.items()]),
             "dryRun": dry_run,
             "webhookURL" : webhook_url,
             "force": force,
