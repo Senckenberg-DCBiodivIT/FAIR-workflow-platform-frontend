@@ -2,6 +2,7 @@
 
 from rest_framework import serializers
 import re
+from urllib.parse import urlparse
 
 
 class WorkflowStatusSerializer(serializers.Serializer):
@@ -20,7 +21,7 @@ class WorkflowSubmissionSerializer(serializers.Serializer):
         default=False,
         help_text="If true, the workflow is validated but not executed.",
     )
-    webhook_url = serializers.URLField(
+    webhook_url = serializers.CharField(
         required=False,
         default=None,
         help_text=(
@@ -40,6 +41,17 @@ class WorkflowSubmissionSerializer(serializers.Serializer):
     def validate_webhook_url(self, value):
         if value is None:
             return value
+        
+        # valid url
+        parsed = urlparse(value)
+
+        if parsed.scheme not in ('http', 'https'):
+            raise serializers.ValidationError("Only http and https are allowed")
+
+        if not parsed.hostname:
+            raise serializers.ValidationError("URL must include a host")
+
+        # valid placeholder
         PLACEHOLDER_RE = re.compile(r"\{([^{}]+)\}")
         ALLOWED_WEBHOOK_PLACEHOLDERS = {"workflow_id"}
         fields = set(PLACEHOLDER_RE.findall(value))
