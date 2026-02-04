@@ -90,7 +90,7 @@ class WorkflowSubmissionView(TemplateView):
         self._logger.info("Render step 3")
         social_acc = SocialAccount.objects.get(user=request.user, provider="orcid")
         name = social_acc.user.first_name.title() + " " + social_acc.user.last_name.title()
-        orcid = social_acc.uid
+        orcid = f"https://orcid.org/{social_acc.uid}"
 
         override_parameters = {}
         for key, value in request.POST.items():
