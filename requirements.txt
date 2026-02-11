@@ -10,8 +10,8 @@ cffi==2.0.0
 charset-normalizer==3.4.4
 click==8.3.0
 colorlog==6.10.1
-cryptography==43.0.1
-Django==5.2.8
+cryptography==46.0.5
+Django==5.2.11
 django-allauth==64.0.0
 django-browser-reload==1.13.0
 django-compat==1.0.15
