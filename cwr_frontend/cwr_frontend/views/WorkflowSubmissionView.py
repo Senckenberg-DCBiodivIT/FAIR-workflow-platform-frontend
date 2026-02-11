@@ -12,7 +12,7 @@ from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServic
 
 
 class WorkflowSubmissionView(TemplateView):
-    template_name = "submit_workflow.html"
+    template_name:str = "submit_workflow.html"
 
     _logger = logging.getLogger(__name__)
     _connector = WorkflowServiceConnector()
@@ -42,7 +42,15 @@ class WorkflowSubmissionView(TemplateView):
 
         if request.method == "POST":
             file = request.FILES["rocratefile"]
-            crate, workflow = get_crate_workflow_from_zip(file)
+            try:
+                crate, workflow = get_crate_workflow_from_zip(file)
+            except Exception as e:
+                context = {
+                    "step": 2,
+                    "workflow_error": str(e),
+                    "workflow": "",
+                }
+                return render(request, self.template_name, context=context)
         else:
             crate_id = request.GET["crate_id"]
             crate, workflow = get_crate_workflow_from_id(request, crate_id)
