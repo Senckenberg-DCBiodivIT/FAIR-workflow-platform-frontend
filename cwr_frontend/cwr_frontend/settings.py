@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_api_key",
     "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 MIDDLEWARE = [
@@ -283,6 +284,8 @@ SPECTACULAR_SETTINGS = {
     "SECURITY": [{"ApiKeyAuth": [], }],
     "AUTHENTICATION_WHITELIST": [],
     "COMPONENT_SPLIT_REQUEST": True,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
 }
 
 API_KEY_CUSTOM_HEADER = "HTTP_API_KEY"
