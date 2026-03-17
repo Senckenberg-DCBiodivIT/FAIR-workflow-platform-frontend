@@ -21,7 +21,7 @@
         <p class="mv2 f6"><span class="fw6">License:</span> <a class="link dim black" href="{{ item.license }}">{{ item.license }}</a></p>
         <p class="mv2 f6"><span class="fw6">Has workflow?</span> {% if item.has_workflow %}<span class="b dark-green">Yes</span>{% else %}No{% endif %}</p>
         <p class="mv2 f6"><span class="fw6">Has Provenance?</span> {% if item.has_provenance %}<span class="b dark-green">Yes</span>{% else %}No{% endif %}</p>
-        <p class="f6 lh-copy gray mb0">Created: {{ item.date_created|date:"d M. Y H:m" }} UTC, Last modified: {{ item.date_modified|date:"d M. Y H:m" }} UTC </p>
+        <p class="f6 lh-copy gray mb0">Created: {{ item.date_created|date:"d M. Y H:i" }} UTC, Last modified: {{ item.date_modified|date:"d M. Y H:i" }} UTC </p>
     </section>
     {% endfor %}
     {% endif %}

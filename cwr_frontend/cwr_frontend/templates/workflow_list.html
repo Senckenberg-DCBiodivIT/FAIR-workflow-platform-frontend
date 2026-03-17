@@ -25,9 +25,9 @@
         {% else %}
         <td></td>
         {% endif %}
-        <td>{{ wfl.startedAt|date:"d M. Y H:m:s" }} UTC</td>
+        <td>{{ wfl.startedAt|date:"d M. Y H:i:s" }} UTC</td>
         {% if wfl.finishedAt %}
-        <td>{{ wfl.finishedAt|date:"d M. Y H:m:s" }} UTC</td>
+        <td>{{ wfl.finishedAt|date:"d M. Y H:i:s" }} UTC</td>
         <td>{{ wfl.startedAt|timesince:wfl.finishedAt }}</td>
         {% else %}
         <td></td>

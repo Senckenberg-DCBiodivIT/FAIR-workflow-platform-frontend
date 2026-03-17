@@ -53,13 +53,13 @@
         <tr class="stripe-dark">
             <td class="pa1">Created at:</td>
             <td class="pa1">
-                {{ date_created|date:"d M. Y H:m" }} UTC
+                {{ date_created|date:"d M. Y H:i" }} UTC
             </td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Last modified:</td>
             <td class="pa1">
-                {{ date_modified|date:"d M. Y H:m" }} UTC
+                {{ date_modified|date:"d M. Y H:i" }} UTC
             </td>
         </tr>
         </tbody>
@@ -114,11 +114,11 @@
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Start Time</td>
-            <td class="pa1">{{ provenance.start_time|date:"d M. Y H:m" }} UTC</td>
+            <td class="pa1">{{ provenance.start_time|date:"d M. Y H:i" }} UTC</td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">End Time</td>
-            <td class="pa1">{{ provenance.end_time|date:"d M. Y H:m" }} UTC</td>
+            <td class="pa1">{{ provenance.end_time|date:"d M. Y H:i" }} UTC</td>
         </tr>
         {% if provenance.parameters %}
         <tr class="stripe-dark">
