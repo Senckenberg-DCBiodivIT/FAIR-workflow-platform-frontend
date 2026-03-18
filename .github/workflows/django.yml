@@ -34,12 +34,13 @@ jobs:
       run: |
         python -m pytest cwr_frontend
     - name: Check for security vulnerabilities with trivy
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@0.35.0
       with:
         scan-type: 'fs'
         scan-ref: '.'
         severity: 'CRITICAL,HIGH'
         exit-code: '1'
+        format: 'table'
   docker:
     runs-on: ubuntu-latest
     needs: test
