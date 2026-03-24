@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.renderers import BaseRenderer
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 from django.http import JsonResponse, HttpResponseBase
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -169,32 +169,78 @@ class WorkflowStatusView(APIView):
 
 class WorkflowDownloadView(APIView):
     permission_classes = [HasCustomAPIKey]
-    renderer_classes = [ZipRenderer]
-    def __init__(self, prefix=settings.CORDRA["PREFIX"], user=settings.CORDRA["USER"], password=settings.CORDRA["PASSWORD"]):
+    renderer_classes = [ZipRenderer, JSONRenderer]
+
+    def __init__(
+        self,
+        prefix=settings.CORDRA["PREFIX"],
+        user=settings.CORDRA["USER"],
+        password=settings.CORDRA["PASSWORD"],
+    ):
         self.user = user
         self.password = password
         self.prefix = prefix
-        self._connector = CordraConnector(user = user, password=password)
+        self._connector = CordraConnector(user=user, password=password)
 
     @extend_schema(
         summary="Download completed workflow as RO-Crate.",
-        description="Download completed workflow as RO-Crate.",
+        description="Download completed workflow as RO-Crate. Use `format=zip` (default) to receive a ZIP archive including all files or `format=json` to receive the RO-Crate metadata as JSON-LD.",
         responses={
-            200: OpenApiResponse(description="Success.", response=OpenApiTypes.BINARY),
+            200: OpenApiResponse(
+                description="Workflow RO-Crate. Returns a ZIP archive when `format=zip` or JSON-LD when `format=json`.",
+                response={
+                    "application/zip": {"type": "string", "format": "binary"},
+                    "application/json": {"type": "object"},
+                },
+            ),
+            400: OpenApiResponse(description="Invalid format parameter."),
+            404: OpenApiResponse(description="Workflow not found."),
         },
         tags=["Workflows"],
+        parameters=[
+            OpenApiParameter(
+                name="format",
+                description="Output format. `zip` returns a ZIP archive (default), `json` returns JSON-LD metadata.",
+                required=False,
+                type=OpenApiTypes.STR,
+                enum=["zip", "json"],
+                default="zip",
+            ),
+        ],
     )
     def get(self, request, workflow_id) -> HttpResponseBase:
         workflow_id = f"{self.prefix}/{workflow_id}"
+        format = request.GET.get("format", "zip")
+        if format == "json":
+            download = False
+        elif format == "zip":
+            download = True
+        else:
+            return JsonResponse(
+                {
+                    "detail": "Invalid format parameter. Supported values are 'zip' and 'json'."
+                },
+                status=400,
+            )
+
         try:
             self._connector.get_object_by_id(workflow_id)
 
         except HTTPError as e:
             # Cordra responds with 401 if not a public object is not found.
             if e.response.status_code == 401 or e.response.status_code == 404:
-                return JsonResponse({"detail": f"Workflow {workflow_id} not found"}, status=404)
+                return JsonResponse(
+                    {"detail": f"Workflow {workflow_id} not found"}, status=404
+                )
             return JsonResponse({"detail": e.response.text}, status=500)
         except ConnectionError:
-            return JsonResponse({'detail': 'Object store not available'}, status=500)
+            return JsonResponse({"detail": "Object store not available"}, status=500)
 
-        return as_ROCrate(request, workflow_id, download=True, connector=self._connector, workflow_only=False, nested=False)
+        return as_ROCrate(
+            request,
+            workflow_id,
+            download=download,
+            connector=self._connector,
+            workflow_only=False,
+            nested=True,
+        )
