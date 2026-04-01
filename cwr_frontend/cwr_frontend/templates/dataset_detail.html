@@ -8,10 +8,19 @@
 {% endblock %}
 {% block head %}
 {% load render_json_ld from json_ld %}
+{% if sd %}
 {% render_json_ld sd %}
+{% endif %}
 {% endblock %}
 {% block content %}
 {% load static %}
+{% if error_message %}
+<section class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 pv0 mb1 dark-red no-underline">Dataset is unavailable</h1>
+    <p class="mv2 f6"> {{ error_message }}</p>
+    <a class="f6 link dim ph3 pv2 dib white bg-dark-green shadow-1" href="{% url 'dataset_list' %}">Back to datasets</a>
+</section>
+{% else %}
 <section id="Details" class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Details</h1>
     <table class="f6 w-100 mw8">
@@ -199,4 +208,5 @@
     {% endfor %}
     </div>
 </section>
+{% endif %}
 {% endblock %}

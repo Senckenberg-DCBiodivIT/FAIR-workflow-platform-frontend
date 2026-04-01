@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django_signposting.utils import add_signposts
-from requests import HTTPError
+from requests import HTTPError, RequestException
 from signposting import LinkRel, Signpost
 import requests
 
@@ -18,8 +18,37 @@ from cwr_frontend.rocrate_io import as_ROCrate
 
 
 class DatasetDetailView(TemplateView):
-    template_name = "dataset_detail.html"
+    template_name: str = "dataset_detail.html"
     _connector = CordraConnector()
+    _error_message = (
+        "This dataset cannot be displayed right now because the object repository is "
+        "unavailable or returned an invalid response. Please try again later."
+    )
+
+    def _service_unavailable_response(
+        self,
+        request,
+        id: str,
+        message: str,
+        response_format: str | None,
+        accept: str,
+        download: bool,
+    ) -> HttpResponse:
+        if response_format == "json" or accept in [
+            "application/json",
+            "application/ld+json",
+        ]:
+            return JsonResponse({"detail": message}, status=503)
+        if download or accept == "application/zip":
+            return HttpResponse(message, status=503, content_type="text/plain")
+        
+        context = {
+            "id": id,
+            "name": "Unavailable Dataset",
+            "error_message": message,
+            "sd": None,
+        }
+        return render(request, self.template_name, context, status=503)
 
     def render(self, request, id: str, nested=False, workflow_only=False) -> HttpResponse:
         """ Return a html representation with signposts from the given digital object """
@@ -162,19 +191,7 @@ class DatasetDetailView(TemplateView):
         id = kwargs.get("id")
         if not id:
             raise Http404("Missing ID")
-        # get digital object from cordra
-        try:
-            object = self._connector.get_object_by_id(id)
-        except HTTPError as e:
-            # Cordra responds with 401 if not a public object is not found.
-            if e.response.status_code == 401 or e.response.status_code == 404:
-                raise Http404
-            raise
 
-        # return response:
-        # - if requested in ROCrate format or as a zip , return the zipped RO-Crate
-        # - if requested in json, return the digital object
-        # - return the rendered http page otherwise
         response_format = None
         if "format" in request.GET:
             response_format = request.GET.get("format").lower()
@@ -183,20 +200,38 @@ class DatasetDetailView(TemplateView):
             download = request.GET.get("download").lower() == "true"
         accept = request.META.get("HTTP_ACCEPT", "").lower()
 
-        if response_format == "rocrate":
-            if download or accept == "application/zip":
+        # get digital object from cordra
+        try:
+            object = self._connector.get_object_by_id(id)
+        except HTTPError as e:
+            # Cordra responds with 401 if not a public object is not found.
+            if e.response.status_code == 401 or e.response.status_code == 404:
+                raise Http404
+            raise
+        except RequestException:
+            return self._service_unavailable_response(request, id, self._error_message, response_format, accept, download)
+
+        # return response:
+        # - if requested in ROCrate format or as a zip , return the zipped RO-Crate
+        # - if requested in json, return the digital object
+        # - return the rendered http page otherwise
+        try:
+            if response_format == "rocrate":
+                if download or accept == "application/zip":
+                    return cast(HttpResponse,
+                                as_ROCrate(request, id, download=True, connector=self._connector, workflow_only=False, nested=True))
+                else:
+                    return cast(HttpResponse,
+                                as_ROCrate(request, id, download=False, connector=self._connector, workflow_only=False, nested=True))
+            elif response_format == "workflowrocrate":
                 return cast(HttpResponse,
-                            as_ROCrate(request, id, download=True, connector=self._connector, workflow_only=False, nested=True))
+                            as_ROCrate(request, id, download=download or accept == "application/zip", connector=self._connector, workflow_only=True, nested=True))
+            elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
+                return JsonResponse(object)
             else:
-                return cast(HttpResponse, 
-                            as_ROCrate(request, id, download=False, connector=self._connector, workflow_only=False, nested=True))
-        elif response_format == "workflowrocrate":
-            return cast(HttpResponse, 
-                        as_ROCrate(request, id, download=download or accept == "application/zip", connector=self._connector, workflow_only=True, nested=True))
-        elif response_format == "json" or accept in ["application/json", "application/ld+json"]:
-            return JsonResponse(object)
-        else:
-            return self.render(request, id, nested=False, workflow_only=False)
+                return self.render(request, id, nested=False, workflow_only=False)
+        except RequestException:
+            return self._service_unavailable_response(request, id, self._error_message, response_format, accept, download)
 
     def _jsonld(self, object_id, objects):
         jsonld.set_document_loader(pyld_caching_document_loader)

@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django.shortcuts import render
+from requests import RequestException
 import logging
 
 from django_signposting.utils import add_signposts
@@ -15,8 +16,9 @@ from cwr_frontend.cordra.CordraConnector import CordraConnector
 
 
 class DatasetListView(TemplateView):
-    template_name = "dataset_list.html"
+    template_name: str = "dataset_list.html"
     _connector = CordraConnector()
+    _error_message = "The dataset list is temporarily unavailable because the object repository could not be reached. Please try again later."
 
     _logger = logging.getLogger(__name__)
 
@@ -85,6 +87,14 @@ class DatasetListView(TemplateView):
                 return HttpResponseRedirect(reverse("dataset_list"))
             else:
                 page = Page([], 1, paginator)
+        except RequestException:
+            context = {
+                "page": None,
+                "nested": show_nested,
+                "error_message": self._error_message,
+                "sd": self._jsonld(None, request),
+            }
+            return render(request, self.template_name, context, status=503)
 
         # render response
         context = {

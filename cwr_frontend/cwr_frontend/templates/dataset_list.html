@@ -6,6 +6,12 @@
 {% render_json_ld sd %}
 {% endblock %}
 {% block content %}
+{% if error_message %}
+<section class="mt2 bg-white shadow-1 pa2">
+    <h1 class="f4 pv0 mb1 dark-red no-underline">Dataset list is unavailable</h1>
+    <p class="mv2 f6"> {{ error_message }}</p>
+</section>
+{% else %}
 <div class="mv2">
     <i>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} datasets</i>
     <a href="{% url 'dataset_list'%}?nested={{ nested|yesno:'false,true'}}" class="fr f6 link dim ph3 pv2 mb2 dib white bg-dark-green shadow-1">{% if nested %}Hide nested{% else %}Show nested{% endif %}</a>
@@ -41,4 +47,5 @@
     </div>
 
 </div>
+{% endif %}
 {% endblock %}
