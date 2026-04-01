@@ -6,7 +6,7 @@ from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServic
 
 
 class WorkflowListView(TemplateView):
-    template_name = "workflow_list.html"
+    template_name: str = "workflow_list.html"
 
     _logger = logging.getLogger(__name__)
     _connector = WorkflowServiceConnector()

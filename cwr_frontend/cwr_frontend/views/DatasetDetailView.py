@@ -167,12 +167,15 @@ class DatasetDetailView(TemplateView):
         signposts = [
             Signpost(LinkRel.type, "https://schema.org/ItemPage"),
             Signpost(LinkRel.type, "https://schema.org/Dataset"),
-            Signpost(LinkRel.license, license_id),
             Signpost(LinkRel.cite_as, request.build_absolute_uri(reverse("dataset_detail", args=[id]))),
             Signpost(LinkRel.describedby, link_rocrate, "application/ld+json"),
             Signpost(LinkRel.describedby, link_rocrate + "&download=true", "application/zip"),
             # Signpost(LinkRel.described_by, link_digital_object, "application/ld+json"),
         ]
+
+        if license_id is not None:
+            signposts.append(Signpost(LinkRel.license, license_id))
+
         for (_, author_url) in authors:
             signposts.append(Signpost(LinkRel.author, author_url))
         for item in items:

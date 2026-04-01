@@ -10,13 +10,18 @@ import urllib.parse as urllib_parse
 from django.core.cache import cache
 import hashlib
 
-def cached_frame(input: dict|list, frame: dict, cache_time=60 * 60 * 24, skip_cache=False):
-    cache_key = hashlib.sha1(json.dumps([input, frame]).encode('utf-8')).hexdigest()
+
+def cached_frame(input_doc: dict[str, Any] | list[Any], frame: dict[str, Any], cache_time: int = 60 * 60 * 24, skip_cache: bool = False) -> dict[str, Any]:
+    cache_key = hashlib.sha1(json.dumps([input_doc, frame]).encode('utf-8')).hexdigest()
     if not skip_cache:
         response = cache.get(cache_key)
         if response is not None:
-            return json.loads(response)
-    framed = jsonld.frame(input, frame)
+            cached_framed = json.loads(response)
+            if isinstance(cached_framed, dict):
+                return cached_framed
+    framed = jsonld.frame(input_doc, frame)
+    if not isinstance(framed, dict):
+        raise TypeError("jsonld.frame returned a non-dict JSON-LD structure")
     cache.set(cache_key, json.dumps(framed), cache_time)
     return framed
 
@@ -81,7 +86,7 @@ def _pyld_extended_loader(url, options={}):
                         {'url': url},
                         code='multiple context link headers')
                 linked_alternate = parse_link_header(link_header).get('alternate')
-                if linked_alternate.get('type') == 'application/ld+json' and \
+                if isinstance(linked_alternate, dict) and linked_alternate.get('type') == 'application/ld+json' and \
                         not re.match(r'^application\/(\w*\+)?json$', content_type):
                     return linked_alternate['target']
             return None
