@@ -63,6 +63,18 @@ class WorkflowServiceConnector:
                 response.raise_for_status()
         return True, response.json()
 
+    def visualize_workflow(self, yaml_bytes: bytes, filename: str = 'workflow.yaml') -> dict[str, Any]:
+        """POST a workflow YAML to the graph endpoint and return the Cytoscape-compatible graph JSON."""
+        files = {"file": (filename, yaml_bytes, "application/x-yaml")}
+        response = requests.post(
+            urljoin(self._base_url, "workflow/graph"),
+            files=files,
+            auth=HTTPBasicAuth(self._username, self._password),
+            verify=self._verify_ssl,
+        )
+        response.raise_for_status()
+        return response.json()
+
     def list_workflows(self) -> list[dict[str, Any]]:
         """ retrieve list of objects from cordra """
         url = f'{urljoin(self._base_url, "workflow/list")}'
