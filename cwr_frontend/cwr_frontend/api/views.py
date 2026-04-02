@@ -4,7 +4,9 @@ from rest_framework.renderers import BaseRenderer, JSONRenderer
 from django.http import JsonResponse, HttpResponseBase
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from requests import HTTPError, ConnectionError
+from requests import HTTPError, ConnectionError, RequestException
+from urllib.parse import urlparse
+import requests
 from typing import Optional, Any
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
@@ -12,7 +14,12 @@ from drf_spectacular.types import OpenApiTypes
 from cwr_frontend.rocrate_io import get_crate_workflow_from_zip, as_ROCrate
 from cwr_frontend.workflowservice.WorkflowServiceConnector import WorkflowServiceConnector
 from cwr_frontend.cordra.CordraConnector import CordraConnector
-from .serializers import WorkflowStatusSerializer, WorkflowSubmissionSerializer
+from .serializers import (
+    WorkflowGraphRequestSerializer,
+    WorkflowGraphResponseSerializer,
+    WorkflowStatusSerializer,
+    WorkflowSubmissionSerializer,
+)
 from .models import ApiKeyIdentity, CustomAPIKey
 from .permissions import HasCustomAPIKey
 
@@ -244,3 +251,111 @@ class WorkflowDownloadView(APIView):
             workflow_only=False,
             nested=True,
         )
+
+
+class WorkflowGraphView(APIView):
+    """
+    Returns a Cytoscape-compatible graph JSON for an input workflow.
+
+    Accepts exactly one of:
+    - multipart file upload: field name file
+    - JSON/form with url: URL to a workflow YAML/JSON resource
+    - JSON/form with workflow: raw workflow YAML/JSON string
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._workflow_service = WorkflowServiceConnector()
+
+    def _build_graph(
+        self,
+        *,
+        workflow_url: str | None,
+        workflow_raw: str | None,
+        uploaded_file=None,
+    ) -> tuple[dict[str, Any], int]:
+        import yaml
+
+        yaml_bytes: bytes | None = None
+        filename = "workflow.yaml"
+
+        if uploaded_file is not None:
+            yaml_bytes = uploaded_file.read()
+            if uploaded_file.name:
+                filename = uploaded_file.name
+        elif workflow_url:
+            parsed = urlparse(workflow_url)
+            candidate_name = parsed.path.split("/")[-1] if parsed.path else ""
+            if candidate_name:
+                filename = candidate_name
+            try:
+                response = requests.get(workflow_url, timeout=20, verify=False)
+                if response.status_code == 404:
+                    return {"detail": f"Workflow URL not found: {workflow_url}"}, 404
+
+                response.raise_for_status()
+                yaml_bytes = response.content
+            except RequestException:
+                return {"detail": "Failed to fetch workflow from provided URL."}, 502
+        else:
+            yaml_bytes = str(workflow_raw).encode("utf-8")
+
+        if not yaml_bytes:
+            return {"detail": "Workflow input is empty."}, 400
+
+        try:
+            parsed_yaml = yaml.safe_load(yaml_bytes)
+            if parsed_yaml is None:
+                return {"detail": "Workflow YAML is empty after parsing."}, 400
+        except yaml.YAMLError as exc:
+            return {"detail": f"Invalid YAML: {exc}"}, 400
+
+        try:
+            graph = self._workflow_service.visualize_workflow(
+                yaml_bytes,
+                filename=filename,
+            )
+        except RequestException:
+            return {"detail": "Workflow service failed to generate graph."}, 502
+
+        return graph, 200
+
+    @extend_schema(
+        summary="Generate workflow graph from file, URL, or raw YAML.",
+        description=(
+            "POST endpoint. Provide exactly one of file, url, or workflow. "
+            "Validates YAML and returns Cytoscape-compatible graph JSON."
+        ),
+        request={
+            "application/json": WorkflowGraphRequestSerializer,
+            "multipart/form-data": WorkflowGraphRequestSerializer,
+            "application/x-www-form-urlencoded": WorkflowGraphRequestSerializer,
+        },
+        responses={
+            200: OpenApiResponse(
+                description="Cytoscape-compatible graph JSON.",
+                response=WorkflowGraphResponseSerializer,
+            ),
+            400: OpenApiResponse(
+                description="Missing input, multiple inputs, empty input, or invalid YAML."
+            ),
+            404: OpenApiResponse(description="Workflow URL not found."),
+            502: OpenApiResponse(description="Upstream service error."),
+        },
+        tags=["Workflows"],
+    )
+    def post(self, request) -> Response:
+        serializer = WorkflowGraphRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        graph_payload, status_code = self._build_graph(
+            workflow_url=serializer.validated_data.get("url"),
+            workflow_raw=serializer.validated_data.get("workflow"),
+            uploaded_file=serializer.validated_data.get("file"),
+        )
+
+        if status_code != 200:
+            return Response(graph_payload, status=status_code)
+
+        response_serializer = WorkflowGraphResponseSerializer(graph_payload)
+        return Response(response_serializer.data)
