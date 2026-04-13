@@ -62,134 +62,120 @@
             }
             isLoaded = true;
 
-            var graphUrl = section.dataset.graphUrl;
-            var workflowUrl = section.dataset.workflowUrl;
-            if (!graphUrl || !workflowUrl) {
-                console.error('Workflow graph is missing endpoint or workflow URL.');
+            var graphPayloadElement = document.getElementById('workflow-graph-data');
+            if (!graphPayloadElement) {
+                graphContainer.innerHTML = '<p class="dark-red f6">Workflow graph data is unavailable.</p>';
                 return;
             }
 
-            fetch(graphUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url: workflowUrl })
-            })
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error('Workflow graph request failed with status ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(function (data) {
-                    if (!data || !data.elements || !Array.isArray(data.elements.nodes) || !Array.isArray(data.elements.edges)) {
-                        throw new Error('Workflow graph API did not return a valid graph payload.');
-                    }
+            try {
+                var data = JSON.parse(graphPayloadElement.textContent);
+                if (!data || !data.elements || !Array.isArray(data.elements.nodes) || !Array.isArray(data.elements.edges)) {
+                    throw new Error('Workflow graph payload is invalid.');
+                }
 
-                    var elements = [];
-                    var visibleNodeIds = {};
+                var elements = [];
+                var visibleNodeIds = {};
 
-                    (data.elements.nodes || []).forEach(function (node) {
-                        var nodeData = (node && node.data) ? node.data : {};
-                        var isArtifact = nodeData.type === 'artifact';
-                        var isGcTrue = nodeData.gc === true || nodeData.gc === 'true' || nodeData.gc === 'True';
+                (data.elements.nodes || []).forEach(function (node) {
+                    var nodeData = (node && node.data) ? node.data : {};
+                    var isArtifact = nodeData.type === 'artifact';
+                    var isGcTrue = nodeData.gc === true || nodeData.gc === 'true' || nodeData.gc === 'True';
 
-                        if (!(isArtifact && isGcTrue)) {
-                            elements.push(node);
-                            if (nodeData.id) {
-                                visibleNodeIds[nodeData.id] = true;
-                            }
+                    if (!(isArtifact && isGcTrue)) {
+                        elements.push(node);
+                        if (nodeData.id) {
+                            visibleNodeIds[nodeData.id] = true;
                         }
-                    });
-
-                    (data.elements.edges || []).forEach(function (edge) {
-                        var edgeData = (edge && edge.data) ? edge.data : {};
-                        if (visibleNodeIds[edgeData.source] && visibleNodeIds[edgeData.target]) {
-                            elements.push(edge);
-                        }
-                    });
-
-                    var cy = cytoscape({
-                        container: graphContainer,
-                        elements: elements,
-                        userZoomingEnabled: true,
-                        userPanningEnabled: true,
-                        autoungrabify: true,
-                        minZoom: 0.3,
-                        maxZoom: 3,
-                        style: [
-                            {
-                                selector: 'node',
-                                style: {
-                                    label: 'data(name)',
-                                    'text-valign': 'center',
-                                    'text-halign': 'center',
-                                    'font-size': '11px',
-                                    'text-wrap': 'wrap',
-                                    'text-max-width': '100px',
-                                    width: 'label',
-                                    height: 'label',
-                                    padding: '8px',
-                                    shape: 'roundrectangle',
-                                    color: '#fff'
-                                }
-                            },
-                            {
-                                selector: 'node[type = "task"]',
-                                style: {
-                                    'background-color': '#137752'
-                                }
-                            },
-                            {
-                                selector: 'node[type = "artifact"]',
-                                style: {
-                                    'background-color': '#f9b233',
-                                    color: '#333',
-                                    shape: 'ellipse'
-                                }
-                            },
-                            {
-                                selector: 'edge[type = "control"]',
-                                style: {
-                                    width: 2,
-                                    'line-color': '#aaa',
-                                    'target-arrow-color': '#aaa',
-                                    'target-arrow-shape': 'triangle',
-                                    'curve-style': 'bezier'
-                                }
-                            },
-                            {
-                                selector: 'edge[type = "data"]',
-                                style: {
-                                    width: 1,
-                                    'line-color': '#aaa',
-                                    'target-arrow-color': '#aaa',
-                                    'target-arrow-shape': 'triangle',
-                                    'curve-style': 'bezier',
-                                    'line-style': 'dashed'
-                                }
-                            }
-                        ],
-                        layout: {
-                            name: 'breadthfirst',
-                            directed: true,
-                            spacingFactor: 0.6
-                        }
-                    });
-
-                    resetGraphView(cy);
-
-                    if (resetButton) {
-                        resetButton.addEventListener('click', function () {
-                            resetGraphView(cy);
-                        });
                     }
-                })
-                .catch(function (error) {
-                    console.error('Failed to load workflow graph:', error);
-                    graphContainer.innerHTML = '<p class="dark-red f6">Failed to load workflow graph.</p>';
                 });
+
+                (data.elements.edges || []).forEach(function (edge) {
+                    var edgeData = (edge && edge.data) ? edge.data : {};
+                    if (visibleNodeIds[edgeData.source] && visibleNodeIds[edgeData.target]) {
+                        elements.push(edge);
+                    }
+                });
+
+                var cy = cytoscape({
+                    container: graphContainer,
+                    elements: elements,
+                    userZoomingEnabled: true,
+                    userPanningEnabled: true,
+                    autoungrabify: true,
+                    minZoom: 0.3,
+                    maxZoom: 3,
+                    style: [
+                        {
+                            selector: 'node',
+                            style: {
+                                label: 'data(name)',
+                                'text-valign': 'center',
+                                'text-halign': 'center',
+                                'font-size': '11px',
+                                'text-wrap': 'wrap',
+                                'text-max-width': '100px',
+                                width: 'label',
+                                height: 'label',
+                                padding: '8px',
+                                shape: 'roundrectangle',
+                                color: '#fff'
+                            }
+                        },
+                        {
+                            selector: 'node[type = "task"]',
+                            style: {
+                                'background-color': '#137752'
+                            }
+                        },
+                        {
+                            selector: 'node[type = "artifact"]',
+                            style: {
+                                'background-color': '#f9b233',
+                                color: '#333',
+                                shape: 'ellipse'
+                            }
+                        },
+                        {
+                            selector: 'edge[type = "control"]',
+                            style: {
+                                width: 2,
+                                'line-color': '#aaa',
+                                'target-arrow-color': '#aaa',
+                                'target-arrow-shape': 'triangle',
+                                'curve-style': 'bezier'
+                            }
+                        },
+                        {
+                            selector: 'edge[type = "data"]',
+                            style: {
+                                width: 1,
+                                'line-color': '#aaa',
+                                'target-arrow-color': '#aaa',
+                                'target-arrow-shape': 'triangle',
+                                'curve-style': 'bezier',
+                                'line-style': 'dashed'
+                            }
+                        }
+                    ],
+                    layout: {
+                        name: 'breadthfirst',
+                        directed: true,
+                        spacingFactor: 0.6
+                    }
+                });
+
+                resetGraphView(cy);
+
+                if (resetButton) {
+                    resetButton.addEventListener('click', function () {
+                        resetGraphView(cy);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load workflow graph:', error);
+                graphContainer.innerHTML = '<p class="dark-red f6">Failed to load workflow graph.</p>';
+            }
         }
 
         section.addEventListener('toggle', function () {

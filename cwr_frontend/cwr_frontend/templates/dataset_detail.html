@@ -163,9 +163,12 @@
 </details>
 
 {% if provenance.instrument.url %}
-<details id="WorkflowGraph" class="mt2 bg-white shadow-1 pa2" data-graph-url="{% url 'workflow-graph-api' %}" data-workflow-url="{{ provenance.instrument.url }}">
+<details id="WorkflowGraph" class="mt2 bg-white shadow-1 pa2">
     <summary class="section-title pointer">Workflow Graph</summary>
     <script defer src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    {% if workflow_graph %}
+    {{ workflow_graph|json_script:"workflow-graph-data" }}
+    {% endif %}
     <div class="flex items-center justify-between mb3">
         <div class="flex items-center f6" style="gap:12px;">
             <span class="flex items-center" style="gap:5px;">
@@ -189,7 +192,11 @@
             Reset view
         </button>
     </div>
-    <div data-role="workflow-graph"></div>
+    <div data-role="workflow-graph">
+        {% if workflow_graph_error %}
+        <p class="dark-red f6">{{ workflow_graph_error }}</p>
+        {% endif %}
+    </div>
 </details>
 {% endif %}
 

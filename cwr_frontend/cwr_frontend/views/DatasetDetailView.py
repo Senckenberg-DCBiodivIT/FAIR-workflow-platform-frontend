@@ -14,6 +14,7 @@ import requests
 from cwr_frontend.jsonld_utils import pyld_caching_document_loader, cached_frame
 from cwr_frontend.cordra.CordraConnector import CordraConnector
 from cwr_frontend.rocrate_io import as_ROCrate
+from cwr_frontend.workflow_graph import build_workflow_graph
 
 
 
@@ -116,6 +117,23 @@ class DatasetDetailView(TemplateView):
                 "parameters": parameters
             }
 
+        workflow_graph = None
+        workflow_graph_error = None
+        instrument_url = None
+        if prov_context is not None:
+            instrument_url = prov_context.get("instrument", {}).get("url")
+
+        if instrument_url:
+            graph_payload, graph_status_code = build_workflow_graph(
+                workflow_url=instrument_url,
+                workflow_raw=None,
+                uploaded_file=None,
+            )
+            if graph_status_code == 200:
+                workflow_graph = graph_payload
+            else:
+                workflow_graph_error = graph_payload.get("detail", "Failed to load workflow graph.")
+
         # render content
         context = {
             "id": id,
@@ -132,6 +150,8 @@ class DatasetDetailView(TemplateView):
             "date_modified": datetime.strptime(dataset["dateModified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
             "date_created": datetime.strptime(dataset["dateCreated"], "%Y-%m-%dT%H:%M:%S.%fZ"),
             "sd": self._jsonld(id, objects),
+            "workflow_graph": workflow_graph,
+            "workflow_graph_error": workflow_graph_error,
         }
 
         # get list of items and their content type: tuple of absolute_url, content_type
