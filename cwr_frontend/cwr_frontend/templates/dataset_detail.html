@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ name }}{% endblock %}
 {% block headline %}{{ name }}{% endblock %}
 {% block banner %}
@@ -11,9 +12,11 @@
 {% if sd %}
 {% render_json_ld sd %}
 {% endif %}
+
+<link rel="stylesheet" href="{% static 'dataset_detail.css' %}"/>
+<script defer src="{% static 'dataset_detail.js' %}"></script>
 {% endblock %}
 {% block content %}
-{% load static %}
 {% if error_message %}
 <section class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 pv0 mb1 dark-red no-underline">Dataset is unavailable</h1>
@@ -27,7 +30,7 @@
         <tbody>
         <tr class="stripe-dark">
             <td class="pa1">PID:</td>
-            <td class="pa1"><b>{{ id }}</b></a></td>
+            <td class="pa1"><b>{{ id }}</b></td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Description:</td>
@@ -104,7 +107,7 @@
         {% else %}
         <tr class="stripe-dark">
             <td class="pa1">Agent:</td>
-            <td class="pa1">{{ provenance.agent_name }} (<a href="{{ provenance.agent_id }}">{{ provenance.agent_id }})</a></td>
+            <td class="pa1">{{ provenance.agent_name }} (<a href="{{ provenance.agent_id }}">{{ provenance.agent_id }}</a>)</td>
         </tr>
         <tr class="stripe-dark">
             <td class="pa1">Instrument</td>
@@ -146,33 +149,49 @@
     Dataset has no provenance data
     {% endif %}
 </section>
-<section id="Visualization" class="mt2 bg-white shadow-1 pa2">
-    <h1 class="f4 mb3">Visualization</h1>
-    <div id="graph-container" style="overflow-x: scroll">
-        <p id="graph-loading">Loading ...</p>
-    </div>
+
+<details id="Visualization" class="mt2 bg-white shadow-1 pa2" data-rocrate-url="{% url 'dataset_detail' id=id %}?format=ROCrate">
+    <summary class="section-title pointer">Dataset Visualization</summary>
     <link rel="stylesheet" href="{% static 'jsonld-vis.css' %}"/>
     <script defer src="{% static 'ajax.min.js' %}"></script>
     <script defer src="{% static 'd3.min.js' %}"></script>
     <script defer src="{% static 'd3-tip.min.js' %}"></script>
     <script defer src="{% static 'jsonld-vis.js' %}"></script>
-    <script defer type="module">
-        var url = "{% url 'dataset_detail' id=id  %}?format=ROCrate";
-        var container = document.getElementById('graph-container');
-        var config = {
-            "h": 600,
-            "w": container.offsetWidth
-        };
-        var content = Ajax.load({
-            url: url,
-            method: "get",
-            success: function (data) {
-                document.getElementById('graph-loading').remove()
-                d3.jsonldVis(data, "#graph-container", config);
-            }
-        });
-    </script>
-</section>
+    <div data-role="graph-container">
+        <p data-role="graph-loading">Expand to load visualization ...</p>
+    </div>
+</details>
+
+{% if provenance.instrument.url %}
+<details id="WorkflowGraph" class="mt2 bg-white shadow-1 pa2" data-graph-url="{% url 'workflow-graph-api' %}" data-workflow-url="{{ provenance.instrument.url }}">
+    <summary class="section-title pointer">Workflow Graph</summary>
+    <script defer src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    <div class="flex items-center justify-between mb3">
+        <div class="flex items-center f6" style="gap:12px;">
+            <span class="flex items-center" style="gap:5px;">
+                <span style="display:inline-block;width:14px;height:14px;background:#137752;border-radius:3px;flex-shrink:0;"></span>
+                Task
+            </span>
+            <span class="flex items-center" style="gap:5px;">
+                <span style="display:inline-block;width:14px;height:14px;background:#f9b233;border-radius:50%;flex-shrink:0;"></span>
+                Artifact
+            </span>
+            <span class="flex items-center" style="gap:5px;">
+                <span style="display:inline-block;width:24px;border-top:2px solid #aaa;flex-shrink:0;"></span>
+                Control flow
+            </span>
+            <span class="flex items-center" style="gap:5px;">
+                <span style="display:inline-block;width:24px;border-top:1px dashed #aaa;flex-shrink:0;"></span>
+                Data flow
+            </span>
+        </div>
+        <button data-role="graph-reset" type="button" class="f6 link dim ph3 pv2 dib black bg-light-gray ba b--black-20 pointer">
+            Reset view
+        </button>
+    </div>
+    <div data-role="workflow-graph"></div>
+</details>
+{% endif %}
 
 <section id="Content" class="mt2 bg-white shadow-1 pa2">
     <h1 class="f4 mb3">Content ({{ items|length }} files)</h1>
