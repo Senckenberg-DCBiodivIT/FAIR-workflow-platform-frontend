@@ -23,4 +23,4 @@ def project_name():
 
 @register.simple_tag
 def orcid_enabled():
-    return settings.ORCIC_ENABLED
+    return settings.ORCID_ENABLED
